@@ -65,5 +65,11 @@ namespace OpenUtau.UI.Dialogs
         {
             SetSinger(singerNames[this.name.SelectedIndex]);
         }
+
+        private void butRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            DocManager.Inst.SearchAllSingers();
+            UpdateSingers();
+        }
     }
 }

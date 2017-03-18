@@ -46,7 +46,32 @@ namespace OpenUtau.Core.USTx
             return _note;
         }
 
-        public string GetResamplerFlags() { return "Y0H0F0"; }
+        public string GetResamplerFlags() {
+            StringBuilder flags = new StringBuilder();
+            foreach (var item in Expressions)
+            {
+                switch (item.Key)
+                {
+                    case "gender":
+                        if (((int)item.Value.Data) != 0)
+                            flags.Append("g").Append((int)item.Value.Data);
+                        break;
+                    case "breathiness":
+                        if (((int)item.Value.Data) != 100)
+                            flags.Append("Y").Append((int)item.Value.Data);
+                        break;
+                    case "lowpass":
+                    case "highpass":
+                    default:
+                        break;
+                }
+            }
+            var flag = flags.ToString();
+            if (!flag.Contains('Y')) flag = string.Concat(flag, "Y0");
+            if (!flag.Contains('H')) flag = string.Concat(flag, "H0");
+            if (!flag.Contains('F')) flag = string.Concat(flag, "F0");
+            return flag;
+        }
 
         public int CompareTo(object obj)
         {

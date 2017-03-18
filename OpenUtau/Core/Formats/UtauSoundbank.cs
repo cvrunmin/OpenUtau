@@ -77,8 +77,8 @@ namespace OpenUtau.Core.Formats
                     string filename = lines[i].Split(new[] { '=' })[0];
                     var detected = DetectPathEncoding(filename, singer.Path, singer.FileEncoding);
                     if (singer.PathEncoding == Encoding.Default) singer.PathEncoding = detected;
-                    i++;
                 }
+                i++;
             }
             if (singer.PathEncoding == null) return null;
             
@@ -95,9 +95,12 @@ namespace OpenUtau.Core.Formats
                 if (line.StartsWith("image="))
                 {
                     string imagePath = line.Trim().Replace("image=", "");
-                    Uri imagepath = new Uri(Path.Combine(singer.Path, EncodingUtil.ConvertEncoding(singer.FileEncoding, singer.PathEncoding, imagePath)));
-                    singer.Avatar = new System.Windows.Media.Imaging.BitmapImage(imagepath);
-                    singer.Avatar.Freeze();
+                    if (string.IsNullOrWhiteSpace(imagePath))
+                    {
+                        Uri imagepath = new Uri(Path.Combine(singer.Path, EncodingUtil.ConvertEncoding(singer.FileEncoding, singer.PathEncoding, imagePath)));
+                        singer.Avatar = new System.Windows.Media.Imaging.BitmapImage(imagepath);
+                        singer.Avatar.Freeze();
+                    }
                 }
                 if (line.StartsWith("author=")) singer.Author = line.Trim().Replace("author=", "");
                 if (line.StartsWith("web=")) singer.Website = line.Trim().Replace("web=", "");
@@ -153,18 +156,20 @@ namespace OpenUtau.Core.Formats
                 {
                     string wavfile = s[0];
                     var args = s[1].Split(new[] { ',' });
-                    if (singer.AliasMap.ContainsKey(args[0])) continue;
+                    var alias = args[0];
+                    if (string.IsNullOrWhiteSpace(alias)) alias = wavfile.Substring(0, wavfile.LastIndexOf(".wav"));
+                    if (singer.AliasMap.ContainsKey(alias)) continue;
                     try
                     {
-                        singer.AliasMap.Add(args[0], new UOto()
+                        singer.AliasMap.Add(alias, new UOto()
                         {
                             File = Path.Combine(relativeDir, wavfile),
                             Alias = args[0],
-                            Offset = double.Parse(args[1]),
-                            Consonant = double.Parse(args[2]),
-                            Cutoff = double.Parse(args[3]),
-                            Preutter = double.Parse(args[4]),
-                            Overlap = double.Parse(args[5])
+                            Offset = double.Parse(string.IsNullOrWhiteSpace(args[1]) ? "0" : args[1]),
+                            Consonant = double.Parse(string.IsNullOrWhiteSpace(args[2]) ? "0" : args[2]),
+                            Cutoff = double.Parse(string.IsNullOrWhiteSpace(args[3]) ? "0" : args[3]),
+                            Preutter = double.Parse(string.IsNullOrWhiteSpace(args[4]) ? "0" : args[4]),
+                            Overlap = double.Parse(string.IsNullOrWhiteSpace(args[5]) ? "0" : args[5])
                         });
                     }
                     catch

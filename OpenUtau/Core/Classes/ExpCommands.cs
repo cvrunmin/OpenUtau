@@ -31,6 +31,44 @@ namespace OpenUtau.Core
         public override void Unexecute() { Note.Expressions[Key].Data = OldValue; }
     }
 
+    public class GlobelSetIntExpCommand : ExpCommand
+    {
+        public int NewValue;
+        public LinkedList<int> OldValues = new LinkedList<int>();
+        public GlobelSetIntExpCommand(UVoicePart part, string key, int newValue)
+        {
+            this.Part = part;
+            this.Key = key;
+            this.NewValue = newValue;
+            LinkedListNode<int> before = null;
+            foreach (var note in part.Notes)
+            {
+                if (before == null) {
+                    before = OldValues.AddFirst((int)note.Expressions[Key].Data);
+                }
+                else
+                {
+                    before = OldValues.AddAfter(before, (int)note.Expressions[Key].Data);
+                }
+            }
+        }
+        public override string ToString() { return "Set all notes expression " + Key; }
+        public override void Execute() {
+            foreach (var note in Part.Notes)
+            {
+                note.Expressions[Key].Data = NewValue + ((int)note.Expressions[Key].Data);
+            }
+        }
+        public override void Unexecute() {
+            int i = 0;
+            foreach (var note in Part.Notes)
+            {
+                note.Expressions[Key].Data = OldValues.ElementAt(i);
+                i++;
+            }
+        }
+    }
+
     public abstract class PitchExpCommand : ExpCommand { }
 
     public class DeletePitchPointCommand : PitchExpCommand

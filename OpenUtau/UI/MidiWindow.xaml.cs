@@ -722,9 +722,19 @@ namespace OpenUtau.UI
             var _expTemplate = DocManager.Inst.Project.ExpressionTable[_key] as IntExpression;
             if (Keyboard.Modifiers == ModifierKeys.Alt) newValue = (int)_expTemplate.Data;
             else newValue = (int)Math.Max(_expTemplate.Min, Math.Min(_expTemplate.Max, (1 - mousePos.Y / expCanvas.ActualHeight) * (_expTemplate.Max - _expTemplate.Min) + _expTemplate.Min));
+            System.Diagnostics.Debug.WriteLine("New Value: " + newValue);
             UNote note = midiHT.HitTestNoteX(mousePos.X);
             if (midiVM.SelectedNotes.Count == 0 || midiVM.SelectedNotes.Contains(note))
-                if (note != null) DocManager.Inst.ExecuteCmd(new SetIntExpCommand(midiVM.Part, note, midiVM.visibleExpElement.Key, newValue));
+            {
+                if (note != null)
+                {
+                    DocManager.Inst.ExecuteCmd(new SetIntExpCommand(midiVM.Part, note, midiVM.visibleExpElement.Key, newValue));
+                }
+                else
+                {
+                    DocManager.Inst.ExecuteCmd(new GlobelSetIntExpCommand(midiVM.Part, midiVM.visibleExpElement.Key, newValue));
+                }
+            }
         }
 
         private void mainButton_Click(object sender, RoutedEventArgs e)
