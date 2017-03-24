@@ -48,9 +48,15 @@ namespace OpenUtau.Core
 
         private void StartPlayback()
         {
+            StartPlayback(TimeSpan.Zero);
+        }
+
+        private void StartPlayback(TimeSpan span)
+        {
             masterMix = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
             foreach (var source in trackSources) masterMix.AddMixerInput(source);
             outDevice = new WaveOut();
+            if (span != TimeSpan.Zero) masterMix = masterMix.Skip(span) as MixingSampleProvider;
             outDevice.Init(masterMix);
             outDevice.Play();
         }
@@ -144,9 +150,12 @@ namespace OpenUtau.Core
         {
             if (cmd is SeekPlayPosTickNotification)
             {
+                var _cmd = cmd as SeekPlayPosTickNotification;
+                int tick = _cmd.playPosTick;
                 StopPlayback();
-                int tick = ((SeekPlayPosTickNotification)cmd).playPosTick;
                 DocManager.Inst.ExecuteCmd(new SetPlayPosTickNotification(tick));
+                //if (_cmd.project != null)
+                    StartPlayback(new TimeSpan(tick));
             }
             else if (cmd is VolumeChangeNotification)
             {

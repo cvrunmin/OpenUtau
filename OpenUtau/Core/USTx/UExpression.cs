@@ -41,6 +41,20 @@ namespace OpenUtau.Core.USTx
         public override UExpression Split(UNote newParent, int postick) { var exp = Clone(newParent); return exp; }
     }
 
+    public class FloatExpression : UExpression
+    {
+        public FloatExpression(UNote parent, string name, string abbr) : base(parent, name, abbr) { }
+        protected float _data;
+        protected float _min = 0;
+        protected float _max = 100;
+        public virtual float Min { set { _min = value; } get { return _min; } }
+        public virtual float Max { set { _max = value; } get { return _max; } }
+        public override string Type { get { return "float"; } }
+        public override object Data { set { _data = Math.Min(Max, Math.Max(Min, (float)value)); } get { return _data; } }
+        public override UExpression Clone(UNote newParent) { return new FloatExpression(newParent, Name, Abbr) { Min = Min, Max = Max, Data = Data }; }
+        public override UExpression Split(UNote newParent, int postick) { var exp = Clone(newParent); return exp; }
+    }
+
     public class ExpPoint : IComparable<ExpPoint>
     {
         public double X;

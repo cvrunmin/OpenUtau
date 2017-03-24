@@ -89,6 +89,7 @@ namespace OpenUtau.Core.Formats
                 lines = File.ReadAllLines(Path.Combine(singer.Path, "character.txt"), singer.FileEncoding);
             }
             catch { return null; }
+            string finalstring = "";
 
             foreach (var line in lines){
                 if (line.StartsWith("name=")) singer.Name = line.Trim().Replace("name=", "");
@@ -104,8 +105,9 @@ namespace OpenUtau.Core.Formats
                 }
                 if (line.StartsWith("author=")) singer.Author = line.Trim().Replace("author=", "");
                 if (line.StartsWith("web=")) singer.Website = line.Trim().Replace("web=", "");
+                finalstring += line + "\r\n";
             }
-
+            singer.Detail = finalstring;
             LoadPrefixMap(singer);
             singer.Loaded = true;
 

@@ -18,6 +18,7 @@ namespace OpenUtau.Core
     public class SetIntExpCommand : ExpCommand
     {
         public int NewValue, OldValue;
+        public int NewOffsetValue, OldOffsetValue;
         public SetIntExpCommand(UVoicePart part, UNote note, string key, int newValue)
         {
             this.Part = part;
@@ -25,21 +26,32 @@ namespace OpenUtau.Core
             this.Key = key;
             this.NewValue = newValue;
             this.OldValue = (int)Note.Expressions[Key].Data;
+            this.NewOffsetValue = NewValue - (int)Part.Expressions[Key].Data;
+            this.OldOffsetValue = Note.VirtualExpressions[Key];
         }
         public override string ToString() { return "Set note expression " + Key; }
-        public override void Execute() { Note.Expressions[Key].Data = NewValue; }
-        public override void Unexecute() { Note.Expressions[Key].Data = OldValue; }
+        public override void Execute()
+        {
+            Note.Expressions[Key].Data = NewValue;
+            Note.VirtualExpressions[Key] = NewOffsetValue;
+        }
+        public override void Unexecute()
+        {
+            Note.Expressions[Key].Data = OldValue;
+            Note.VirtualExpressions[Key] = OldOffsetValue;
+        }
     }
 
     public class GlobelSetIntExpCommand : ExpCommand
     {
-        public int NewValue;
+        public int NewValue, OldValue;
         public LinkedList<int> OldValues = new LinkedList<int>();
         public GlobelSetIntExpCommand(UVoicePart part, string key, int newValue)
         {
             this.Part = part;
             this.Key = key;
             this.NewValue = newValue;
+            OldValue = (int)part.Expressions[key].Data;
             LinkedListNode<int> before = null;
             foreach (var note in part.Notes)
             {
@@ -54,12 +66,15 @@ namespace OpenUtau.Core
         }
         public override string ToString() { return "Set all notes expression " + Key; }
         public override void Execute() {
+            Part.Expressions[Key].Data = NewValue;
             foreach (var note in Part.Notes)
             {
-                note.Expressions[Key].Data = NewValue + ((int)note.Expressions[Key].Data);
+                note.Expressions[Key].Data = NewValue + note.VirtualExpressions[Key];
             }
         }
-        public override void Unexecute() {
+        public override void Unexecute()
+        {
+            Part.Expressions[Key].Data = OldValue;
             int i = 0;
             foreach (var note in Part.Notes)
             {

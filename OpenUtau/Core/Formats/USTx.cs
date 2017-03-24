@@ -194,6 +194,17 @@ namespace OpenUtau.Core.Formats
                     {
                         _result.Notes.Add(serializer.ConvertToType<UNote>(note));
                     }
+                    foreach (var pair in (Dictionary<string, object>)(dictionary["expression"]))
+                    {
+                        var exp = serializer.ConvertToType(pair.Value, typeof(IntExpression)) as IntExpression;
+                        var _exp = new IntExpression(null, pair.Key, exp.Abbr)
+                        {
+                            Data = exp.Data,
+                            Min = exp.Min,
+                            Max = exp.Max,
+                        };
+                        _result.Expressions.Add(pair.Key, _exp);
+                    }
                 }
                 else if (dictionary.ContainsKey("path"))
                     result = Wave.CreatePart(dictionary["path"] as string);
@@ -231,6 +242,7 @@ namespace OpenUtau.Core.Formats
                 {
                     var _obj = obj as UVoicePart;
                     result.Add("notes", _obj.Notes);
+                    result.Add("expression", _obj.Expressions);
                 }
 
                 return result;
@@ -494,6 +506,20 @@ namespace OpenUtau.Core.Formats
                     if (track.Singer.Name == singer.Name)
                     {
                         track.Singer = singer;
+                    }
+                }
+            }
+
+            foreach (var part in project.Parts)
+            {
+                if (part is UVoicePart) {
+                    var _part = part as UVoicePart;
+                    foreach (var item in _part.Expressions)
+                    {
+                        foreach (var note in _part.Notes)
+                        {
+                            note.VirtualExpressions[item.Key] = (int)item.Value.Data - (int)note.Expressions[item.Key].Data;
+                        }
                     }
                 }
             }

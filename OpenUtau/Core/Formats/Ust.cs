@@ -41,6 +41,13 @@ namespace OpenUtau.Core.Formats
 
             double bpm = projects.First().BPM;
             UProject project = new UProject() { BPM = bpm, Name = "Merged Project", Saved = false };
+            project.RegisterExpression(new IntExpression(null, "velocity", "VEL") { Data = 100, Min = 0, Max = 200 });
+            project.RegisterExpression(new IntExpression(null, "volume", "VOL") { Data = 100, Min = 0, Max = 200 });
+            project.RegisterExpression(new IntExpression(null, "gender", "GEN") { Data = 0, Min = -100, Max = 100 });
+            project.RegisterExpression(new IntExpression(null, "lowpass", "LPF") { Data = 0, Min = 0, Max = 100 });
+            project.RegisterExpression(new IntExpression(null, "highpass", "HPF") { Data = 0, Min = 0, Max = 100 });
+            project.RegisterExpression(new IntExpression(null, "accent", "ACC") { Data = 100, Min = 0, Max = 200 });
+            project.RegisterExpression(new IntExpression(null, "decay", "DEC") { Data = 0, Min = 0, Max = 100 });
             foreach (UProject p in projects)
             {
                 var _track = p.Tracks[0];
@@ -84,8 +91,7 @@ namespace OpenUtau.Core.Formats
             var _track = new UTrack();
             project.Tracks.Add(_track);
             _track.TrackNo = 0;
-            UVoicePart part = new UVoicePart() { TrackNo = 0, PosTick = 0 };
-            project.Parts.Add(part);
+            var part = project.CreateVoicePart(0, 0);
 
             List<string> currentLines = new List<string>();
             int currentTick = 0;
@@ -144,6 +150,45 @@ namespace OpenUtau.Core.Formats
                             if (singer == null) singer = new USinger() { Name = "", Path = singerpath };
                             project.Singers.Add(singer);
                             project.Tracks[0].Singer = singer;
+                        }
+                        if (line.StartsWith("Flags=")) {
+                            var flags = line.Trim().Replace("Flags=", "");
+                            var current = "";
+                            var partstring = "";
+                            for (int i = 0; i < flags.Length; i++)
+                            {
+                                char c = flags[i];
+                                switch (c)
+                                {
+                                    case 'g':
+                                        if (!string.IsNullOrWhiteSpace(current)) {
+                                            Util.Utils.SetExpresstionValue(part.Expressions[current], partstring);
+                                            partstring = "";
+                                        }
+                                        current = "gender";
+                                        break;
+                                    case 'Y':
+                                        if (!string.IsNullOrWhiteSpace(current))
+                                        {
+                                            Util.Utils.SetExpresstionValue(part.Expressions[current], partstring);
+                                            partstring = "";
+                                        }
+                                        current = "breathiness";
+                                        break;
+                                    case 't':
+                                    case 'B':
+                                        if (!string.IsNullOrWhiteSpace(current))
+                                        {
+                                            Util.Utils.SetExpresstionValue(part.Expressions[current], partstring);
+                                            partstring = "";
+                                            current = "";
+                                        }
+                                        break;
+                                    default:
+                                        partstring = string.Concat(partstring, c);
+                                        break;
+                                }
+                            }
                         }
                     }
                     else if (currentBlock == UstBlock.Note)

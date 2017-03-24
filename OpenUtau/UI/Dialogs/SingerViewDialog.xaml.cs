@@ -44,21 +44,23 @@ namespace OpenUtau.UI.Dialogs
             }
             this.name.ItemsSource = singerNames;
         }
-
+        USinger SelectedSinger;
         public void SetSinger(string singerName)
         {
-            USinger singer = null;
+            USinger singer = SelectedSinger = null;
             foreach(var pair in DocManager.Inst.Singers)
                 if (pair.Value.Name == singerName)
                 {
                     singer = pair.Value;
                 }
             if (singer == null) return;
+            SelectedSinger = singer;
             this.name.Text = singer.Name;
             this.avatar.Source = singer.Avatar;
             this.info.Text = "Author: " + singer.Author + "\nWebsite: " + singer.Website + "\nPath: " + singer.Path;
-            this.otoview.Items.Clear();
-            foreach (var pair in singer.AliasMap) this.otoview.Items.Add(pair.Value);
+            //this.otoview.Items.Clear();
+            otoview.ItemsSource = singer.AliasMap.Values;
+            //foreach (var pair in singer.AliasMap) this.otoview.Items.Add(pair.Value);
         }
 
         private void name_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -70,6 +72,12 @@ namespace OpenUtau.UI.Dialogs
         {
             DocManager.Inst.SearchAllSingers();
             UpdateSingers();
+        }
+
+        private void otoview_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var item = (UOto)((FrameworkElement)e.OriginalSource).DataContext;
+            new OtoEditDialog(SelectedSinger, item).ShowDialog();
         }
     }
 }

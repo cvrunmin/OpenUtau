@@ -30,7 +30,11 @@ namespace OpenUtau.Core.USTx
         public UNote CreateNote()
         {
             UNote note = UNote.Create();
-            foreach (var pair in ExpressionTable) { note.Expressions.Add(pair.Key, pair.Value.Clone(note)); }
+            foreach (var pair in ExpressionTable)
+            {
+                note.Expressions.Add(pair.Key, pair.Value.Clone(note));
+                note.VirtualExpressions.Add(pair.Key, 0);
+            }
             note.PitchBend.Points[0].X = -25;
             note.PitchBend.Points[1].X = 25;
             return note;
@@ -44,6 +48,13 @@ namespace OpenUtau.Core.USTx
             note.DurTick = durTick;
             note.PitchBend.Points[1].X = Math.Min(25, DocManager.Inst.Project.TickToMillisecond(note.DurTick) / 2);
             return note;
+        }
+
+        public UVoicePart CreateVoicePart(int TrackNo, int PosTick) {
+            UVoicePart part = new UVoicePart() { TrackNo = TrackNo, PosTick = PosTick };
+            foreach (var pair in ExpressionTable) { part.Expressions.Add(pair.Key, pair.Value); }
+            Parts.Add(part);
+            return part;
         }
 
         public UProject() { }

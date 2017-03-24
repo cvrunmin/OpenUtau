@@ -29,7 +29,7 @@ namespace OpenUtau.Core
                 case 4: i = 1; break;
                 case 8: i = 2; break;
                 case 16: i = 3; break;
-                default: throw new Exception("Invalid beat unit.");
+                default: throw new ArgumentException("Invalid beat unit.");
             }
 
             if (beatPerBar % 4 == 0) i--; // level below bar is half bar, or 2 beatunit

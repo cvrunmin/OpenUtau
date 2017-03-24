@@ -17,6 +17,7 @@ namespace OpenUtau.Core.USTx
         public string Lyric = "a";
         public List<UPhoneme> Phonemes = new List<UPhoneme>();
         public Dictionary<string, UExpression> Expressions = new Dictionary<string, UExpression>();
+        public Dictionary<string, int> VirtualExpressions = new Dictionary<string, int>();
         public PitchBendExpression PitchBend;
         public VibratoExpression Vibrato;
         public bool Error = false;
@@ -42,6 +43,7 @@ namespace OpenUtau.Core.USTx
             };
             foreach (var phoneme in this.Phonemes) _note.Phonemes.Add(phoneme.Clone(_note));
             foreach (var pair in this.Expressions) _note.Expressions.Add(pair.Key, pair.Value.Clone(_note));
+            foreach (var pair in this.VirtualExpressions) _note.VirtualExpressions.Add(pair.Key, pair.Value);
             _note.PitchBend = (PitchBendExpression)this.PitchBend.Clone(_note);
             return _note;
         }
@@ -54,7 +56,7 @@ namespace OpenUtau.Core.USTx
                 {
                     case "gender":
                         if (((int)item.Value.Data) != 0)
-                            flags.Append("g").Append((int)item.Value.Data);
+                            flags.Append("g").Append(((int)item.Value.Data).ToString("+###;-###"));
                         break;
                     case "breathiness":
                         if (((int)item.Value.Data) != 100)

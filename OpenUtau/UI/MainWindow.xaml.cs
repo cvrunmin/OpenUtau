@@ -421,20 +421,23 @@ namespace OpenUtau.UI
                 Multiselect = false,
                 CheckFileExists = true
             };
-            if (openFileDialog.ShowDialog() == true) CmdImportAudio(openFileDialog.FileName);
-            var project = DocManager.Inst.Project;
-            var parts = Core.Formats.Midi.Load(openFileDialog.FileName, project);
-
-            DocManager.Inst.StartUndoGroup();
-            foreach (var part in parts)
+            if (openFileDialog.ShowDialog() == true)
             {
-                var track = new UTrack();
-                track.TrackNo = project.Tracks.Count;
-                part.TrackNo = track.TrackNo;
-                DocManager.Inst.ExecuteCmd(new AddTrackCommand(project, track));
-                DocManager.Inst.ExecuteCmd(new AddPartCommand(project, part));
+                CmdImportAudio(openFileDialog.FileName);
+                var project = DocManager.Inst.Project;
+                var parts = Core.Formats.Midi.Load(openFileDialog.FileName, project);
+
+                DocManager.Inst.StartUndoGroup();
+                foreach (var part in parts)
+                {
+                    var track = new UTrack();
+                    track.TrackNo = project.Tracks.Count;
+                    part.TrackNo = track.TrackNo;
+                    DocManager.Inst.ExecuteCmd(new AddTrackCommand(project, track));
+                    DocManager.Inst.ExecuteCmd(new AddPartCommand(project, part));
+                }
+                DocManager.Inst.EndUndoGroup();
             }
-            DocManager.Inst.EndUndoGroup();
         }
 
         private void MenuSingers_Click(object sender, RoutedEventArgs e)
@@ -631,11 +634,17 @@ namespace OpenUtau.UI
             PlaybackManager.Inst.PausePlayback();
         }
 
+        private void stopButton_Click(object sender, RoutedEventArgs e)
+        {
+            PlaybackManager.Inst.StopPlayback();
+        }
+
         private void bpmText_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             // TODO: set bpm
         }
 
-        # endregion
+        #endregion
+
     }
 }

@@ -87,7 +87,11 @@ namespace OpenUtau.Core
     public class SeekPlayPosTickNotification : UNotification
     {
         public int playPosTick;
-        public SeekPlayPosTickNotification(int tick) { this.playPosTick = tick; }
+        public UProject project;
+        public SeekPlayPosTickNotification(int tick, UProject project = null) {
+            this.playPosTick = tick;
+            this.project = project;
+        }
         public override string ToString() { return "Seek play position to tick " + playPosTick; }
     }
 

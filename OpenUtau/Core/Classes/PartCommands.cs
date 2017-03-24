@@ -18,7 +18,13 @@ namespace OpenUtau.Core
     {
         public AddPartCommand(UProject project, UPart part) { this.project = project; this.part = part; }
         public override string ToString() { return "Add part"; }
-        public override void Execute() { project.Parts.Add(part); }
+        public override void Execute() {
+            project.Parts.Add(part);
+            if(part is UVoicePart)
+            {
+                foreach (var pair in project.ExpressionTable) { (part as UVoicePart).Expressions.Add(pair.Key, pair.Value); }
+            }
+        }
         public override void Unexecute() { project.Parts.Remove(part); }
     }
 
@@ -27,7 +33,13 @@ namespace OpenUtau.Core
         public RemovePartCommand(UProject project, UPart part) { this.project = project; this.part = part; }
         public override string ToString() { return "Remove parts"; }
         public override void Execute() { project.Parts.Remove(part); }
-        public override void Unexecute() { project.Parts.Add(part); }
+        public override void Unexecute() {
+            project.Parts.Add(part);
+            if (part is UVoicePart)
+            {
+                foreach (var pair in project.ExpressionTable) { (part as UVoicePart).Expressions.Add(pair.Key, pair.Value); }
+            }
+        }
     }
 
     public class MovePartCommand : PartCommand

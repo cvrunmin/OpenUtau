@@ -25,6 +25,7 @@ namespace OpenUtau.Core.USTx
         public string Author;
         public string Website;
         public string Language;
+        public string Detail;
 
         public bool Loaded = false;
 

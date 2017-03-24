@@ -109,8 +109,7 @@ namespace OpenUtau.Core.Formats
 
                 foreach (XmlNode part in track.SelectNodes(partPath, nsmanager)) // musical part
                 {
-                    UVoicePart upart = new UVoicePart();
-                    uproject.Parts.Add(upart);
+                    UVoicePart upart = uproject.CreateVoicePart(0,0);
 
                     upart.Name = part.SelectSingleNode(partnamePath, nsmanager).InnerText;
                     upart.Comment = part.SelectSingleNode(partcommentPath, nsmanager).InnerText;

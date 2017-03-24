@@ -690,7 +690,6 @@ namespace OpenUtau.UI
             e.Cancel = true;
             this.Hide();
         }
-
         private void expCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             ((Canvas)sender).CaptureMouse();

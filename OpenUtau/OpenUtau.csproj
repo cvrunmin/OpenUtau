@@ -55,8 +55,8 @@
     <Reference Include="Microsoft.Expression.Interactions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Blend.Interctivity.WPF.v4.0.1.0.3\lib\net40\Microsoft.Expression.Interactions.dll</HintPath>
     </Reference>
-    <Reference Include="NAudio">
-      <HintPath>..\packages\NAudio.1.7.3\lib\net35\NAudio.dll</HintPath>
+    <Reference Include="NAudio, Version=1.8.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAudio.1.8.0\lib\net35\NAudio.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -92,6 +92,19 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\Formats\UtauSoundbank.cs" />
+    <Compile Include="Core\Lib\WaveFormRenderer\AveragePeakProvider.cs" />
+    <Compile Include="Core\Lib\WaveFormRenderer\DecibelPeakProvider.cs" />
+    <Compile Include="Core\Lib\WaveFormRenderer\IPeakProvider.cs" />
+    <Compile Include="Core\Lib\WaveFormRenderer\MaxPeakProvider.cs" />
+    <Compile Include="Core\Lib\WaveFormRenderer\PeakInfo.cs" />
+    <Compile Include="Core\Lib\WaveFormRenderer\PeakProvider.cs" />
+    <Compile Include="Core\Lib\WaveFormRenderer\RmsPeakProvider.cs" />
+    <Compile Include="Core\Lib\WaveFormRenderer\SamplingPeakProvider.cs" />
+    <Compile Include="Core\Lib\WaveFormRenderer\SoundCloudBlockWaveFormSettings.cs" />
+    <Compile Include="Core\Lib\WaveFormRenderer\SoundCloudOriginalSettings.cs" />
+    <Compile Include="Core\Lib\WaveFormRenderer\StandardWaveFormRendererSettings.cs" />
+    <Compile Include="Core\Lib\WaveFormRenderer\WaveFormRenderer.cs" />
+    <Compile Include="Core\Lib\WaveFormRenderer\WaveFormRendererSettings.cs" />
     <Compile Include="Core\Lib\xxHash.cs" />
     <Compile Include="Core\Render\NAudio\AudioStreamReader.cs" />
     <Compile Include="Core\Render\NAudio\CachedSound.cs" />
@@ -126,6 +139,8 @@
     <Compile Include="Core\Util\PathManager.cs" />
     <Compile Include="Core\Util\Preferences.cs" />
     <Compile Include="Core\Util\UpdateChecker.cs" />
+    <Compile Include="Core\Util\Utils.cs" />
+    <Compile Include="SimpleHelpers\FileEncoding.cs" />
     <Compile Include="UI\Controls\ExpComboBox.xaml.cs">
       <DependentUpon>ExpComboBox.xaml</DependentUpon>
     </Compile>
@@ -159,6 +174,9 @@
       <DependentUpon>ViewScaler.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UI\Dialogs\OtoEditDialog.xaml.cs">
+      <DependentUpon>OtoEditDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Dialogs\PreferencesDialog.xaml.cs">
       <DependentUpon>PreferencesDialog.xaml</DependentUpon>
     </Compile>
@@ -170,6 +188,7 @@
     </Compile>
     <Compile Include="UI\Controls\SizeObserver.cs" />
     <Compile Include="UI\Models\ExpComboBoxViewModel.cs" />
+    <Compile Include="UI\Models\OtoViewModel.cs" />
     <Compile Include="UI\Models\TrackHeaderConverters.cs" />
     <Compile Include="UI\Models\MidiViewHitTest .cs" />
     <Compile Include="UI\Models\MidiViewModel.cs" />
@@ -190,6 +209,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UI\Controls\ViewScaler.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\Dialogs\OtoEditDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
