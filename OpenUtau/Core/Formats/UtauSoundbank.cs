@@ -41,7 +41,19 @@ namespace OpenUtau.Core.Formats
         {
             var absPath = DetectSingerPath(path, ustEncoding);
             if (absPath == "") return null;
-            else if (loadedSingers.ContainsKey(absPath)) return loadedSingers[absPath];
+            else if (loadedSingers.ContainsKey(absPath))
+            {
+                if(loadedSingers[absPath].Loaded)
+                {
+                    return loadedSingers[absPath];
+                }
+                else
+                {
+                    var singer = LoadSinger(absPath);
+                    loadedSingers[absPath] = singer;
+                    return singer;
+                }
+            }
             else
             {
                 var singer = LoadSinger(absPath);

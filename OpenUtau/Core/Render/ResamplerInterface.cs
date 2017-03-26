@@ -27,6 +27,27 @@ namespace OpenUtau.Core.Render
             worker.RunWorkerAsync(new Tuple<UVoicePart, UProject, IResamplerDriver>(part, project, engine));
         }
 
+        public Task<SequencingSampleProvider> ResamplePartNew(UVoicePart part, UProject project, IResamplerDriver engine)
+        {
+            return new TaskFactory().StartNew(function: tuple =>
+            {
+                var _tuple = tuple as Tuple<UVoicePart, UProject, IResamplerDriver>;
+                return RenderAsync(_tuple.Item1, _tuple.Item2, _tuple.Item3);
+            }, state: new Tuple<UVoicePart, UProject, IResamplerDriver>(part, project, engine)).ContinueWith(continuationFunction: (task)=> {
+                List<RenderItemSampleProvider> renderItemSampleProviders = new List<RenderItemSampleProvider>();
+                foreach (var item in task.Result) renderItemSampleProviders.Add(new RenderItemSampleProvider(item));
+                DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, string.Format("")));
+                try
+                {
+                    return new SequencingSampleProvider(renderItemSampleProviders);
+                }
+                catch (ArgumentException)
+                {
+                    return null;
+                }
+            });
+        }
+
         private void worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             DocManager.Inst.ExecuteCmd(new ProgressBarNotification(e.ProgressPercentage, (string)e.UserState));
@@ -49,7 +70,61 @@ namespace OpenUtau.Core.Render
             DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, string.Format("")));
             resampleDoneCallback(new SequencingSampleProvider(renderItemSampleProviders));
         }
+        private List<RenderItem> RenderAsync(UVoicePart part, UProject project, IResamplerDriver engine)
+        {
+            List<RenderItem> renderItems = new List<RenderItem>();
+            Debug.Assert(engine != null, "Engine is not provided");
+            System.Diagnostics.Stopwatch watch = new Stopwatch();
+            watch.Start();
+            System.Diagnostics.Debug.WriteLine("Resampling start");
+            lock (part)
+            {
+                string cacheDir = PathManager.Inst.GetCachePath(project.FilePath);
+                string[] cacheFiles = Directory.EnumerateFiles(cacheDir).ToArray();
+                int count = 0, i = 0;
+                foreach (UNote note in part.Notes) foreach (UPhoneme phoneme in note.Phonemes) count++;
 
+                foreach (UNote note in part.Notes)
+                {
+                    foreach (UPhoneme phoneme in note.Phonemes)
+                    {
+                        RenderItem item = BuildRenderItem(phoneme, part, project);
+                        if (!item.Error)
+                        {
+                            var sound = RenderCache.Inst.Get(item.HashParameters());
+
+                            if (sound == null)
+                            {
+                                string cachefile = Path.Combine(cacheDir, string.Format("{0:x}.wav", item.HashParameters()));
+                                if (!cacheFiles.Contains(cachefile))
+                                {
+                                    System.Diagnostics.Debug.WriteLine("Sound {0:x} resampling {1}", item.HashParameters(), item.GetResamplerExeArgs());
+                                    DriverModels.EngineInput engineArgs = DriverModels.CreateInputModel(item, 0);
+                                    System.IO.Stream output = engine.DoResampler(engineArgs);
+                                    sound = new CachedSound(output);
+                                }
+                                else
+                                {
+                                    System.Diagnostics.Debug.WriteLine("Sound {0:x} found on disk {1}", item.HashParameters(), item.GetResamplerExeArgs());
+                                    sound = new CachedSound(cachefile);
+                                }
+                                RenderCache.Inst.Put(item.HashParameters(), sound, engine.GetInfo().ToString());
+                            }
+                            else System.Diagnostics.Debug.WriteLine("Sound {0} found in cache {1}", item.HashParameters(), item.GetResamplerExeArgs());
+
+                            item.Sound = sound;
+                            renderItems.Add(item);
+                        }
+                        DocManager.Inst.ExecuteCmd(new ProgressBarNotification(100 * ++i / count, string.Format("Resampling \"{0}\" {1}/{2}", phoneme.Phoneme, i, count)));
+                    }
+                }
+            }
+            watch.Stop();
+            System.Diagnostics.Debug.WriteLine("Resampling end");
+            System.Diagnostics.Debug.WriteLine("Total cache size {0:n0} bytes", RenderCache.Inst.TotalMemSize);
+            System.Diagnostics.Debug.WriteLine("Total time {0} ms", watch.Elapsed.TotalMilliseconds);
+            return renderItems;
+        }
         private List<RenderItem> RenderAsync(UVoicePart part, UProject project, IResamplerDriver engine, BackgroundWorker worker)
         {
             List<RenderItem> renderItems = new List<RenderItem>();
@@ -69,29 +144,32 @@ namespace OpenUtau.Core.Render
                     foreach (UPhoneme phoneme in note.Phonemes)
                     {
                         RenderItem item = BuildRenderItem(phoneme, part, project);
-                        var sound = RenderCache.Inst.Get(item.HashParameters());
-
-                        if (sound == null)
+                        if (!item.Error)
                         {
-                            string cachefile = Path.Combine(cacheDir, string.Format("{0:x}.wav", item.HashParameters()));
-                            if (!cacheFiles.Contains(cachefile))
-                            {
-                                System.Diagnostics.Debug.WriteLine("Sound {0:x} resampling {1}", item.HashParameters(), item.GetResamplerExeArgs());
-                                DriverModels.EngineInput engineArgs = DriverModels.CreateInputModel(item, 0);
-                                System.IO.Stream output = engine.DoResampler(engineArgs);
-                                sound = new CachedSound(output);
-                            }
-                            else
-                            {
-                                System.Diagnostics.Debug.WriteLine("Sound {0:x} found on disk {1}", item.HashParameters(), item.GetResamplerExeArgs());
-                                sound = new CachedSound(cachefile);
-                            }
-                            RenderCache.Inst.Put(item.HashParameters(), sound, engine.GetInfo().ToString());
-                        }
-                        else System.Diagnostics.Debug.WriteLine("Sound {0} found in cache {1}", item.HashParameters(), item.GetResamplerExeArgs());
+                            var sound = RenderCache.Inst.Get(item.HashParameters());
 
-                        item.Sound = sound;
-                        renderItems.Add(item);
+                            if (sound == null)
+                            {
+                                string cachefile = Path.Combine(cacheDir, string.Format("{0:x}.wav", item.HashParameters()));
+                                if (!cacheFiles.Contains(cachefile))
+                                {
+                                    System.Diagnostics.Debug.WriteLine("Sound {0:x} resampling {1}", item.HashParameters(), item.GetResamplerExeArgs());
+                                    DriverModels.EngineInput engineArgs = DriverModels.CreateInputModel(item, 0);
+                                    System.IO.Stream output = engine.DoResampler(engineArgs);
+                                    sound = new CachedSound(output);
+                                }
+                                else
+                                {
+                                    System.Diagnostics.Debug.WriteLine("Sound {0:x} found on disk {1}", item.HashParameters(), item.GetResamplerExeArgs());
+                                    sound = new CachedSound(cachefile);
+                                }
+                                RenderCache.Inst.Put(item.HashParameters(), sound, engine.GetInfo().ToString());
+                            }
+                            else System.Diagnostics.Debug.WriteLine("Sound {0} found in cache {1}", item.HashParameters(), item.GetResamplerExeArgs());
+
+                            item.Sound = sound;
+                            renderItems.Add(item);
+                        }
                         worker.ReportProgress(100 * ++i / count, string.Format("Resampling \"{0}\" {1}/{2}", phoneme.Phoneme, i, count));
                     }
                 }
@@ -107,6 +185,8 @@ namespace OpenUtau.Core.Render
         {
             USinger singer = project.Tracks[part.TrackNo].Singer;
             string rawfile = Lib.EncodingUtil.ConvertEncoding(singer.FileEncoding, singer.PathEncoding, phoneme.Oto.File);
+            bool err = false;
+            if (string.IsNullOrWhiteSpace(rawfile)) err = true;
             rawfile = Path.Combine(singer.Path, rawfile);
 
             double strechRatio = Math.Pow(2, 1.0 - (double)(int)phoneme.Parent.Expressions["velocity"].Data / 100);
@@ -116,6 +196,7 @@ namespace OpenUtau.Core.Render
 
             RenderItem item = new RenderItem()
             {
+                Error = err,
                 // For resampler
                 RawFile = rawfile,
                 NoteNum = phoneme.Parent.NoteNum,

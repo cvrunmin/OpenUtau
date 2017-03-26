@@ -11,6 +11,7 @@ using System.Xml.Linq;
 
 using OpenUtau.Core;
 using OpenUtau.Core.USTx;
+using OpenUtau.Core.Lib;
 
 namespace OpenUtau.Core.Formats
 {
@@ -423,6 +424,7 @@ namespace OpenUtau.Core.Formats
             UProject project = new UProject() { Saved = false };
             project.RegisterExpression(new IntExpression(null, "velocity", "VEL") { Data = 100, Min = 0, Max = 200 });
             project.RegisterExpression(new IntExpression(null, "volume", "VOL") { Data = 100, Min = 0, Max = 200 });
+            project.RegisterExpression(new IntExpression(null, "breathiness", "BRE") { Data = 0, Min = 0, Max = 100 });
             project.RegisterExpression(new IntExpression(null, "gender", "GEN") { Data = 0, Min = -100, Max = 100 });
             project.RegisterExpression(new IntExpression(null, "lowpass", "LPF") { Data = 0, Min = 0, Max = 100 });
             project.RegisterExpression(new IntExpression(null, "highpass", "HPF") { Data = 0, Min = 0, Max = 100 });
@@ -489,14 +491,11 @@ namespace OpenUtau.Core.Formats
             // Load singers
             for (int i = 0; i < project.Singers.Count; i++)
             {
-                foreach (var pair in DocManager.Inst.Singers)
-                {
-                    if (project.Singers[i].Name == pair.Value.Name)
+                var _singer = UtauSoundbank.GetSinger(project.Singers[i].Path, EncodingUtil.DetectFileEncoding(file), DocManager.Inst.Singers);
+                    if (project.Singers[i].Name == _singer.Name)
                     {
-                        project.Singers[i] = pair.Value;
-                        continue;
+                        project.Singers[i] = _singer;
                     }
-                }
             }
 
             foreach (var track in project.Tracks)

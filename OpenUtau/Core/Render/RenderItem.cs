@@ -10,6 +10,7 @@ namespace OpenUtau.Core.Render
 {
     class RenderItem
     {
+        public bool Error;
         // For resampler
         public string RawFile;
         public int NoteNum;

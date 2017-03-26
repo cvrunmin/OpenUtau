@@ -103,7 +103,7 @@
                        Value="{Binding OffsetX, Mode=TwoWay, Source={StaticResource midiVM}, UpdateSourceTrigger=PropertyChanged}"
                        ViewportSize="{Binding ViewportSizeX, Source={StaticResource midiVM}}"
                        LargeChange="{Binding ViewportSizeX, Source={StaticResource midiVM}}"
-                       SmallChange="{Binding SmallChangeX, Source={StaticResource midiVM}}">
+                       SmallChange="{Binding SmallChangeX, Source={StaticResource midiVM}}" ValueChanged="horizontalScroll_ValueChanged">
                 <i:Interaction.Behaviors>
                     <ib:ScrollbarBehavior/>
                 </i:Interaction.Behaviors>

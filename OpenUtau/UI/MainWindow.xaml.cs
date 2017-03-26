@@ -15,12 +15,13 @@ using System.Windows.Shell;
 
 using WinInterop = System.Windows.Interop;
 using System.Runtime.InteropServices;
-using Microsoft.Win32;
 
 using OpenUtau.UI.Models;
 using OpenUtau.UI.Controls;
 using OpenUtau.Core;
 using OpenUtau.Core.USTx;
+using System.Windows.Forms;
+using OpenUtau.Core.Render;
 
 namespace OpenUtau.UI
 {
@@ -63,7 +64,7 @@ namespace OpenUtau.UI
             CmdNewFile();
 
             if (UpdateChecker.Check())
-                this.mainMenu.Items.Add(new MenuItem()
+                this.mainMenu.Items.Add(new System.Windows.Controls.MenuItem()
                 {
                     Header = @"Update available",
                     Foreground = ThemeManager.WhiteKeyNameBrushNormal
@@ -99,7 +100,7 @@ namespace OpenUtau.UI
             ((Canvas)sender).CaptureMouse();
         }
 
-        private void timelineCanvas_MouseMove(object sender, MouseEventArgs e)
+        private void timelineCanvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             Point mousePos = e.GetPosition((UIElement)sender);
             timelineCanvas_MouseMove_Helper(mousePos);
@@ -176,7 +177,7 @@ namespace OpenUtau.UI
                     Canvas.SetZIndex(selectionBox, 1000);
                     selectionBox.Visibility = System.Windows.Visibility.Visible;
                 }
-                Mouse.OverrideCursor = Cursors.Cross;
+                Mouse.OverrideCursor = System.Windows.Input.Cursors.Cross;
             }
             else if (hit is DrawingVisual)
             {
@@ -199,7 +200,7 @@ namespace OpenUtau.UI
                 {
                     _resizePartElement = true;
                     _resizeMinDurTick = trackVM.GetPartMinDurTick(_hitPartElement.Part);
-                    Mouse.OverrideCursor = Cursors.SizeWE;
+                    Mouse.OverrideCursor = System.Windows.Input.Cursors.SizeWE;
                     if (trackVM.SelectedParts.Count > 0)
                     {
                         _partResizeShortest = _hitPartElement.Part;
@@ -218,7 +219,7 @@ namespace OpenUtau.UI
                     _movePartElement = true;
                     _partMoveRelativeTick = trackVM.CanvasToSnappedTick(mousePos.X) - _hitPartElement.Part.PosTick;
                     _partMoveStartTick = partEl.Part.PosTick;
-                    Mouse.OverrideCursor = Cursors.SizeAll;
+                    Mouse.OverrideCursor = System.Windows.Input.Cursors.SizeAll;
                     if (trackVM.SelectedParts.Count > 0)
                     {
                         _partMovePartLeft = _partMovePartMin = _partMovePartMax = _hitPartElement.Part;
@@ -273,7 +274,7 @@ namespace OpenUtau.UI
             Mouse.OverrideCursor = null;
         }
 
-        private void trackCanvas_MouseMove(object sender, MouseEventArgs e)
+        private void trackCanvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             Point mousePos = e.GetPosition((UIElement)sender);
             trackCanvas_MouseMove_Helper(mousePos);
@@ -350,7 +351,7 @@ namespace OpenUtau.UI
                 if (hit is DrawingVisual)
                 {
                     PartElement partEl = ((DrawingVisual)hit).Parent as PartElement;
-                    if (mousePos.X > partEl.X + partEl.VisualWidth - UIConstants.ResizeMargin && partEl is VoicePartElement) Mouse.OverrideCursor = Cursors.SizeWE;
+                    if (mousePos.X > partEl.X + partEl.VisualWidth - UIConstants.ResizeMargin && partEl is VoicePartElement) Mouse.OverrideCursor = System.Windows.Input.Cursors.SizeWE;
                     else Mouse.OverrideCursor = null;
                 }
                 else
@@ -380,7 +381,7 @@ namespace OpenUtau.UI
                 trackVM.DeselectAll();
             }
             ((UIElement)sender).CaptureMouse();
-            Mouse.OverrideCursor = Cursors.No;
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.No;
         }
 
         private void trackCanvas_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
@@ -410,7 +411,7 @@ namespace OpenUtau.UI
                 Multiselect = false,
                 CheckFileExists = true
             };
-            if (openFileDialog.ShowDialog() == true) CmdImportAudio(openFileDialog.FileName);
+            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) CmdImportAudio(openFileDialog.FileName);
         }
 
         private void MenuImportMidi_Click(object sender, RoutedEventArgs e)
@@ -421,7 +422,7 @@ namespace OpenUtau.UI
                 Multiselect = false,
                 CheckFileExists = true
             };
-            if (openFileDialog.ShowDialog() == true)
+            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 CmdImportAudio(openFileDialog.FileName);
                 var project = DocManager.Inst.Project;
@@ -448,7 +449,10 @@ namespace OpenUtau.UI
 
         private void MenuRenderAll_Click(object sender, RoutedEventArgs e)
         {
-            PlaybackManager.Inst.Play(DocManager.Inst.Project);
+            var savdialog = new SaveFileDialog() { DefaultExt = "wav", AddExtension = true, OverwritePrompt = true, Filter = "Wave file (*.wav)|*.wav|All Files|*.*"};
+            if (savdialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
+                RenderDispatcher.Inst.WriteToFile(savdialog.FileName, DocManager.Inst.Project);
+            }
         }
 
         private void MenuAbout_Click(object sender, RoutedEventArgs e)
@@ -459,7 +463,7 @@ namespace OpenUtau.UI
                         + "including smooth editing and intellegent phonology support "
                         + "to singing software synthesizer community."
                         + "\n\nOpenUtau is an open source software under the MIT Licence. Visit us on GitHub.";
-            MessageBox.Show(text, "About OpenUtau", MessageBoxButton.OK, MessageBoxImage.None);
+            System.Windows.Forms.MessageBox.Show(text, "About OpenUtau", MessageBoxButtons.OK, MessageBoxIcon.None);
         }
 
         private void MenuPrefs_Click(object sender, RoutedEventArgs e)
@@ -471,13 +475,13 @@ namespace OpenUtau.UI
         # endregion
 
         // Disable system menu and main menu
-        protected override void OnKeyDown(KeyEventArgs e)
+        protected override void OnKeyDown(System.Windows.Input.KeyEventArgs e)
         {
             Window_KeyDown(this, e);
             e.Handled = true;
         }
 
-        private void Window_KeyDown(object sender, KeyEventArgs e)
+        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (Keyboard.Modifiers == 0 && e.Key == Key.Delete)
             {
@@ -514,7 +518,7 @@ namespace OpenUtau.UI
                 Multiselect = true,
                 CheckFileExists = true
             };
-            if (openFileDialog.ShowDialog() == true) CmdOpenFile(openFileDialog.FileNames);
+            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) CmdOpenFile(openFileDialog.FileNames);
         }
 
         private void CmdOpenFile(string[] files)
@@ -534,7 +538,7 @@ namespace OpenUtau.UI
             if (DocManager.Inst.Project.Saved == false)
             {
                 SaveFileDialog dialog = new SaveFileDialog() { DefaultExt = "ustx", Filter = "Project Files|*.ustx", Title = "Save File" };
-                if (dialog.ShowDialog() == true)
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
                     DocManager.Inst.ExecuteCmd(new SaveProjectNotification(dialog.FileName));
                 }
@@ -563,7 +567,7 @@ namespace OpenUtau.UI
             if (midiWindow != null)
                 Core.Util.Preferences.Default.MidiMaximized = midiWindow.WindowState == System.Windows.WindowState.Maximized;
             Core.Util.Preferences.Save();
-            Application.Current.Shutdown();
+            System.Windows.Application.Current.Shutdown();
         }
 
         # endregion
@@ -575,14 +579,14 @@ namespace OpenUtau.UI
             trackVM.MarkUpdate();
         }
 
-        private void trackCanvas_DragEnter(object sender, DragEventArgs e)
+        private void trackCanvas_DragEnter(object sender, System.Windows.DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effects = DragDropEffects.Copy;
+            if (e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop)) e.Effects = System.Windows.DragDropEffects.Copy;
         }
 
-        private void trackCanvas_Drop(object sender, DragEventArgs e)
+        private void trackCanvas_Drop(object sender, System.Windows.DragEventArgs e)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            string[] files = (string[])e.Data.GetData(System.Windows.DataFormats.FileDrop);
             CmdOpenFile(files);
         }
 

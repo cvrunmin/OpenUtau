@@ -78,13 +78,19 @@ namespace OpenUtau.UI.Controls
 
         Pen pen3;
         Pen pen2;
+        Pen pen5;
+        Pen pen4;
 
         public FloatExpElement()
         {
             pen3 = new Pen(ThemeManager.NoteFillBrushes[0], 3);
             pen2 = new Pen(ThemeManager.NoteFillBrushes[0], 2);
+            pen5 = new Pen(new SolidColorBrush(ThemeManager.GetColorVariationAlpha(ThemeManager.NoteFillBrushes[0].Color, 0xaa)), 3);
+            pen4 = new Pen(new SolidColorBrush(ThemeManager.GetColorVariationAlpha(ThemeManager.NoteFillBrushes[0].Color, 0xaa)), 2);
             pen3.Freeze();
             pen2.Freeze();
+            pen5.Freeze();
+            pen4.Freeze();
         }
 
         public override void RedrawIfUpdated()
@@ -101,9 +107,9 @@ namespace OpenUtau.UI.Controls
                     double x2 = Math.Round(ScaleX * Part.EndTick);
                     double partValueHeight = Math.Round(VisualHeight - VisualHeight * ((int)_exp.Data - _expTemplate.Min) / (_expTemplate.Max - _expTemplate.Min));
                     double partZeroHeight = Math.Round(VisualHeight - VisualHeight * (0f - _expTemplate.Min) / (_expTemplate.Max - _expTemplate.Min));
-                    cxt.DrawLine(pen3, new Point(x1 + 0.5, partZeroHeight + 0.5), new Point(x1 + 0.5, partValueHeight + 3));
+                    cxt.DrawLine(pen5, new Point(x1 + 0.5, partZeroHeight + 0.5), new Point(x1 + 0.5, partValueHeight + 3));
                     cxt.DrawEllipse(Brushes.White, pen2, new Point(x1 + 0.5, partValueHeight), 2.5, 2.5);
-                    cxt.DrawLine(pen2, new Point(x1 + 3, partValueHeight), new Point(Math.Max(x1 + 3, x2 - 3), partValueHeight));
+                    cxt.DrawLine(pen4, new Point(x1 + 3, partValueHeight), new Point(Math.Max(x1 + 3, x2 - 3), partValueHeight));
                     cxt.DrawText(new FormattedText(_exp.Data.ToString(), System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Arial"),12, new SolidColorBrush(ThemeManager.NoteFillBrushes[0].Color)), new Point(x1 + 3, partValueHeight));
                     foreach (UNote note in Part.Notes)
                     {

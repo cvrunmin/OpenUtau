@@ -63,15 +63,16 @@ namespace OpenUtau.Core.USTx
                             flags.Append("Y").Append((int)item.Value.Data);
                         break;
                     case "lowpass":
+                        if (((int)item.Value.Data) != 0)
+                            flags.Append("H").Append((int)item.Value.Data);
+                        break;
                     case "highpass":
                     default:
                         break;
                 }
             }
             var flag = flags.ToString();
-            if (!flag.Contains('Y')) flag = string.Concat(flag, "Y0");
-            if (!flag.Contains('H')) flag = string.Concat(flag, "H0");
-            if (!flag.Contains('F')) flag = string.Concat(flag, "F0");
+            //if (!flag.Contains('F')) flag = string.Concat(flag, "F0");
             return flag;
         }
 

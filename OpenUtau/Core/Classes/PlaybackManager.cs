@@ -30,10 +30,10 @@ namespace OpenUtau.Core
             else if (outDevice != null)
             {
                 if (outDevice.PlaybackState == PlaybackState.Playing) return;
-                else if (outDevice.PlaybackState == PlaybackState.Paused) { outDevice.Play(); return; }
+                else if (outDevice.PlaybackState == PlaybackState.Paused) { outDevice.Resume(); return; }
                 else outDevice.Dispose();
             }
-            BuildAudio(project);
+            BuildAudioAndPlay(project);
         }
 
         public void StopPlayback()
@@ -51,13 +51,21 @@ namespace OpenUtau.Core
             StartPlayback(TimeSpan.Zero);
         }
 
-        private void StartPlayback(TimeSpan span)
+        private void StartPlayback(TimeSpan span, bool preMade = false)
         {
-            masterMix = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
-            foreach (var source in trackSources) masterMix.AddMixerInput(source);
+            if (!preMade)
+            {
+                masterMix = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
+                foreach (var source in trackSources) masterMix.AddMixerInput(source);
+            }
             outDevice = new WaveOut();
-            if (span != TimeSpan.Zero) masterMix = masterMix.Skip(span) as MixingSampleProvider;
-            outDevice.Init(masterMix);
+            if (span != TimeSpan.Zero)
+            {
+            }
+            else
+            {
+                outDevice.Init(masterMix);
+            }
             outDevice.Play();
         }
 
@@ -123,8 +131,12 @@ namespace OpenUtau.Core
                     else lock (lockObject) { pendingParts--; }
                 }
             }
+        }
 
-            if (pendingParts == 0) StartPlayback();
+        private async void BuildAudioAndPlay(UProject project) {
+            //BuildAudio(project);
+            masterMix = await RenderDispatcher.Inst.GetMixingSampleProvider(project);
+            /*if (pendingParts == 0)*/ StartPlayback(TimeSpan.Zero, true);
         }
 
         public void UpdatePlayPos()
@@ -150,9 +162,9 @@ namespace OpenUtau.Core
         {
             if (cmd is SeekPlayPosTickNotification)
             {
+                StopPlayback();
                 var _cmd = cmd as SeekPlayPosTickNotification;
                 int tick = _cmd.playPosTick;
-                StopPlayback();
                 DocManager.Inst.ExecuteCmd(new SetPlayPosTickNotification(tick));
                 //if (_cmd.project != null)
                     StartPlayback(new TimeSpan(tick));
@@ -160,6 +172,9 @@ namespace OpenUtau.Core
             else if (cmd is VolumeChangeNotification)
             {
                 var _cmd = cmd as VolumeChangeNotification;
+                if (masterMix != null && masterMix.MixerInputs.Count() > _cmd.TrackNo) {
+                    (masterMix.MixerInputs.ElementAt(_cmd.TrackNo) as TrackSampleProvider).Volume = DecibelToVolume(_cmd.Volume);
+                }
                 if (trackSources != null && trackSources.Count > _cmd.TrackNo)
                 {
                     trackSources[_cmd.TrackNo].Volume = DecibelToVolume(_cmd.Volume);

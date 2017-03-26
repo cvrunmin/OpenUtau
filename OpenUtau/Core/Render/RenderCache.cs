@@ -42,13 +42,19 @@ namespace OpenUtau.Core.Render
             }
             else return null;
         }
-        public int TotalMemSize { get {
+        public int TotalMemSize {
+            get {
                 int size = 0;
-                foreach (var pair in cache)
+                lock (cache)
                 {
-                    if (pair.Value.Sound == null) continue;
-                    size += pair.Value.Sound.MemSize;
+                    foreach (var pair in cache)
+                    {
+                        if (pair.Value.Sound == null) continue;
+                        size += pair.Value.Sound.MemSize;
+                    }
                 }
-                return size; } }
+                return size;
+            }
+        }
     }
 }

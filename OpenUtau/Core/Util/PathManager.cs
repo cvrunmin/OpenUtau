@@ -83,7 +83,7 @@ namespace OpenUtau.Core
         public string GetCachePath(string filepath)
         {
             string cachepath;
-            if (filepath == "") cachepath = Path.Combine(_homePath, DefaultCachePath);
+            if (string.IsNullOrWhiteSpace(filepath)) cachepath = Path.Combine(_homePath, DefaultCachePath);
             else cachepath = Path.Combine(Path.GetDirectoryName(filepath), DefaultCachePath);
             if (!Directory.Exists(cachepath)) Directory.CreateDirectory(cachepath);
             return cachepath;

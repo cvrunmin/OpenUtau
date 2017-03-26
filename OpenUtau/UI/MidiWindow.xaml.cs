@@ -189,12 +189,14 @@ namespace OpenUtau.UI
                 {
                     notesCanvas_MouseMove_Helper(mousePos);
                     if (Mouse.Captured == this.timelineCanvas) timelineCanvas_MouseMove_Helper(mousePos);
+                    midiVM.MarkUpdate();
                 }
             }
             else if (Mouse.Captured == timelineCanvas && Mouse.LeftButton == MouseButtonState.Pressed)
             {
                 Point mousePos = Mouse.GetPosition(timelineCanvas);
                 timelineCanvas_MouseMove_Helper(mousePos);
+                midiVM.MarkUpdate();
             }
         }
 
@@ -583,6 +585,7 @@ namespace OpenUtau.UI
 
         private void timelineCanvas_MouseMove(object sender, MouseEventArgs e)
         {
+            timelineCanvas_MouseMove_Helper(e.GetPosition(sender as UIElement));
         }
 
         private void timelineCanvas_MouseMove_Helper(Point mousePos)
@@ -739,6 +742,11 @@ namespace OpenUtau.UI
         private void mainButton_Click(object sender, RoutedEventArgs e)
         {
             DocManager.Inst.ExecuteCmd(new ShowPitchExpNotification());
+        }
+
+        private void horizontalScroll_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            midiVM.MarkUpdate();
         }
     }
 }
