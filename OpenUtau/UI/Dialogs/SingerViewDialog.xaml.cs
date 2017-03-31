@@ -15,6 +15,8 @@ using System.Windows.Shapes;
 using OpenUtau.UI.Controls;
 using OpenUtau.Core;
 using OpenUtau.Core.USTx;
+using System.Windows.Forms;
+using System.Collections.ObjectModel;
 
 namespace OpenUtau.UI.Dialogs
 {
@@ -58,9 +60,8 @@ namespace OpenUtau.UI.Dialogs
             this.name.Text = singer.Name;
             this.avatar.Source = singer.Avatar;
             this.info.Text = "Author: " + singer.Author + "\nWebsite: " + singer.Website + "\nPath: " + singer.Path;
-            //this.otoview.Items.Clear();
-            otoview.ItemsSource = singer.AliasMap.Values;
-            //foreach (var pair in singer.AliasMap) this.otoview.Items.Add(pair.Value);
+            var observable = new ObservableCollection<UOto>(singer.AliasMap.Values);
+            otoview.ItemsSource = observable;
         }
 
         private void name_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -77,7 +78,53 @@ namespace OpenUtau.UI.Dialogs
         private void otoview_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var item = (UOto)((FrameworkElement)e.OriginalSource).DataContext;
-            new OtoEditDialog(SelectedSinger, item).ShowDialog();
+            var dialog = new OtoEditDialog(SelectedSinger, item);
+            dialog.Closing += (sender1, e1) =>
+            {
+                if (dialog.DialogResult == true)
+                {
+                    var result = dialog.EditingOto;
+                    if (SelectedSinger.AliasMap.ContainsKey(result.Alias))
+                    {
+                        UOto conflictedOto = SelectedSinger.AliasMap[result.Alias];
+                        if (!otoview.SelectedItem.Equals(conflictedOto) && !conflictedOto.Equals(result))
+                        {
+                            MessageBoxManager.Yes = "Replace";
+                            MessageBoxManager.No = "Duplicate";
+                            MessageBoxManager.Register();
+                            var warningResult = System.Windows.Forms.MessageBox.Show(string.Format("Singer {0} already has alia {1} (old: {2}({3}) , new: {4}({5})), replace or duplicate?", SelectedSinger.Name, result.Alias, conflictedOto.Alias, conflictedOto.File, result.Alias, result.File), "Conflict", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
+                            MessageBoxManager.Unregister();
+                            switch (warningResult)
+                            {
+                                case System.Windows.Forms.DialogResult.Yes:
+                                    SelectedSinger.AliasMap[result.Alias] = result;
+                                    break;
+                                case System.Windows.Forms.DialogResult.No:
+                                    int i = 1;
+                                    for (; SelectedSinger.AliasMap.ContainsKey(result.Alias + " (" + i + ")"); ++i) { }
+                                    result.Alias += " (" + i + ")";
+                                    SelectedSinger.AliasMap.Add(result.Alias, result);
+                                    break;
+                                case System.Windows.Forms.DialogResult.Cancel:
+                                    e1.Cancel = true;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            SelectedSinger.AliasMap[result.Alias] = result;
+                        }
+                    }
+                    else
+                    {
+                        SelectedSinger.AliasMap.Add(result.Alias, result);
+                    }
+                    otoview.Items.Refresh();
+                }
+            };
+            dialog.ShowDialog();
         }
     }
 }

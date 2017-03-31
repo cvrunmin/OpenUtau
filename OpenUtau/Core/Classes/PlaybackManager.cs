@@ -22,7 +22,7 @@ namespace OpenUtau.Core
         public static PlaybackManager Inst { get { if (_s == null) { _s = new PlaybackManager(); } return _s; } }
 
         MixingSampleProvider masterMix;
-        List<TrackSampleProvider> trackSources;
+        List<TrackSampleProvider> trackSources = new List<TrackSampleProvider>();
 
         public void Play(UProject project)
         {
@@ -69,69 +69,9 @@ namespace OpenUtau.Core
             outDevice.Play();
         }
 
-        private ISampleProvider BuildWavePartAudio(UWavePart part, UProject project)
-        {
-            AudioFileReader stream;
-            try { stream = new AudioFileReader(part.FilePath); }
-            catch { return null; }
-            return new WaveToSampleProvider(stream);
-        }
-
-        private void BuildVoicePartAudio(UVoicePart part, UProject project,IResamplerDriver engine)
-        {
-            ResamplerInterface ri = new ResamplerInterface();
-            ri.ResamplePart(part, project, engine, (o) => { this.BuildVoicePartDone(o, part, project); });
-        }
-
-        private void BuildVoicePartDone(SequencingSampleProvider source, UPart part, UProject project)
-        {
-            lock (lockObject)
-            {
-                trackSources[part.TrackNo].AddSource(
-                    source,
-                    TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)));
-                pendingParts--;
-            }
-
-            if (pendingParts == 0) StartPlayback();
-        }
-
         int pendingParts = 0;
         object lockObject = new object();
 
-        private void BuildAudio(UProject project)
-        {
-            trackSources = new List<TrackSampleProvider>();
-            foreach (UTrack track in project.Tracks)
-            {
-                trackSources.Add(new TrackSampleProvider() { Volume = DecibelToVolume(track.Volume) });
-            }
-            pendingParts = project.Parts.Count;
-            foreach (UPart part in project.Parts)
-            {
-                if (part is UWavePart)
-                {
-                    lock (lockObject)
-                    {
-                        trackSources[part.TrackNo].AddSource(
-                            BuildWavePartAudio(part as UWavePart, project),
-                            TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)));
-                        pendingParts--;
-                    }
-                }
-                else
-                {
-                    var singer = project.Tracks[part.TrackNo].Singer;
-                    if (singer != null && singer.Loaded)
-                    {
-                        System.IO.FileInfo ResamplerFile = new System.IO.FileInfo(PathManager.Inst.GetPreviewEnginePath());
-                        IResamplerDriver engine = ResamplerDriver.ResamplerDriver.LoadEngine(ResamplerFile.FullName);
-                        BuildVoicePartAudio(part as UVoicePart, project, engine);
-                    }
-                    else lock (lockObject) { pendingParts--; }
-                }
-            }
-        }
 
         private async void BuildAudioAndPlay(UProject project) {
             //BuildAudio(project);
@@ -167,7 +107,7 @@ namespace OpenUtau.Core
                 int tick = _cmd.playPosTick;
                 DocManager.Inst.ExecuteCmd(new SetPlayPosTickNotification(tick));
                 //if (_cmd.project != null)
-                    StartPlayback(new TimeSpan(tick));
+                    StartPlayback(new TimeSpan(tick), true);
             }
             else if (cmd is VolumeChangeNotification)
             {

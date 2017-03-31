@@ -195,6 +195,20 @@ namespace OpenUtau.UI
                         midiWindow.Show();
                         midiWindow.Focus();
                     }
+                    else if(partEl is WavePartElement) //TODO
+                    {
+                        var dialog = new OpenFileDialog()
+                        {
+                            Filter = "Audio Files|*.*",
+                            Multiselect = false,
+                            CheckFileExists = true
+                        };
+                        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                        {
+                            DocManager.Inst.ExecuteCmd(new RemovePartCommand(DocManager.Inst.Project, partEl.Part), true);
+                            CmdImportAudio(dialog.FileName);
+                        }
+                    }
                 }
                 else if (mousePos.X > partEl.X + partEl.VisualWidth - UIConstants.ResizeMargin && partEl is VoicePartElement) // resize
                 {

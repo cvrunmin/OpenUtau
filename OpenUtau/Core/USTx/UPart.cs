@@ -15,6 +15,7 @@ namespace OpenUtau.Core.USTx
 
         public int TrackNo;
         public int PosTick = 0;
+        public bool Error { get; set; }
         public virtual int DurTick { set; get; }
         public int EndTick { get { return PosTick + DurTick; } }
 

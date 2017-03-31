@@ -92,6 +92,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\Formats\UtauSoundbank.cs" />
+    <Compile Include="Core\Lib\MessageBoxManager.cs" />
     <Compile Include="Core\Lib\WaveFormRenderer\AveragePeakProvider.cs" />
     <Compile Include="Core\Lib\WaveFormRenderer\DecibelPeakProvider.cs" />
     <Compile Include="Core\Lib\WaveFormRenderer\IPeakProvider.cs" />

@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows;
 using System.Windows.Media;
+using OpenUtau.UI.Dialogs;
 
 namespace OpenUtau.UI.Models
 {
@@ -17,17 +18,37 @@ namespace OpenUtau.UI.Models
     {
         public event PropertyChangedEventHandler PropertyChanged;
         public Canvas otoCanvas;
+        
+        public OtoViewElement element;
 
-        public UOto oto;
+        public OtoEditDialog owner;
+        public OtoViewModel() {
+            element = new OtoViewElement() { model = this };
+        }
 
         protected void OnPropertyChanged(string name)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
+        protected bool _updated = false;
+        public void MarkUpdate() { _updated = true; }
+
+        public void RedrawIfUpdated() {
+            if (_updated)
+            {
+                element.VisualHeight = otoCanvas.ActualHeight;
+                _updated = false;
+            }
+            element.RedrawIfUpdated();
+        }
+
         public void OnNext(UCommand cmd, bool isUndo)
         {
-            throw new NotImplementedException();
+            if (cmd is UpdateOtoCommand) {
+                element.MarkUpdate();
+            }
+            RedrawIfUpdated();
         }
 
         public void Subscribe(ICmdPublisher publisher)
@@ -68,14 +89,123 @@ namespace OpenUtau.UI.Models
             visual = new DrawingVisual();
             MarkUpdate();
             this.AddVisualChild(visual);
+            offsetBrush = new SolidColorBrush(ThemeManager.GetColorVariationAlpha(Colors.DarkBlue, 0x7f));
+            consonantBrush = new SolidColorBrush(ThemeManager.GetColorVariationAlpha(Colors.BlueViolet, 0x7f));
+            preutteranceBrush = new SolidColorBrush(Colors.Red);
+            overlapBrush = new SolidColorBrush(Colors.Green);
+            cutoffBrush = new SolidColorBrush(ThemeManager.GetColorVariationAlpha(Colors.DarkBlue, 0x7f));
+            offsetBrush.Freeze();
+            consonantBrush.Freeze();
+            preutteranceBrush.Freeze();
+            overlapBrush.Freeze();
+            cutoffBrush.Freeze();
         }
 
         public virtual void RedrawIfUpdated() {
             if (!_updated) return;
             DrawingContext cxt = visual.RenderOpen();
-
+            cxt.DrawRectangle(offsetBrush, null, new Rect(new Point(0, 0), new Point(model.owner.ActualOffsetPosX, model.otoCanvas.ActualHeight)));
+            cxt.DrawRectangle(consonantBrush, null, new Rect(new Point(model.owner.ActualOffsetPosX, 0), new Point(model.owner.ActualConsonantPosX, model.otoCanvas.ActualHeight)));
+            cxt.DrawRectangle(cutoffBrush, null, new Rect(new Point(model.owner.ActualCutoffPosX, 0), new Point(model.otoCanvas.ActualWidth, model.otoCanvas.ActualHeight)));
+            cxt.DrawLine(new Pen(overlapBrush, 2), new Point(model.owner.ActualOverlapPosX, model.otoCanvas.ActualHeight * .2), new Point(model.owner.ActualOverlapPosX, model.otoCanvas.ActualHeight * .8));
+            cxt.DrawLine(new Pen(preutteranceBrush, 2), new Point(model.owner.ActualPreutterPosX, model.otoCanvas.ActualHeight * .3), new Point(model.owner.ActualPreutterPosX, model.otoCanvas.ActualHeight * .7));
             cxt.Close();
             _updated = false;
+        }
+    }
+
+    class UpdateOtoCommand : UCommand
+    {
+        public string Key;
+        public object NewValue;
+        public object OldValue;
+        public OtoEditDialog dialog;
+        public UpdateOtoCommand(OtoEditDialog dialog, string key, object value) {
+            this.dialog = dialog;
+            this.Key = key;
+            NewValue = value;
+            var oto = this.dialog.EditingOto;
+            switch (key)
+            {
+                case "Alias":
+                    OldValue = oto.Alias;
+                    break;
+                case "Offset":
+                    OldValue = oto.Offset;
+                    break;
+                case "Cutoff":
+                    OldValue = oto.Cutoff;
+                    break;
+                case "Consonant":
+                    OldValue = oto.Consonant;
+                    break;
+                case "Preutter":
+                    OldValue = oto.Preutter;
+                    break;
+                case "Overlap":
+                    OldValue = oto.Overlap;
+                    break;
+                default:
+                    break;
+            }
+        }
+        public override void Execute()
+        {
+            switch (Key)
+            {
+                case "Alias":
+                    dialog.EditingOto.Alias = (string)NewValue;
+                    break;
+                case "Offset":
+                    dialog.EditingOto.Offset = (double)NewValue;
+                    break;
+                case "Cutoff":
+                    dialog.EditingOto.Cutoff = (double)NewValue;
+                    break;
+                case "Consonant":
+                    dialog.EditingOto.Consonant = (double)NewValue;
+                    break;
+                case "Preutter":
+                    dialog.EditingOto.Preutter = (double)NewValue;
+                    break;
+                case "Overlap":
+                    dialog.EditingOto.Overlap = (double)NewValue;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public override string ToString()
+        {
+            return "Update the " + Key + " of " + dialog.EditingOto.Alias + "(" + dialog.EditingOto.File + ") to " + NewValue;
+        }
+
+        public override void Unexecute()
+        {
+            switch (Key)
+            {
+                case "Alias":
+                    dialog.EditingOto.Alias = (string)OldValue;
+                    break;
+                case "Offset":
+                    dialog.EditingOto.Offset = (double)OldValue;
+                    break;
+                case "Cutoff":
+                    dialog.EditingOto.Cutoff = (double)OldValue;
+                    break;
+                case "Consonant":
+                    dialog.EditingOto.Consonant = (double)OldValue;
+                    break;
+                case "Preutter":
+                    dialog.EditingOto.Preutter = (double)OldValue;
+                    break;
+                case "Overlap":
+                    dialog.EditingOto.Overlap = (double)OldValue;
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

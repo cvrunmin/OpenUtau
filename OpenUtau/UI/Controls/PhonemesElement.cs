@@ -86,7 +86,7 @@ namespace OpenUtau.UI.Controls
                 double y4 = (1 - phoneme.Envelope.Points[4].Y / 100) * height;
 
                 Pen pen = note.Selected ? penEnvSel : penEnv;
-                Brush brush = note.Selected ? ThemeManager.NoteFillSelectedErrorBrushes : ThemeManager.NoteFillErrorBrushes[0];
+                Brush brush = note.Selected ? ThemeManager.NoteFillSelectedErrorBrush : ThemeManager.NoteFillErrorBrushes[0];
                 
                 StreamGeometry g = new StreamGeometry();
                 List<Point> poly = new List<Point>() {

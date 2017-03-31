@@ -40,7 +40,7 @@ namespace OpenUtau.UI
 
         // Midi notes
         public static SolidColorBrush NoteFillSelectedBrush = new SolidColorBrush();
-        public static SolidColorBrush NoteFillSelectedErrorBrushes = new SolidColorBrush();
+        public static SolidColorBrush NoteFillSelectedErrorBrush = new SolidColorBrush();
         public static SolidColorBrush NoteStrokeSelectedBrush = new SolidColorBrush();
         public static SolidColorBrush NoteStrokeErrorBrush = new SolidColorBrush();
 
@@ -80,7 +80,7 @@ namespace OpenUtau.UI
 
             // Midi notes
             NoteFillSelectedBrush.Color = GetColor("NoteFillSelectedColorB");
-            NoteFillSelectedErrorBrushes.Color = GetColorVariationAlpha(NoteFillSelectedBrush.Color, 127);
+            NoteFillSelectedErrorBrush.Color = GetColorVariationAlpha(NoteFillSelectedBrush.Color, 127);
 
             NoteStrokeSelectedBrush.Color = GetColor("NoteStrokeSelectedColor");
             NoteStrokeErrorBrush.Color = GetColor("NoteStrokeErrorColor");

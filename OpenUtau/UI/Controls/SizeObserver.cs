@@ -27,37 +27,37 @@ namespace OpenUtau.UI.Controls
 
         public static bool GetObserve(FrameworkElement frameworkElement)
         {
-            if (frameworkElement == null) throw new Exception("frameworkElement is null");
+            if (frameworkElement == null) throw new ArgumentException("frameworkElement is null");
             return (bool)frameworkElement.GetValue(ObserveProperty);
         }
 
         public static void SetObserve(FrameworkElement frameworkElement, bool observe)
         {
-            if (frameworkElement == null) throw new Exception("frameworkElement is null");
+            if (frameworkElement == null) throw new ArgumentException("frameworkElement is null");
             frameworkElement.SetValue(ObserveProperty, observe);
         }
 
         public static double GetObservedWidth(FrameworkElement frameworkElement)
         {
-            if (frameworkElement == null) throw new Exception("frameworkElement is null");
+            if (frameworkElement == null) throw new ArgumentException("frameworkElement is null");
             return (double)frameworkElement.GetValue(ObservedWidthProperty);
         }
 
         public static void SetObservedWidth(FrameworkElement frameworkElement, double observedWidth)
         {
-            if (frameworkElement == null) throw new Exception("frameworkElement is null");
+            if (frameworkElement == null) throw new ArgumentException("frameworkElement is null");
             frameworkElement.SetValue(ObservedWidthProperty, observedWidth);
         }
 
         public static double GetObservedHeight(FrameworkElement frameworkElement)
         {
-            if (frameworkElement == null) throw new Exception("frameworkElement is null");
+            if (frameworkElement == null) throw new ArgumentException("frameworkElement is null");
             return (double)frameworkElement.GetValue(ObservedHeightProperty);
         }
 
         public static void SetObservedHeight(FrameworkElement frameworkElement, double observedHeight)
         {
-            if (frameworkElement == null) throw new Exception("frameworkElement is null");
+            if (frameworkElement == null) throw new ArgumentException("frameworkElement is null");
             frameworkElement.SetValue(ObservedHeightProperty, observedHeight);
         }
 

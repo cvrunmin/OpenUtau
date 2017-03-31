@@ -96,7 +96,7 @@ namespace OpenUtau.UI.Controls
             double height = Math.Max(2, midiVM.TrackHeight - 2);
             cxt.DrawRoundedRectangle(
                 note.Error ?
-                note.Selected ? ThemeManager.NoteFillSelectedErrorBrushes : ThemeManager.NoteFillErrorBrushes[0] :
+                note.Selected ? ThemeManager.NoteFillSelectedErrorBrush : ThemeManager.NoteFillErrorBrushes[0] :
                 note.Selected ? ThemeManager.NoteFillSelectedBrush : ThemeManager.NoteFillBrushes[0],
                 null, new Rect(new Point(left, top), new Size(width, height)), 2, 2);
             if (height >= 10)

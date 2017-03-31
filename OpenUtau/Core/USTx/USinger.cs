@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OpenUtau.Core.USTx
 {
-    public struct UOto
+    public class UOto
     {
         public string Alias { set; get; }
         public string File { set; get; }
@@ -15,6 +15,7 @@ namespace OpenUtau.Core.USTx
         public double Cutoff { set; get; }
         public double Preutter { set; get; }
         public double Overlap { set; get; }
+        public double Duration { get; set; }
     }
 
     public class USinger
@@ -30,6 +31,7 @@ namespace OpenUtau.Core.USTx
         public bool Loaded = false;
 
         public System.Windows.Media.Imaging.BitmapImage Avatar;
+        public string AvatarPath;
 
         public Encoding FileEncoding;
         public Encoding PathEncoding;

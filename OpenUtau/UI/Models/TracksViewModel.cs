@@ -216,11 +216,12 @@ namespace OpenUtau.UI.Models
             double quarterCount = UIConstants.MinQuarterCount;
             if (Project != null)
                 foreach (UPart part in Project.Parts)
-                    quarterCount = Math.Max(quarterCount, (part.DurTick + part.PosTick) / Project.Resolution + UIConstants.SpareQuarterCount);
+                    if (part != null)
+                       quarterCount = Math.Max(quarterCount, (part.DurTick + part.PosTick) / Project.Resolution + UIConstants.SpareQuarterCount);
             QuarterCount = quarterCount;
 
             int trackCount = UIConstants.MinTrackCount;
-            if (Project != null) foreach (UPart part in Project.Parts) trackCount = Math.Max(trackCount, part.TrackNo + 1 + UIConstants.SpareTrackCount);
+            if (Project != null) foreach (UPart part in Project.Parts) if(part != null) trackCount = Math.Max(trackCount, part.TrackNo + 1 + UIConstants.SpareTrackCount);
             TrackCount = trackCount;
         }
 

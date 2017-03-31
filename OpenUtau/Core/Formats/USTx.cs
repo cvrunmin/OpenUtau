@@ -492,7 +492,7 @@ namespace OpenUtau.Core.Formats
             for (int i = 0; i < project.Singers.Count; i++)
             {
                 var _singer = UtauSoundbank.GetSinger(project.Singers[i].Path, EncodingUtil.DetectFileEncoding(file), DocManager.Inst.Singers);
-                    if (project.Singers[i].Name == _singer.Name)
+                    if (_singer != null && project.Singers[i].Name == _singer.Name)
                     {
                         project.Singers[i] = _singer;
                     }

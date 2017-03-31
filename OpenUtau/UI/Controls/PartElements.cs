@@ -95,7 +95,11 @@ namespace OpenUtau.UI.Controls
         public virtual void RedrawFrame()
         {
             DrawingContext cxt = frameVisual.RenderOpen();
-            cxt.DrawRoundedRectangle(GetFrameBrush(), null, new Rect(0, 0, Part.DurTick * ScaleX, _height), 4, 4);
+            if(Part != null)
+            {
+                cxt.DrawRoundedRectangle(GetFrameBrush(), null, new Rect(0, 0, Part.DurTick * ScaleX, _height), 4, 4);
+            }
+
             cxt.Close();
         }
 
@@ -135,8 +139,12 @@ namespace OpenUtau.UI.Controls
 
         public virtual Brush GetFrameBrush()
         {
-            if (Selected) return ThemeManager.NoteFillSelectedBrush;
-            else return ThemeManager.NoteFillBrushes[0];
+            if (Selected) {
+                if (Part != null && Part.Error) return ThemeManager.NoteFillSelectedErrorBrush;
+                return ThemeManager.NoteFillSelectedBrush;
+            }
+            else if (Part != null && Part.Error) return ThemeManager.NoteFillErrorBrushes[0];
+            return ThemeManager.NoteFillBrushes[0];
         }
 
         protected bool _modified = false;
@@ -164,11 +172,14 @@ namespace OpenUtau.UI.Controls
         public override void RedrawPart()
         {
             DrawingContext cxt = partVisual.RenderOpen();
-            cxt.DrawLine(pen, new Point(0, UIConstants.HiddenNoteNum), new Point(0, UIConstants.HiddenNoteNum));
-            cxt.DrawLine(pen, new Point(Part.DurTick, UIConstants.MaxNoteNum - UIConstants.HiddenNoteNum),
-                              new Point(Part.DurTick, UIConstants.MaxNoteNum - UIConstants.HiddenNoteNum));
-            foreach (UNote note in ((UVoicePart)Part).Notes) cxt.DrawLine(pen, new Point(note.PosTick, UIConstants.MaxNoteNum - note.NoteNum),
-                                                                 new Point(note.EndTick, UIConstants.MaxNoteNum - note.NoteNum));
+            if (Part != null)
+            {
+                cxt.DrawLine(pen, new Point(0, UIConstants.HiddenNoteNum), new Point(0, UIConstants.HiddenNoteNum));
+                cxt.DrawLine(pen, new Point(Part.DurTick, UIConstants.MaxNoteNum - UIConstants.HiddenNoteNum),
+                                  new Point(Part.DurTick, UIConstants.MaxNoteNum - UIConstants.HiddenNoteNum));
+                foreach (UNote note in ((UVoicePart)Part).Notes) cxt.DrawLine(pen, new Point(note.PosTick, UIConstants.MaxNoteNum - note.NoteNum),
+                                                                     new Point(note.EndTick, UIConstants.MaxNoteNum - note.NoteNum));
+            }
             cxt.Close();
             tTransPre.Y = -partVisual.ContentBounds.Top;
             FitHeight(VisualHeight);
@@ -259,8 +270,7 @@ namespace OpenUtau.UI.Controls
 
         public override void RedrawPart()
         {
-            if (((UWavePart)Part).Peaks == null) return;
-            else DrawWaveform();
+            if (((UWavePart)Part).Peaks != null) DrawWaveform();
         }
 
         private void DrawWaveform()

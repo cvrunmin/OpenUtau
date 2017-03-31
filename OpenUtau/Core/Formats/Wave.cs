@@ -38,7 +38,10 @@ namespace OpenUtau.Core.Formats
             }
             catch
             {
-                return null;
+                return new UWavePart() {
+                    FilePath = filepath,
+                    Error = true
+                };
             }
             int durTick = DocManager.Inst.Project.MillisecondToTick(1000.0 * stream.Length / stream.WaveFormat.AverageBytesPerSecond);
             UWavePart uwavepart = new UWavePart()
@@ -51,16 +54,18 @@ namespace OpenUtau.Core.Formats
             stream.Close();
             return uwavepart;
         }
-
-        public static float[] BuildPeaks(UWavePart part, System.ComponentModel.BackgroundWorker worker)
+        public static float[] BuildPeaks(UWavePart part, System.ComponentModel.BackgroundWorker worker) {
+            return BuildPeaks(part.FilePath, part.Channels, worker);
+        }
+        public static float[] BuildPeaks(string path, int channels, System.ComponentModel.BackgroundWorker worker)
         {
+            if (!File.Exists(path)) return new float[0];
             const double peaksRate = 4000;
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
             float[] peaks;
-            using (var stream = new AudioFileReader(part.FilePath))
+            using (var stream = new AudioFileReader(path))
             {
-                int channels = part.Channels;
                 double peaksSamples = (int)((double)stream.Length / stream.WaveFormat.BlockAlign / stream.WaveFormat.SampleRate * peaksRate);
                 peaks = new float[(int)(peaksSamples + 1) * channels];
                 double blocksPerPixel = stream.Length / stream.WaveFormat.BlockAlign / peaksSamples;
