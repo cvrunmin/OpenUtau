@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OpenUtau.Core.USTx
 {
-    public class UOto
+    public struct UOto
     {
         public string Alias { set; get; }
         public string File { set; get; }
@@ -16,6 +16,42 @@ namespace OpenUtau.Core.USTx
         public double Preutter { set; get; }
         public double Overlap { set; get; }
         public double Duration { get; set; }
+
+        public UOto SetAlias(string alia)
+        {
+            Alias = alia;
+            return this;
+        }
+        public UOto SetFile(string file)
+        {
+            File = file;
+            return this;
+        }
+        public UOto SetOffset(double offset)
+        {
+            Offset = offset;
+            return this;
+        }
+        public UOto SetConsonant(double consonant)
+        {
+            Consonant = consonant;
+            return this;
+        }
+        public UOto SetCutoff(double cutoff)
+        {
+            Cutoff = cutoff;
+            return this;
+        }
+        public UOto SetPreutter(double preutter)
+        {
+            Preutter = preutter;
+            return this;
+        }
+        public UOto SetOverlap(double overlap)
+        {
+            Overlap = overlap;
+            return this;
+        }
     }
 
     public class USinger

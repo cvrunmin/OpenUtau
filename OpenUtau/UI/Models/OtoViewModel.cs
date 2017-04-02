@@ -154,22 +154,22 @@ namespace OpenUtau.UI.Models
             switch (Key)
             {
                 case "Alias":
-                    dialog.EditingOto.Alias = (string)NewValue;
+                    dialog.EditingOto = dialog.EditingOto.SetAlias((string)NewValue);
                     break;
                 case "Offset":
-                    dialog.EditingOto.Offset = (double)NewValue;
+                    dialog.EditingOto = dialog.EditingOto.SetOffset((double)NewValue);
                     break;
                 case "Cutoff":
-                    dialog.EditingOto.Cutoff = (double)NewValue;
+                    dialog.EditingOto = dialog.EditingOto.SetCutoff((double)NewValue);
                     break;
                 case "Consonant":
-                    dialog.EditingOto.Consonant = (double)NewValue;
+                    dialog.EditingOto = dialog.EditingOto.SetConsonant((double)NewValue);
                     break;
                 case "Preutter":
-                    dialog.EditingOto.Preutter = (double)NewValue;
+                    dialog.EditingOto = dialog.EditingOto.SetPreutter((double)NewValue);
                     break;
                 case "Overlap":
-                    dialog.EditingOto.Overlap = (double)NewValue;
+                    dialog.EditingOto = dialog.EditingOto.SetOverlap((double)NewValue);
                     break;
                 default:
                     break;
@@ -186,22 +186,22 @@ namespace OpenUtau.UI.Models
             switch (Key)
             {
                 case "Alias":
-                    dialog.EditingOto.Alias = (string)OldValue;
+                    dialog.EditingOto = dialog.EditingOto.SetAlias((string)OldValue);
                     break;
                 case "Offset":
-                    dialog.EditingOto.Offset = (double)OldValue;
+                    dialog.EditingOto = dialog.EditingOto.SetOffset((double)OldValue);
                     break;
                 case "Cutoff":
-                    dialog.EditingOto.Cutoff = (double)OldValue;
+                    dialog.EditingOto = dialog.EditingOto.SetCutoff((double)OldValue);
                     break;
                 case "Consonant":
-                    dialog.EditingOto.Consonant = (double)OldValue;
+                    dialog.EditingOto = dialog.EditingOto.SetConsonant((double)OldValue);
                     break;
                 case "Preutter":
-                    dialog.EditingOto.Preutter = (double)OldValue;
+                    dialog.EditingOto = dialog.EditingOto.SetPreutter((double)OldValue);
                     break;
                 case "Overlap":
-                    dialog.EditingOto.Overlap = (double)OldValue;
+                    dialog.EditingOto = dialog.EditingOto.SetOverlap((double)OldValue);
                     break;
                 default:
                     break;

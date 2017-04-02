@@ -36,7 +36,7 @@ namespace OpenUtau.UI.Dialogs
             if (string.IsNullOrWhiteSpace(EditingOto.Alias))
             {
                 var i = EditingOto.File.LastIndexOf('\\');
-                EditingOto.Alias = EditingOto.File.Substring(i > -1 ? i : 0).Replace(".wav", "");
+                EditingOto = EditingOto.SetAlias(EditingOto.File.Substring(i > -1 ? i : 0).Replace(".wav", ""));
                 ForceUpdateTextBox();
             }
         }
