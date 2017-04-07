@@ -24,7 +24,7 @@ namespace OpenUtau.Core.Formats
         {
             public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
             {
-                UNote result = USTx.Project.CreateNote();
+                UNote result = Project.CreateNote();
                 result.Lyric = dictionary["y"] as string;
                 result.NoteNum = Convert.ToInt32(dictionary["n"]);
                 result.PosTick = Convert.ToInt32(dictionary["pos"]);
@@ -97,14 +97,16 @@ namespace OpenUtau.Core.Formats
 
                 if (_obj.Vibrato.Length > 0 && _obj.Vibrato.Depth > 0)
                 {
-                    var vbr = new List<double>();
-                    vbr.Add(_obj.Vibrato.Length);
-                    vbr.Add(_obj.Vibrato.Period);
-                    vbr.Add(_obj.Vibrato.Depth);
-                    vbr.Add(_obj.Vibrato.In);
-                    vbr.Add(_obj.Vibrato.Out);
-                    vbr.Add(_obj.Vibrato.Shift);
-                    vbr.Add(_obj.Vibrato.Drift);
+                    var vbr = new List<double>
+                    {
+                        _obj.Vibrato.Length,
+                        _obj.Vibrato.Period,
+                        _obj.Vibrato.Depth,
+                        _obj.Vibrato.In,
+                        _obj.Vibrato.Out,
+                        _obj.Vibrato.Shift,
+                        _obj.Vibrato.Drift
+                    };
                     result.Add("vbr", vbr);
                 }
 
@@ -200,9 +202,9 @@ namespace OpenUtau.Core.Formats
                         var exp = serializer.ConvertToType(pair.Value, typeof(IntExpression)) as IntExpression;
                         var _exp = new IntExpression(null, pair.Key, exp.Abbr)
                         {
-                            Data = exp.Data,
                             Min = exp.Min,
                             Max = exp.Max,
+                            Data = exp.Data
                         };
                         _result.Expressions.Add(pair.Key, _exp);
                     }
@@ -276,9 +278,9 @@ namespace OpenUtau.Core.Formats
                     var exp = serializer.ConvertToType(pair.Value, typeof(IntExpression)) as IntExpression;
                     var _exp = new IntExpression(null, pair.Key, exp.Abbr)
                     {
-                        Data = exp.Data,
                         Min = exp.Min,
                         Max = exp.Max,
+                        Data = exp.Data
                     };
                     result.ExpressionTable.Add(pair.Key, _exp);
                 }
@@ -304,8 +306,7 @@ namespace OpenUtau.Core.Formats
             {
                 Dictionary<string, object> result = new Dictionary<string, object>();
 
-                var _obj = obj as UProject;
-                if (_obj != null)
+                if (obj is UProject _obj)
                 {
                     result.Add("ustxversion", thisUstxVersion);
                     result.Add("name", _obj.Name);
@@ -339,9 +340,9 @@ namespace OpenUtau.Core.Formats
                 {
                     IntExpression result = new IntExpression(null, "", dictionary["abbr"] as string)
                     {
-                        Data = dictionary["data"],
                         Min = Convert.ToInt32(dictionary["min"]),
                         Max = Convert.ToInt32(dictionary["max"]),
+                        Data = dictionary["data"]
                     };
                     return result;
                 }
@@ -374,8 +375,7 @@ namespace OpenUtau.Core.Formats
 
                 if (obj is UTrack)
                 {
-                    var _obj = obj as UTrack;
-                    if (_obj != null)
+                    if (obj is UTrack _obj)
                     {
                         result.Add("trackno", _obj.TrackNo);
                         result.Add("name", _obj.Name);
@@ -385,8 +385,7 @@ namespace OpenUtau.Core.Formats
                 }
                 else if (obj is USinger)
                 {
-                    var _obj = obj as USinger;
-                    if (_obj != null)
+                    if (obj is USinger _obj)
                     {
                         result.Add("name", _obj.Name);
                         result.Add("path", _obj.Path);
@@ -394,8 +393,7 @@ namespace OpenUtau.Core.Formats
                 }
                 else if (obj is IntExpression)
                 {
-                    var _obj = obj as IntExpression;
-                    if (_obj != null)
+                    if (obj is IntExpression _obj)
                     {
                         result.Add("abbr", _obj.Abbr);
                         result.Add("type", _obj.Type);
@@ -511,13 +509,12 @@ namespace OpenUtau.Core.Formats
 
             foreach (var part in project.Parts)
             {
-                if (part is UVoicePart) {
-                    var _part = part as UVoicePart;
+                if (part is UVoicePart _part) {
                     foreach (var item in _part.Expressions)
                     {
                         foreach (var note in _part.Notes)
                         {
-                            note.VirtualExpressions[item.Key] = (int)item.Value.Data - (int)note.Expressions[item.Key].Data;
+                            note.VirtualExpressions[item.Key] = (int)note.Expressions[item.Key].Data - (int)item.Value.Data;
                         }
                     }
                 }

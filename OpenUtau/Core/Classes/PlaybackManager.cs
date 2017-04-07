@@ -53,6 +53,11 @@ namespace OpenUtau.Core
 
         private void StartPlayback(TimeSpan span, bool preMade = false)
         {
+            if (outDevice != null && outDevice.PlaybackState == PlaybackState.Paused)
+            {
+                outDevice.Resume();
+                return;
+            }
             if (!preMade)
             {
                 masterMix = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
@@ -106,8 +111,6 @@ namespace OpenUtau.Core
                 var _cmd = cmd as SeekPlayPosTickNotification;
                 int tick = _cmd.playPosTick;
                 DocManager.Inst.ExecuteCmd(new SetPlayPosTickNotification(tick));
-                //if (_cmd.project != null)
-                    StartPlayback(new TimeSpan(tick), true);
             }
             else if (cmd is VolumeChangeNotification)
             {

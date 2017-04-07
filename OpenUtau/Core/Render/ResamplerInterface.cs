@@ -19,8 +19,10 @@ namespace OpenUtau.Core.Render
         public void ResamplePart(UVoicePart part, UProject project, IResamplerDriver engine, Action<SequencingSampleProvider> resampleDoneCallback)
         {
             this.resampleDoneCallback = resampleDoneCallback;
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.WorkerReportsProgress = true;
+            BackgroundWorker worker = new BackgroundWorker()
+            {
+                WorkerReportsProgress = true
+            };
             worker.DoWork += worker_DoWork;
             worker.RunWorkerCompleted += worker_RunWorkerCompleted;
             worker.ProgressChanged += worker_ProgressChanged;
@@ -181,8 +183,8 @@ namespace OpenUtau.Core.Render
         private RenderItem BuildRenderItem(UPhoneme phoneme, UVoicePart part, UProject project)
         {
             USinger singer = project.Tracks[part.TrackNo].Singer;
-            string rawfile = Lib.EncodingUtil.ConvertEncoding(singer.FileEncoding, singer.PathEncoding, phoneme.Oto.File);
             bool err = false;
+            string rawfile = Lib.EncodingUtil.ConvertEncoding(singer.FileEncoding, singer.PathEncoding, phoneme.Oto.File);
             if (string.IsNullOrWhiteSpace(rawfile)) err = true;
             rawfile = Path.Combine(singer.Path, rawfile);
 
