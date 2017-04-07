@@ -29,14 +29,11 @@ namespace OpenUtau.Core.Render
 
         public Task<SequencingSampleProvider> ResamplePartNew(UVoicePart part, UProject project, IResamplerDriver engine)
         {
-            return new TaskFactory().StartNew(function: tuple =>
-            {
-                var _tuple = tuple as Tuple<UVoicePart, UProject, IResamplerDriver>;
-                return RenderAsync(_tuple.Item1, _tuple.Item2, _tuple.Item3);
-            }, state: new Tuple<UVoicePart, UProject, IResamplerDriver>(part, project, engine)).ContinueWith(continuationFunction: (task)=> {
+            return new TaskFactory().StartNew(() => RenderAsync(part, project, engine))
+                .ContinueWith(task => {
                 List<RenderItemSampleProvider> renderItemSampleProviders = new List<RenderItemSampleProvider>();
                 foreach (var item in task.Result) renderItemSampleProviders.Add(new RenderItemSampleProvider(item));
-                DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, string.Format("")));
+                DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, ""));
                 try
                 {
                     return new SequencingSampleProvider(renderItemSampleProviders);

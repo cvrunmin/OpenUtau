@@ -23,7 +23,7 @@ namespace OpenUtau.UI.Models
 
         public OtoEditDialog owner;
         public OtoViewModel() {
-            element = new OtoViewElement() { model = this };
+            element = new OtoViewElement() { model = this, ScaleX = 1d };
         }
 
         protected void OnPropertyChanged(string name)
@@ -73,7 +73,15 @@ namespace OpenUtau.UI.Models
         protected double _visualHeight;
         public double VisualHeight { set { if (_visualHeight != value) { _visualHeight = value; MarkUpdate(); } } get { return _visualHeight; } }
         protected double _scaleX;
-        public double ScaleX { set { if (_scaleX != value) { _scaleX = value; MarkUpdate(); } } get { return _scaleX; } }
+        public double ScaleX {
+            set {
+                if (_scaleX != value && value >= 0.125 && value <= 16) {
+                    _scaleX = value;
+                    MarkUpdate();
+                }
+            }
+            get => _scaleX;
+        }
         Brush offsetBrush;
         Brush consonantBrush;
         Brush cutoffBrush;

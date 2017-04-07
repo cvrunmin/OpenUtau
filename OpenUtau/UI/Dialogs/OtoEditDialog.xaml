@@ -15,9 +15,24 @@
         <Binding Mode="OneWay" Source="{StaticResource oto}"/>
     </Window.DataContext>
     <Grid>
-        <ScrollViewer x:Name="scrollViewer" Margin="10,90,10,30" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True" PanningMode="HorizontalOnly">
-            <Grid Width="1008" Background="#FF999999">
-                <Canvas x:Name="waveformCanvas" MouseLeftButtonDown="waveformCanvas_MouseLeftButtonDown" MouseMove="waveformCanvas_MouseMove" MouseLeftButtonUp="waveformCanvas_MouseLeftButtonUp" SizeChanged="waveformCanvas_SizeChanged" MouseLeave="waveformCanvas_MouseLeave" Margin="168,0"/>
+        <ScrollViewer x:Name="scrollViewer" Margin="10,90,10,30" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True" PanningMode="HorizontalOnly" Template="{DynamicResource ScrollViewerControlTemplate}">
+            <ScrollViewer.Resources>
+                <ControlTemplate x:Key="ScrollViewerControlTemplate" TargetType="{x:Type ScrollViewer}">
+                    <Grid x:Name="Grid" Background="{TemplateBinding Background}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Rectangle x:Name="Corner" Grid.Column="1" Fill="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Grid.Row="1"/>
+                        <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" CanContentScroll="{TemplateBinding CanContentScroll}" CanHorizontallyScroll="False" CanVerticallyScroll="False" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" Grid.Column="0" Margin="{TemplateBinding Padding}" Grid.Row="0"/>
+                        <ScrollBar x:Name="PART_HorizontalScrollBar" AutomationProperties.AutomationId="HorizontalScrollBar" Cursor="Arrow" Grid.Column="0" Maximum="{TemplateBinding ScrollableWidth}" Minimum="0" Orientation="Horizontal" Grid.Row="1" Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" ViewportSize="{TemplateBinding ViewportWidth}" Margin="0,0,36,0"/>
+                        <Button x:Name="PART_ZoomInButton" Content="+" HorizontalAlignment="Right" Margin="0,0,18,0" Grid.Row="1" Width="18" Height="18" Padding="0,0,0,1" Background="{x:Null}" BorderBrush="{x:Null}" Click="PART_ZoomInButton_Click"/>
+                        <Button x:Name="PART_ZoomOutButton" Content="-" HorizontalAlignment="Right" Margin="0" Grid.Row="1" Width="18" Height="18" Padding="0,0,0,1" BorderBrush="{x:Null}" Background="{x:Null}" Click="PART_ZoomOutButton_Click"/>
+                    </Grid>
+                </ControlTemplate>
+            </ScrollViewer.Resources>
+            <Grid x:Name="canvasGrid" Width="1008" Background="#FF999999">
+                <Canvas x:Name="waveformCanvas" Margin="168,0" MouseLeftButtonDown="waveformCanvas_MouseLeftButtonDown" MouseMove="waveformCanvas_MouseMove" MouseLeftButtonUp="waveformCanvas_MouseLeftButtonUp" SizeChanged="waveformCanvas_SizeChanged" MouseLeave="waveformCanvas_MouseLeave"/>
             </Grid>
         </ScrollViewer>
         <Grid x:Name="gridProperties" Margin="10,10,10,0" VerticalAlignment="Top">

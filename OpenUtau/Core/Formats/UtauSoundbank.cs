@@ -69,7 +69,7 @@ namespace OpenUtau.Core.Formats
             if (pathEncoding == null) return "";
             return PathManager.Inst.GetSingerAbsPath(EncodingUtil.ConvertEncoding(ustEncoding, pathEncoding, path));
         }
-        static void SaveSinger(USinger singer) {
+        public static void SaveSinger(USinger singer) {
             SaveOtos(singer);
             using (var writer = new StreamWriter(Path.Combine(singer.Path, "character.txt"), false, Encoding.UTF8))
             {

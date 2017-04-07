@@ -36,25 +36,12 @@ namespace OpenUtau.Core.Util
         }
     }
 
-    class RegionWidthConverter : IMultiValueConverter
+    public static class ColorsConverter
     {
+        public static Color ToMediaColor(this System.Drawing.Color drawingColor) => 
+            new Color() { R = drawingColor.R, G = drawingColor.G, B = drawingColor.B, A = drawingColor.A };
 
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-        {
-            try
-            {
-                var doubleValues = values.Cast<double>().ToArray(); //expected: 0: value, 1:maximum value, 2:actual width
-                return doubleValues[0] / doubleValues[1] * doubleValues[2];
-            }
-            catch (Exception)
-            {
-                return 0d;
-            }
-        }
-
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+        public static System.Drawing.Color ToDrawingColor(this Color mediaColor) =>
+            System.Drawing.Color.FromArgb(red: mediaColor.R, green: mediaColor.G, blue: mediaColor.B, alpha: mediaColor.A);
     }
 }

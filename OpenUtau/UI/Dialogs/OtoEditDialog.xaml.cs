@@ -1,4 +1,5 @@
 ﻿using OpenUtau.Core;
+using OpenUtau.Core.Lib.WaveFormRenderer;
 using OpenUtau.Core.USTx;
 using OpenUtau.UI.Models;
 using System;
@@ -24,12 +25,13 @@ namespace OpenUtau.UI.Dialogs
         }
         public UOto EditingOto { get; set; }
         OtoViewModel model;
-        public OtoEditDialog(USinger singer, UOto oto) : this() {
-            waveformCanvas.Background = CreateWaveForm(singer, oto);
+        public OtoEditDialog(USinger singer, UOto oto) : this()
+        {
+            SavedSinger = singer;
             this.EditingOto = oto;
             this.DataContext = EditingOto;
             Resources["oto"] = EditingOto;
-            model = new OtoViewModel() { otoCanvas = waveformCanvas, owner = this};
+            model = new OtoViewModel() { otoCanvas = waveformCanvas, owner = this };
             waveformCanvas.Children.Add(model.element);
             this.Subscribe(DocManager.Inst);
             model.Subscribe(DocManager.Inst);
@@ -39,8 +41,15 @@ namespace OpenUtau.UI.Dialogs
                 EditingOto.Alias = EditingOto.File.Substring(i > -1 ? i : 0).Replace(".wav", "");
                 ForceUpdateTextBox();
             }
+            CreateWaveForm(singer, oto);
         }
-
+        private USinger SavedSinger;
+        private void CreateWaveForm(USinger singer, UOto oto)
+        {
+            waveformCanvas.Background = CreateWaveFormAsync(singer, oto);
+            RenderOptions.SetBitmapScalingMode(waveformCanvas, BitmapScalingMode.NearestNeighbor);
+            RenderOptions.SetEdgeMode(waveformCanvas, EdgeMode.Aliased);
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -52,21 +61,23 @@ namespace OpenUtau.UI.Dialogs
         [DllImport("gdi32.dll")]
         private static extern void DeleteObject(IntPtr hObject);
 
-        private ImageBrush CreateWaveForm(USinger singer, UOto oto) {
-            System.Drawing.Image img = new WaveFormRendererLib.WaveFormRenderer().Render(System.IO.Path.Combine(singer.Path, oto.File), new WaveFormRendererLib.StandardWaveFormRendererSettings() { TopHeight = 100, BottomHeight = 100, TopPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), BottomPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), DecibelScale = true });
-            using (var bmp = new Bitmap(img))
-            {
-                IntPtr hBitmap = bmp.GetHbitmap();
-
-                try
-                {
-                    return new ImageBrush(System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions()));
-                }
-                finally
-                {
-                    DeleteObject(hBitmap);
-                }
-            }
+        private ImageBrush CreateWaveFormAsync(USinger singer, UOto oto)
+        {
+            //System.Drawing.Image img = new WaveFormRendererLib.WaveFormRenderer().Render(System.IO.Path.Combine(singer.Path, oto.File), new WaveFormRendererLib.StandardWaveFormRendererSettings() { TopHeight = 100, BottomHeight = 100, Width = (int)(800 * (model.element.ScaleX != 0 ? model.element.ScaleX : 1)), TopPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), BottomPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), DecibelScale = true });
+            WriteableBitmap img = /*await*/ new NewWaveFormRenderer().Render(System.IO.Path.Combine(singer.Path, oto.File), new WaveFormRendererLib.StandardWaveFormRendererSettings() { TopHeight = 100, BottomHeight = 100, Width = (int)(800 * (model.element.ScaleX != 0 ? model.element.ScaleX : 1)), TopPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), BottomPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), DecibelScale = true, SpacerPixels = 1, TopSpacerPen = new System.Drawing.Pen(System.Drawing.Color.Cyan), BottomSpacerPen = new System.Drawing.Pen(System.Drawing.Color.Cyan) });
+            //using (var bmp = new Bitmap(img))
+            //{
+            //    IntPtr hBitmap = bmp.GetHbitmap();
+            //    try
+            //    {
+            //        return new ImageBrush(System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions()));
+                    return new ImageBrush(img);
+            //    }
+            //    finally
+            //    {
+            //        DeleteObject(hBitmap);
+            //    }
+            //}
         }
 
         private void waveformCanvas_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -99,11 +110,11 @@ namespace OpenUtau.UI.Dialogs
             Status = EditStatus.NotCaptured;
         }
 
-        internal double ActualOffsetPosX => EditingOto.Offset / EditingOto.Duration * waveformCanvas.ActualWidth;
-        internal double ActualConsonantPosX => EditingOto.Consonant / EditingOto.Duration * waveformCanvas.ActualWidth + ActualOffsetPosX;
-        internal double ActualOverlapPosX => EditingOto.Overlap / EditingOto.Duration * waveformCanvas.ActualWidth + ActualOffsetPosX;
-        internal double ActualPreutterPosX => EditingOto.Preutter / EditingOto.Duration * waveformCanvas.ActualWidth + ActualOffsetPosX;
-        internal double ActualCutoffPosX => (1d - EditingOto.Cutoff / EditingOto.Duration) * waveformCanvas.ActualWidth;
+        internal double ActualOffsetPosX    =>       EditingOto.Offset    / EditingOto.Duration  * waveformCanvas.ActualWidth;
+        internal double ActualConsonantPosX => (     EditingOto.Consonant / EditingOto.Duration  * waveformCanvas.ActualWidth) + ActualOffsetPosX;
+        internal double ActualOverlapPosX   => (     EditingOto.Overlap   / EditingOto.Duration  * waveformCanvas.ActualWidth) + ActualOffsetPosX;
+        internal double ActualPreutterPosX  => (     EditingOto.Preutter  / EditingOto.Duration  * waveformCanvas.ActualWidth) + ActualOffsetPosX;
+        internal double ActualCutoffPosX    => (1d - EditingOto.Cutoff    / EditingOto.Duration) * waveformCanvas.ActualWidth;
         internal EditStatus Status = EditStatus.NotCaptured;
 
         private void waveformCanvas_SetValHelper(System.Windows.Point pt)
@@ -237,6 +248,26 @@ namespace OpenUtau.UI.Dialogs
         {
             DialogResult = true;
             Close();
+        }
+
+        private void PART_ZoomInButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (model.element.ScaleX < 16)
+            {
+                model.element.ScaleX *= 2;
+                canvasGrid.Width *= 2;
+                CreateWaveForm(SavedSinger, EditingOto);
+            }
+        }
+
+        private void PART_ZoomOutButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (model.element.ScaleX > 0.125)
+            {
+                model.element.ScaleX *= 0.5;
+                canvasGrid.Width *= 0.5;
+                CreateWaveForm(SavedSinger, EditingOto);
+            }
         }
     }
 

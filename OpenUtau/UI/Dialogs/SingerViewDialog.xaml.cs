@@ -17,6 +17,7 @@ using OpenUtau.Core;
 using OpenUtau.Core.USTx;
 using System.Windows.Forms;
 using System.Collections.ObjectModel;
+using static OpenUtau.Core.Formats.UtauSoundbank;
 
 namespace OpenUtau.UI.Dialogs
 {
@@ -66,6 +67,7 @@ namespace OpenUtau.UI.Dialogs
 
         private void name_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            SaveSinger(SelectedSinger);
             SetSinger(singerNames[this.name.SelectedIndex]);
         }
 
@@ -125,6 +127,11 @@ namespace OpenUtau.UI.Dialogs
                 }
             };
             dialog.ShowDialog();
+        }
+
+        private void window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            SaveSinger(SelectedSinger);
         }
     }
 }
