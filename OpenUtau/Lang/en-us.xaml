@@ -1,0 +1,66 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:OpenUtau.Lang"
+                    xmlns:s="clr-namespace:System;assembly=mscorlib">
+    <s:String x:Key="DisplayName">English (United States)</s:String>
+
+    <s:String x:Key="MenuFile">_File</s:String>
+    <s:String x:Key="MenuNew">_New...</s:String>
+    <s:String x:Key="MenuOpen">_Open...</s:String>
+    <s:String x:Key="MenuOpenAs">O_pen As</s:String>
+    <s:String x:Key="MenuSave">_Save...</s:String>
+    <s:String x:Key="MenuSaveAs">Save _As...</s:String>
+    <s:String x:Key="MenuImportAudio">_Import Audio...</s:String>
+    <s:String x:Key="MenuImportMidi">_Import Midi...</s:String>
+    <s:String x:Key="MenuRenderAll">Render All...</s:String>
+    <s:String x:Key="MenuRecentFile">Recent _Files</s:String>
+    <s:String x:Key="MenuExit">_Exit</s:String>
+    <s:String x:Key="MenuEdit">_Edit</s:String>
+    <s:String x:Key="MenuUndo">_Undo</s:String>
+    <s:String x:Key="MenuRedo">_Redo</s:String>
+    <s:String x:Key="MenuCut">Cu_t</s:String>
+    <s:String x:Key="MenuCopy">_Copy</s:String>
+    <s:String x:Key="MenuPaste">_Paste</s:String>
+    <s:String x:Key="MenuDelete">_Delete</s:String>
+    <s:String x:Key="MenuSelectAll">Select _All</s:String>
+    <s:String x:Key="MenuTools">_Tools</s:String>
+    <s:String x:Key="MenuSingers">Singers</s:String>
+    <s:String x:Key="MenuRefreshPlugin">Refresh Plugins</s:String>
+    <s:String x:Key="MenuPreferences">Preferences</s:String>
+    <s:String x:Key="MenuHelp">_Help</s:String>
+    <s:String x:Key="MenuAbout">About OpenUTAU</s:String>
+    <s:String x:Key="Refresh">Refresh</s:String>
+    <s:String x:Key="Alias">Alias</s:String>
+    <s:String x:Key="File">File</s:String>
+    <s:String x:Key="Offset">Offset</s:String>
+    <s:String x:Key="Offset2">Offset (start of data)</s:String>
+    <s:String x:Key="Consonant">Consonant</s:String>
+    <s:String x:Key="Preutterance">Preutterance</s:String>
+    <s:String x:Key="Overlap">Overlap</s:String>
+    <s:String x:Key="Cutoff">Cutoff</s:String>
+    <s:String x:Key="Cutoff2">Cutoff (end of data)</s:String>
+    <s:String x:Key="General">General</s:String>
+    <s:String x:Key="Paths">Paths</s:String>
+    <s:String x:Key="Appearance">Appearance</s:String>
+    <s:String x:Key="Theme">Theme</s:String>
+    <s:String x:Key="Themes">Themes</s:String>
+    <s:String x:Key="Media">Media</s:String>
+    <s:String x:Key="Audio">Audio</s:String>
+    <s:String x:Key="Playback">Playback</s:String>
+    <s:String x:Key="Rendering">Rendering</s:String>
+    <s:String x:Key="SingerPath">Singer paths</s:String>
+    <s:String x:Key="Add">Add</s:String>
+    <s:String x:Key="Remove">Remove</s:String>
+    <s:String x:Key="OutputDevice">Output device</s:String>
+    <s:String x:Key="ResamplingPreviewTitle">Resampling engine for preview</s:String>
+    <s:String x:Key="ResamplingExportTitle">Resampling engine for export</s:String>
+    <s:String x:Key="ResamplingInternal">Internal engine</s:String>
+    <s:String x:Key="ResamplingExternal">External engine</s:String>
+    <s:String x:Key="ResamplingNotes">
+        Note: to use external resamplers, please add resampler DLL or EXE file to Resamplers folder under OpenUtau install path.
+    </s:String>
+    <s:String x:Key="Save">Save</s:String>
+    <s:String x:Key="Cancel">Cancel</s:String>
+    <s:String x:Key="Replace">Replace</s:String>
+    <s:String x:Key="Duplicate">Duplicate</s:String>
+</ResourceDictionary>

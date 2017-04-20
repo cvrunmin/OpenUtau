@@ -17,10 +17,10 @@
     </Window.Resources>
     <local:BorderlessWindow.MenuContent>
         <Menu x:Name="mainMenu" IsMainMenu="True" VerticalAlignment="Top" HorizontalAlignment="Left" Background="White">
-            <MenuItem Header="_File">
-                <MenuItem Header="_New..." InputGestureText="Ctrl+N" Click="MenuNew_Click"/>
-                <MenuItem Header="_Open..." InputGestureText="Ctrl+O" Click="MenuOpen_Click"/>
-                <MenuItem Header="O_pen As">
+            <MenuItem Header="{DynamicResource MenuFile}">
+                <MenuItem Header="{DynamicResource MenuNew}" InputGestureText="Ctrl+N" Click="MenuNew_Click"/>
+                <MenuItem Header="{DynamicResource MenuOpen}" InputGestureText="Ctrl+O" Click="MenuOpen_Click"/>
+                <MenuItem Header="{DynamicResource MenuOpenAs}">
                     <MenuItem Header="Ustx..."/>
                     <MenuItem Header="Vsqx..."/>
                     <MenuItem Header="Ust (ANSI)..."/>
@@ -28,33 +28,33 @@
                     <MenuItem Header="Ust (GB2312)..."/>
                     <MenuItem Header="Ust (Shift-JIS)..."/>
                 </MenuItem>
-                <MenuItem Header="_Save" InputGestureText="Ctrl+S" Click="MenuSave_Click"/>
-                <MenuItem Header="Save _As..." IsEnabled="False"/>
-                <MenuItem Header="_Import Audio..." Click="MenuImportAudio_Click"/>
-                <MenuItem Header="_Import Midi..." Click="MenuImportMidi_Click"/>
-                <MenuItem Header="Render All..." Click="MenuRenderAll_Click"/>
-                <MenuItem Header="Recent _Files" IsEnabled="False">
+                <MenuItem Header="{DynamicResource MenuSave}" InputGestureText="Ctrl+S" Click="MenuSave_Click"/>
+                <MenuItem Header="{DynamicResource MenuSaveAs}" IsEnabled="False"/>
+                <MenuItem Header="{DynamicResource MenuImportAudio}" Click="MenuImportAudio_Click"/>
+                <MenuItem Header="{DynamicResource MenuImportMidi}" Click="MenuImportMidi_Click"/>
+                <MenuItem Header="{DynamicResource MenuRenderAll}" Click="MenuRenderAll_Click"/>
+                <MenuItem Header="{DynamicResource MenuRecentFile}" IsEnabled="False">
                     <MenuItem Header="1.vsqx"/>
                     <MenuItem Header="2.vsqx"/>
                 </MenuItem>
-                <MenuItem Header="_Exit" InputGestureText="Alt+F4" Click="MenuExit_Click"/>
+                <MenuItem Header="{DynamicResource MenuExit}" InputGestureText="Alt+F4" Click="MenuExit_Click"/>
             </MenuItem>
-            <MenuItem Header="_Edit">
-                <MenuItem Header="_Undo" InputGestureText="Ctrl+Z" Click="MenuUndo_Click" />
-                <MenuItem Header="_Redo" InputGestureText="Ctrl+Y" Click="MenuRedo_Click"/>
-                <MenuItem Header="Cu_t" InputGestureText="Ctrl+X" IsEnabled="False"/>
-                <MenuItem Header="_Copy" InputGestureText="Ctrl+C" IsEnabled="False"/>
-                <MenuItem Header="_Paste" InputGestureText="Ctrl+V" IsEnabled="False"/>
-                <MenuItem Header="_Delete" InputGestureText="Del"/>
-                <MenuItem Header="Select _All" InputGestureText="Ctrl+A"/>
+            <MenuItem Header="{DynamicResource MenuEdit}">
+                <MenuItem Header="{DynamicResource MenuUndo}" InputGestureText="Ctrl+Z" Click="MenuUndo_Click" />
+                <MenuItem Header="{DynamicResource MenuRedo}" InputGestureText="Ctrl+Y" Click="MenuRedo_Click"/>
+                <MenuItem Header="{DynamicResource MenuCut}" InputGestureText="Ctrl+X" IsEnabled="False"/>
+                <MenuItem Header="{DynamicResource MenuCopy}" InputGestureText="Ctrl+C" IsEnabled="False"/>
+                <MenuItem Header="{DynamicResource MenuPaste}" InputGestureText="Ctrl+V" IsEnabled="False"/>
+                <MenuItem Header="{DynamicResource MenuDelete}" InputGestureText="Del"/>
+                <MenuItem Header="{DynamicResource MenuSelectAll}" InputGestureText="Ctrl+A"/>
             </MenuItem>
-            <MenuItem Header="_Tools">
-                <MenuItem Header="Singers..." Click="MenuSingers_Click"/>
-                <MenuItem Header="Refresh Plugins" IsEnabled="False"/>
-                <MenuItem Header="Preferences" Click="MenuPrefs_Click"/>
+            <MenuItem Header="{DynamicResource MenuTools}">
+                <MenuItem Header="{DynamicResource MenuSingers}" Click="MenuSingers_Click"/>
+                <MenuItem Header="{DynamicResource MenuRefreshPlugin}" IsEnabled="False"/>
+                <MenuItem Header="{DynamicResource MenuPreferences}" Click="MenuPrefs_Click"/>
             </MenuItem>
-            <MenuItem Header="_Help">
-                <MenuItem Header="About OpenUTAU" Click="MenuAbout_Click"/>
+            <MenuItem Header="{DynamicResource MenuHelp}">
+                <MenuItem Header="{DynamicResource MenuAbout}" Click="MenuAbout_Click"/>
             </MenuItem>
         </Menu>
     </local:BorderlessWindow.MenuContent>

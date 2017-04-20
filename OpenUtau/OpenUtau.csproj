@@ -145,6 +145,7 @@
     <Compile Include="Core\Util\Preferences.cs" />
     <Compile Include="Core\Util\UpdateChecker.cs" />
     <Compile Include="Core\Util\Utils.cs" />
+    <Compile Include="Lang\LanguageManager.cs" />
     <Compile Include="SimpleHelpers\FileEncoding.cs" />
     <Compile Include="UI\Controls\ExpComboBox.xaml.cs">
       <DependentUpon>ExpComboBox.xaml</DependentUpon>
@@ -201,6 +202,10 @@
     <Compile Include="UI\Models\ProgressBarViewModel.cs" />
     <Compile Include="UI\Models\TracksViewModel.cs" />
     <Compile Include="UI\UIConstants.cs" />
+    <Page Include="Lang\en-us.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UI\Controls\ExpComboBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

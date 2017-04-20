@@ -5,38 +5,38 @@
     <Grid>
         <TreeView x:Name="treeView" HorizontalAlignment="Left" Margin="10" VerticalAlignment="Stretch" Width="150"
                   SelectedItemChanged="treeView_SelectedItemChanged">
-            <TreeViewItem Header="General" IsExpanded="True">
-                <TreeViewItem x:Name="pathsItem" Header="Paths" Margin="-12,0,0,0"/>
+            <TreeViewItem Header="{DynamicResource General}" IsExpanded="True">
+                <TreeViewItem x:Name="pathsItem" Header="{DynamicResource Paths}" Margin="-12,0,0,0"/>
             </TreeViewItem>
-            <TreeViewItem Header="Appearance" IsExpanded="True">
-                <TreeViewItem x:Name="themesItem" Header="Themes" Margin="-12,0,0,0"/>
-                <TreeViewItem Header="Media" Margin="-12,0,0,0"/>
+            <TreeViewItem Header="{DynamicResource Appearance}" IsExpanded="True">
+                <TreeViewItem x:Name="themesItem" Header="{DynamicResource Themes}" Margin="-12,0,0,0"/>
+                <TreeViewItem Header="{DynamicResource Media}" Margin="-12,0,0,0"/>
             </TreeViewItem>
-            <TreeViewItem Header="Audio" IsExpanded="True">
-                <TreeViewItem x:Name="playbackItem" Header="Playback" Margin="-12,0,0,0"/>
-                <TreeViewItem x:Name="renderingItem" Header="Rendering" Margin="-12,0,0,0"/>
+            <TreeViewItem Header="{DynamicResource Audio}" IsExpanded="True">
+                <TreeViewItem x:Name="playbackItem" Header="{DynamicResource Playback}" Margin="-12,0,0,0"/>
+                <TreeViewItem x:Name="renderingItem" Header="{DynamicResource Rendering}" Margin="-12,0,0,0"/>
             </TreeViewItem>
         </TreeView>
         <Grid x:Name="pathsGrid" Margin="170,2,10,10" Visibility="Hidden">
-            <GroupBox Header="Singer paths" Height="200" VerticalAlignment="Top">
+            <GroupBox Header="{DynamicResource SingerPath}" Height="200" VerticalAlignment="Top">
                 <Grid>
                     <ListBox x:Name="singerPathsList" Margin="10,10,10,42" SelectionChanged="singerPathsList_SelectionChanged"/>
-                    <Button x:Name="singerPathAddButton" Margin="10" Width="75" Height="22" VerticalAlignment="Bottom" HorizontalAlignment="Left" Content="Add"
+                    <Button x:Name="singerPathAddButton" Margin="10" Width="75" Height="22" VerticalAlignment="Bottom" HorizontalAlignment="Left" Content="{DynamicResource Add}"
                             Focusable="False" Click="singerPathAddButton_Click"/>
                     <Button x:Name="singerPathRemoveButton" Margin="95,0,0,10" Width="75" Height="22" VerticalAlignment="Bottom" HorizontalAlignment="Left"
-                            Focusable="False" Content="Remove" IsEnabled="False" Click="singerPathRemoveButton_Click"/>
+                            Focusable="False" Content="{DynamicResource Remove}" IsEnabled="False" Click="singerPathRemoveButton_Click"/>
                 </Grid>
             </GroupBox>
         </Grid>
         <Grid x:Name="themesGrid" Margin="170,2,10,10" Visibility="Hidden">
-            <TextBlock Text="Theme" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <TextBlock Text="{DynamicResource Theme}" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             <ComboBox Width="256" Height="22" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,25,0,0">
                 <ComboBoxItem Content="Clean" IsSelected="True"/>
                 <ComboBoxItem Content="Dark"/>
             </ComboBox>
         </Grid>
         <Grid x:Name="playbackGrid" Margin="170,2,10,10" Visibility="Hidden">
-            <TextBlock Text="Output device" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <TextBlock Text="{DynamicResource OutputDevice}" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             <ComboBox Width="256" Height="22" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,25,0,0">
                 <ComboBoxItem Content="WASAPI" IsSelected="True"/>
                 <ComboBoxItem Content="DirectSound"/>
@@ -45,30 +45,29 @@
             </ComboBox>
         </Grid>
         <Grid x:Name="renderingGrid" Margin="170,2,10,10" Visibility="Hidden">
-            <GroupBox Header="Resampling engine for preview" Height="80" VerticalAlignment="Top">
+            <GroupBox Header="{DynamicResource ResamplingPreviewTitle}" Height="80" VerticalAlignment="Top">
                 <Grid>
                     <RadioButton x:Name="previewRatioInternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,10,0,0" GroupName="preview" Checked="previewEngine_Checked">
-                        Internal engine (Recommended)
+                        <DynamicResource ResourceKey="ResamplingInternal"/>
                     </RadioButton>
                     <RadioButton x:Name="previewRatioExternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,36,0,0" GroupName="preview" Checked="previewEngine_Checked">
-                        External engine
+                        <DynamicResource ResourceKey="ResamplingExternal"/>
                     </RadioButton>
                     <ComboBox x:Name="previewEngineCombo" Margin="110,34,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="256" SelectionChanged="previewEngineCombo_SelectionChanged"/>
                 </Grid>
             </GroupBox>
-            <GroupBox Header="Resampling engine for export" Height="80" VerticalAlignment="Top" Margin="0,80,0,0">
+            <GroupBox Header="{DynamicResource ResamplingExportTitle}" Height="80" VerticalAlignment="Top" Margin="0,80,0,0">
                 <Grid>
                     <RadioButton x:Name="exportRatioInternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,10,0,0" GroupName="export" Checked="exportEngine_Checked">
-                        Internal engine
+                        <DynamicResource ResourceKey="ResamplingInternal"/>
                     </RadioButton>
                     <RadioButton x:Name="exportRatioExternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,36,0,0" GroupName="export" Checked="exportEngine_Checked">
-                        External engine
+                        <DynamicResource ResourceKey="ResamplingExternal"/>
                     </RadioButton>
                     <ComboBox x:Name="exportEngineCombo" Margin="110,34,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="256" SelectionChanged="exportEngineCombo_SelectionChanged"/>
                 </Grid>
             </GroupBox>
-            <TextBlock Margin="9,162,0,0" TextWrapping="Wrap">
-                Note: to use external resamplers, please add resampler DLL or EXE file to Resamplers folder under OpenUtau install path.
+            <TextBlock Margin="9,162,0,0" TextWrapping="Wrap" Text="{DynamicResource ResamplingNotes}">
             </TextBlock>
         </Grid>
     </Grid>

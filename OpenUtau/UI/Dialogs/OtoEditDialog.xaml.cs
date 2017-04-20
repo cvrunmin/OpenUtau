@@ -63,24 +63,11 @@ namespace OpenUtau.UI.Dialogs
 
         private ImageBrush CreateWaveFormAsync(USinger singer, UOto oto)
         {
-            //System.Drawing.Image img = new WaveFormRendererLib.WaveFormRenderer().Render(System.IO.Path.Combine(singer.Path, oto.File), new WaveFormRendererLib.StandardWaveFormRendererSettings() { TopHeight = 100, BottomHeight = 100, Width = (int)(800 * (model.element.ScaleX != 0 ? model.element.ScaleX : 1)), TopPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), BottomPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), DecibelScale = true });
-            WriteableBitmap img = /*await*/ new NewWaveFormRenderer().Render(System.IO.Path.Combine(singer.Path, oto.File), new WaveFormRendererLib.StandardWaveFormRendererSettings() { TopHeight = 100, BottomHeight = 100, Width = (int)(800 * (model.element.ScaleX != 0 ? model.element.ScaleX : 1)), TopPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), BottomPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), DecibelScale = true, SpacerPixels = 1, TopSpacerPen = new System.Drawing.Pen(System.Drawing.Color.Cyan), BottomSpacerPen = new System.Drawing.Pen(System.Drawing.Color.Cyan) });
-            //using (var bmp = new Bitmap(img))
-            //{
-            //    IntPtr hBitmap = bmp.GetHbitmap();
-            //    try
-            //    {
-            //        return new ImageBrush(System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions()));
-                    return new ImageBrush(img);
-            //    }
-            //    finally
-            //    {
-            //        DeleteObject(hBitmap);
-            //    }
-            //}
+            WriteableBitmap img = new NewWaveFormRenderer().Render(System.IO.Path.Combine(singer.Path, oto.File), new WaveFormRendererLib.StandardWaveFormRendererSettings() { TopHeight = 100, BottomHeight = 100, Width = (int)(800 * (model.element.ScaleX != 0 ? model.element.ScaleX : 1)), TopPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), BottomPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), DecibelScale = true, SpacerPixels = 1, TopSpacerPen = new System.Drawing.Pen(System.Drawing.Color.Cyan), BottomSpacerPen = new System.Drawing.Pen(System.Drawing.Color.Cyan) });
+            return new ImageBrush(img);
         }
 
-        private void waveformCanvas_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void waveformCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             ((Canvas)sender).CaptureMouse();
             DocManager.Inst.StartUndoGroup();
@@ -89,7 +76,7 @@ namespace OpenUtau.UI.Dialogs
             waveformCanvas_SetValHelper(mousePos);
         }
 
-        private void waveformCanvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        private void waveformCanvas_MouseMove(object sender, MouseEventArgs e)
         {
             System.Windows.Point mousePos = e.GetPosition((UIElement)sender);
             if (Mouse.LeftButton == MouseButtonState.Pressed)
@@ -103,7 +90,7 @@ namespace OpenUtau.UI.Dialogs
             }
         }
 
-        private void waveformCanvas_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void waveformCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             DocManager.Inst.EndUndoGroup();
             ((Canvas)sender).ReleaseMouseCapture();
@@ -156,37 +143,37 @@ namespace OpenUtau.UI.Dialogs
         {            
             if (Math.Abs(ActualPreutterPosX - pt.X) < 5 && waveformCanvas.ActualHeight * .3 <= pt.Y && pt.Y <= waveformCanvas.ActualHeight * .7)
             {
-                txtblkStatus.Text = "Pretturance: " + EditingOto.Preutter + "ms";
+                txtblkStatus.Text = Lang.LanguageManager.GetLocalized("Pretturance")+": " + EditingOto.Preutter + "ms";
                 Mouse.OverrideCursor = Cursors.Cross;
                 if(pressed) Status = EditStatus.Pretturance;
             }
             else if (Math.Abs(ActualOverlapPosX - pt.X) < 5 && waveformCanvas.ActualHeight * .2 <= pt.Y && pt.Y <= waveformCanvas.ActualHeight * .8)
             {
-                txtblkStatus.Text = "Overlap: " + EditingOto.Overlap + "ms";
+                txtblkStatus.Text = Lang.LanguageManager.GetLocalized("Overlap") + ": " + EditingOto.Overlap + "ms";
                 Mouse.OverrideCursor = Cursors.Cross;
                 if (pressed) Status = EditStatus.Overlap;
             }
             else if (Math.Abs(ActualConsonantPosX - pt.X) < 5)
             {
-                txtblkStatus.Text = "Consonant: " + EditingOto.Consonant + "ms";
+                txtblkStatus.Text = Lang.LanguageManager.GetLocalized("Consonant") + ": " + EditingOto.Consonant + "ms";
                 Mouse.OverrideCursor = Cursors.Cross;
                 if (pressed) Status = EditStatus.Consonant;
             }
             else if (Math.Abs(ActualOffsetPosX - pt.X) < 5)
             {
-               txtblkStatus.Text = "Offset (Start of data): " + EditingOto.Offset + "ms";
+               txtblkStatus.Text = Lang.LanguageManager.GetLocalized("Offset2") + ": " + EditingOto.Offset + "ms";
                 Mouse.OverrideCursor = Cursors.Cross;
                 if (pressed) Status = EditStatus.Offset;
             }
             else if (Math.Abs(ActualCutoffPosX - pt.X) < 5)
             {
-                txtblkStatus.Text = "Cutoff(End of data): " + EditingOto.Cutoff + "ms";
+                txtblkStatus.Text = Lang.LanguageManager.GetLocalized("Cutoff2") + ": " + EditingOto.Cutoff + "ms";
                 Mouse.OverrideCursor = Cursors.Cross;
                 if (pressed) Status = EditStatus.Cutoff;
             }
             else
             {
-                txtblkStatus.Text = "Stand by";
+                txtblkStatus.Text = "";
                 Mouse.OverrideCursor = null;
             }
         }
@@ -207,7 +194,7 @@ namespace OpenUtau.UI.Dialogs
 
         private void waveformCanvas_MouseLeave(object sender, MouseEventArgs e)
         {
-            txtblkStatus.Text = "Stand by";
+            txtblkStatus.Text = "";
             Mouse.OverrideCursor = null;
         }
 
@@ -231,9 +218,9 @@ namespace OpenUtau.UI.Dialogs
         {
             foreach (var item in gridProperties.Children)
             {
-                if (item is TextBox)
+                if (item is TextBox textbox)
                 {
-                    ((TextBox)item).GetBindingExpression(TextBox.TextProperty).UpdateTarget();
+                    textbox.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
                 }
             }
         }

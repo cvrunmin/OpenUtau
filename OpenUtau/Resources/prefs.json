@@ -12,5 +12,6 @@
     "InternalEnginePreview": true,
     "InternalEngineExport": true,
     "ExternalPreviewEngine": "",
-    "ExternalExportEngine": ""
+    "ExternalExportEngine": "",
+	"Language": "en-us"
 }

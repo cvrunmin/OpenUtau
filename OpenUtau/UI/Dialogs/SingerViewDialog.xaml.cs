@@ -91,8 +91,8 @@ namespace OpenUtau.UI.Dialogs
                         UOto conflictedOto = SelectedSinger.AliasMap[result.Alias];
                         if (!otoview.SelectedItem.Equals(conflictedOto) && !conflictedOto.Equals(result))
                         {
-                            MessageBoxManager.Yes = "Replace";
-                            MessageBoxManager.No = "Duplicate";
+                            MessageBoxManager.Yes = Lang.LanguageManager.GetLocalized("Replace");
+                            MessageBoxManager.No = Lang.LanguageManager.GetLocalized("Duplicate");
                             MessageBoxManager.Register();
                             var warningResult = System.Windows.Forms.MessageBox.Show(string.Format("Singer {0} already has alia {1} (old: {2}({3}) , new: {4}({5})), replace or duplicate?", SelectedSinger.Name, result.Alias, conflictedOto.Alias, conflictedOto.File, result.Alias, result.File), "Conflict", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
                             MessageBoxManager.Unregister();

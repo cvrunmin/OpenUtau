@@ -13,16 +13,16 @@
         <ListView x:Name="otoview" Margin="365,30,10,10" MouseDoubleClick="otoview_MouseDoubleClick">
             <ListView.View>
                 <GridView AllowsColumnReorder="False">
-                    <GridViewColumn Header="Alias" DisplayMemberBinding="{Binding Alias}"/>
-                    <GridViewColumn Header="File" DisplayMemberBinding="{Binding File}"/>
-                    <GridViewColumn Header="Offset" DisplayMemberBinding="{Binding Offset}"/>
-                    <GridViewColumn Header="Consonant" DisplayMemberBinding="{Binding Consonant}"/>
-                    <GridViewColumn Header="Cutoff" DisplayMemberBinding="{Binding Cutoff}"/>
-                    <GridViewColumn Header="Preutter" DisplayMemberBinding="{Binding Preutter}"/>
-                    <GridViewColumn Header="Overlap" DisplayMemberBinding="{Binding Overlap}"/>
+                    <GridViewColumn Header="{DynamicResource Alias}" DisplayMemberBinding="{Binding Alias}"/>
+                    <GridViewColumn Header="{DynamicResource File}" DisplayMemberBinding="{Binding File}"/>
+                    <GridViewColumn Header="{DynamicResource Offset}" DisplayMemberBinding="{Binding Offset}"/>
+                    <GridViewColumn Header="{DynamicResource Consonant}" DisplayMemberBinding="{Binding Consonant}"/>
+                    <GridViewColumn Header="{DynamicResource Cutoff}" DisplayMemberBinding="{Binding Cutoff}"/>
+                    <GridViewColumn Header="{DynamicResource Preutterance}" DisplayMemberBinding="{Binding Preutter}"/>
+                    <GridViewColumn Header="{DynamicResource Overlap}" DisplayMemberBinding="{Binding Overlap}"/>
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button x:Name="butRefresh" Content="Refresh" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Click="butRefresh_Click"/>
+        <Button x:Name="butRefresh" Content="{DynamicResource Refresh}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Click="butRefresh_Click"/>
     </Grid>
 </Window>

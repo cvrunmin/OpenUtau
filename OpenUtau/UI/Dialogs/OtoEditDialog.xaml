@@ -53,32 +53,29 @@
                 <ColumnDefinition Width="1*"/>
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
-            <Label Content="Alias" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="0" Height="25" Width="37"/>
+            <Label Content="{DynamicResource Alias}" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="0" Height="25" Width="37"/>
             <TextBox Text="{Binding Alias, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnTargetUpdated=True, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}" Width="75" Margin="1,0,0,0" Grid.Column="1" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
-            <Label Content="Offset" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="3" Margin="0" Height="25" Width="44"/>
+            <Label Content="{DynamicResource Offset}" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="3" Margin="0" Height="25" Width="44"/>
             <TextBox Text="{Binding Offset, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnTargetUpdated=True, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}" Width="75" Margin="0" Grid.Column="4" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
             <Label Content="ms" HorizontalAlignment="RIght" VerticalAlignment="Top" Grid.Column="4" Padding="0,5" Margin="76,0,0,0"/>
-            <Label Content="Cutoff" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="6" Margin="0" Height="25" Width="45"/>
+            <Label Content="{DynamicResource Cutoff}" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="6" Margin="0" Height="25" Width="45"/>
             <TextBox Text="{Binding Cutoff, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnTargetUpdated=True, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}" Width="75" Margin="0" Grid.Column="7" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
             <Label Content="ms" HorizontalAlignment="RIght" VerticalAlignment="Top" Grid.Column="7" Padding="0,5" Margin="76,0,1,0" Height="25" Width="17"/>
 
-            <Label Content="Consonant" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="0" Grid.Row="2" Height="25" Width="71"/>
+            <Label Content="{DynamicResource Consonant}" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="0" Grid.Row="2" Height="25" Width="71"/>
             <TextBox Text="{Binding Consonant, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnTargetUpdated=True, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}" Width="75" Margin="1,0,0,0" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
             <Label Content="ms" HorizontalAlignment="RIght" VerticalAlignment="Top" Grid.Column="1" Padding="0,5" Margin="76,0,0,0" Grid.Row="2"/>
-            <Label Content="Overlap" VerticalAlignment="Top" Grid.Column="3" Grid.Row="2" Margin="0" Height="25" Width="54"/>
+            <Label Content="{DynamicResource Overlap}" VerticalAlignment="Top" Grid.Column="3" Grid.Row="2" Margin="0" Height="25" Width="54"/>
             <TextBox Text="{Binding Overlap, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnTargetUpdated=True, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}" Width="75" Margin="0" Grid.Column="4" HorizontalAlignment="Left" Grid.Row="2" VerticalContentAlignment="Center"/>
             <Label Content="ms" HorizontalAlignment="RIght" VerticalAlignment="Top" Grid.Column="4" Padding="0,5" Grid.Row="2" Height="25" Width="17" Margin="76,0,0,0"/>
-            <Label Content="Preutterance" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="6" Grid.Row="2" Margin="0" Height="25" Width="82"/>
+            <Label Content="{DynamicResource Preutterance}" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="6" Grid.Row="2" Margin="0" Height="25" Width="82"/>
             <TextBox Text="{Binding Preutter, BindsDirectlyToSource=True, Mode=TwoWay, NotifyOnTargetUpdated=True, NotifyOnSourceUpdated=True, UpdateSourceTrigger=PropertyChanged}" Width="75" Margin="0" Grid.Column="7" HorizontalAlignment="Left" Grid.Row="2" VerticalContentAlignment="Center"/>
             <Label Content="ms" HorizontalAlignment="RIght" VerticalAlignment="Top" Grid.Column="7" Padding="0,5" Margin="76,0,1,0" Grid.Row="2" Height="25" Width="17"/>
-            <Button x:Name="butSave" Content="Save" Grid.Column="9" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="80" Click="butSave_Click"/>
-            <Button x:Name="butCancel" Content="Cancel" Grid.Column="9" HorizontalAlignment="Right" VerticalAlignment="Top" Width="80" Grid.Row="2" Click="butCancel_Click"/>
+            <Button x:Name="butSave" Content="{DynamicResource Save}" Grid.Column="9" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="80" Click="butSave_Click"/>
+            <Button x:Name="butCancel" Content="{DynamicResource Cancel}" Grid.Column="9" HorizontalAlignment="Right" VerticalAlignment="Top" Width="80" Grid.Row="2" Click="butCancel_Click"/>
         </Grid>
         <StatusBar Margin="0" VerticalAlignment="Bottom" Height="20">
-            <TextBlock x:Name="txtblkStatus" Text="Stand by"/>
+            <TextBlock x:Name="txtblkStatus" Text=""/>
         </StatusBar>
-        <!--
-        <Controls:OtoViewElement x:Name="waveformElement" Margin="10,90,10,10" Oto="{Binding EditingOto, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:OtoEditDialog}}}"/>
-        -->
     </Grid>
 </Window>
