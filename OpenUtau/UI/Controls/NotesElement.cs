@@ -56,11 +56,10 @@ namespace OpenUtau.UI.Controls
                 {
                     inView = midiVM.NoteIsInView(note);
 
-                    if (inView && !lastInView)
-                        if (lastNote != null)
+                    if (inView && !lastInView && lastNote != null)
                             DrawNote(lastNote, cxt);
 
-                    if (inView || !inView && lastInView)
+                    if (inView || lastInView)
                         DrawNote(note, cxt);
 
                     lastNote = note;
@@ -85,7 +84,48 @@ namespace OpenUtau.UI.Controls
             {
                 if (ShowPitch) DrawPitchBend(note, cxt);
                 if (ShowPitch) DrawVibrato(note, cxt);
+                if (note.IsLyricBoxActive) DrawLyricBox(note);
             }
+        }
+        private TextBox lyricBox = null;
+        private void DrawLyricBox(UNote note)
+        {
+            double left = note.PosTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution + 1 - midiVM.OffsetX;
+            double top = midiVM.TrackHeight * ((double)UIConstants.MaxNoteNum - 1 - note.NoteNum) + 1 - midiVM.OffsetY;
+            double width = Math.Max(2, note.DurTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution - 1);
+            double height = Math.Max(2, midiVM.TrackHeight - 2);
+            if (lyricBox == null)
+            {
+                lyricBox = new TextBox() { Width = width, Height = height, Visibility = Visibility.Visible, MaxLength = 32767, Text = note.Lyric };
+                void OnEnterPressed(object sender)
+                {
+                    if (lyricBox == null) return; //already updated
+                    DocManager.Inst.ExecuteCmd(new ChangeNoteLyricCommand(Part, note, lyricBox.Text));
+                    DocManager.Inst.EndUndoGroup();
+                    midiVM.MidiCanvas.Children.Remove(lyricBox);
+                    note.IsLyricBoxActive = false;
+                    midiVM.AnyNotesEditing = false;
+                    lyricBox = null;
+                }
+                lyricBox.InputBindings.Add(new System.Windows.Input.KeyBinding() { Command = new DelegateCommand(OnEnterPressed), Key = System.Windows.Input.Key.Return });
+                lyricBox.InputBindings.Add(new System.Windows.Input.KeyBinding() { Command = new DelegateCommand(OnEnterPressed), Key = System.Windows.Input.Key.Enter });
+                lyricBox.LostFocus += (sender, e) =>
+                {
+                    if (lyricBox == null) return; //already updated
+                    DocManager.Inst.ExecuteCmd(new ChangeNoteLyricCommand(Part, note, lyricBox.Text));
+                    DocManager.Inst.EndUndoGroup();
+                    midiVM.MidiCanvas.Children.Remove(lyricBox);
+                    note.IsLyricBoxActive = false;
+                    midiVM.AnyNotesEditing = false;
+                    lyricBox = null;
+                };
+                midiVM.MidiCanvas.Children.Add(lyricBox);
+                DocManager.Inst.StartUndoGroup();
+            }
+            lyricBox.Width = width;
+            lyricBox.Height = height;
+            Canvas.SetLeft(lyricBox, left);
+            Canvas.SetTop(lyricBox, top);
         }
 
         private void DrawNoteBody(UNote note, DrawingContext cxt)
@@ -145,7 +185,7 @@ namespace OpenUtau.UI.Controls
             double outPix = lengthPix * vibrato.Out / 100;
             double depthPix = vibrato.Depth / 100 * midiVM.TrackHeight;
 
-            /*if (vibrato.Length > 0 && vibrato.Depth > 0)
+            if (vibrato.Length > 0 && vibrato.Depth > 0)
             {
                 StreamGeometry g = new StreamGeometry();
                 using (var gcxt = g.Open())
@@ -159,7 +199,7 @@ namespace OpenUtau.UI.Controls
                     gcxt.Close();
                 }
                 cxt.DrawGeometry(Brushes.White, null, g);
-            }*/
+            }
 
             double _x0 = 0, _y0 = 0, _x1 = 0, _y1 = 0;
             while (_x1 < lengthPix)

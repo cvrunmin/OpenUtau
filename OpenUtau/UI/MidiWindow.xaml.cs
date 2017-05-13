@@ -203,7 +203,7 @@ namespace OpenUtau.UI
         # region Note Canvas
 
         Rectangle selectionBox;
-        Nullable<Point> selectionStart;
+        Point? selectionStart;
         int _lastNoteLength = 480;
 
         bool _inMove = false;
@@ -267,14 +267,14 @@ namespace OpenUtau.UI
                             IsHitTestVisible = false
                         };
                         notesCanvas.Children.Add(selectionBox);
-                        Canvas.SetZIndex(selectionBox, 1000);
+                        Panel.SetZIndex(selectionBox, 1000);
                         selectionBox.Visibility = System.Windows.Visibility.Visible;
                     }
                     else
                     {
                         selectionBox.Width = 0;
                         selectionBox.Height = 0;
-                        Canvas.SetZIndex(selectionBox, 1000);
+                        Panel.SetZIndex(selectionBox, 1000);
                         selectionBox.Visibility = System.Windows.Visibility.Visible;
                     }
                     Mouse.OverrideCursor = Cursors.Cross;
@@ -285,8 +285,14 @@ namespace OpenUtau.UI
                     {
                         _noteHit = noteHit;
                         if (!midiVM.SelectedNotes.Contains(noteHit)) midiVM.DeselectAll();
-
-                        if (!midiHT.HitNoteResizeArea(noteHit, mousePos))
+                        if (!noteHit.IsLyricBoxActive && e.ClickCount >= 2) {
+                            noteHit.IsLyricBoxActive = true;
+                            midiVM.AnyNotesEditing = true;
+                            midiVM.MarkUpdate();
+                            midiVM.notesElement?.MarkUpdate();
+                            midiVM.RedrawIfUpdated();
+                        }
+                        else if (!midiHT.HitNoteResizeArea(noteHit, mousePos))
                         {
                             // Move note
                             _inMove = true;
@@ -307,7 +313,7 @@ namespace OpenUtau.UI
                             }
                             DocManager.Inst.StartUndoGroup();
                         }
-                        else // if (!noteHit.IsLyricBoxActive()) FIXME
+                        else if (!noteHit.IsLyricBoxActive) //FIXME
                         {
                             // Resize note
                             _inResize = true;
@@ -348,12 +354,13 @@ namespace OpenUtau.UI
         private void notesCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (midiVM.Part == null) return;
+            if(_inMove || _inResize)
+                DocManager.Inst.EndUndoGroup();
             _inMove = false;
             _inResize = false;
             _noteHit = null;
             _inPitMove = false;
             _pitHit = null;
-            DocManager.Inst.EndUndoGroup();
             // End selection
             selectionStart = null;
             if (selectionBox != null)
@@ -632,7 +639,8 @@ namespace OpenUtau.UI
         protected override void OnKeyDown(KeyEventArgs e)
         {
             Window_KeyDown(this, e);
-            e.Handled = true;
+            if(!midiVM.AnyNotesEditing)
+                e.Handled = true;
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
@@ -641,49 +649,48 @@ namespace OpenUtau.UI
             {
                 this.Hide();
             }
-            else if (midiVM.Part == null)
+            else if (midiVM.Part != null && !midiVM.AnyNotesEditing)
             {
-                return;
-            }
-            else if (Keyboard.Modifiers == ModifierKeys.Control) // Ctrl
-            {
-                if (e.Key == Key.A)
+                if (Keyboard.Modifiers == ModifierKeys.Control) // Ctrl
                 {
-                    midiVM.SelectAll();
-                }
-                else if (e.Key == Key.Z)
-                {
-                    midiVM.DeselectAll();
-                    DocManager.Inst.Undo();
-                }
-                else if (e.Key == Key.Y)
-                {
-                    midiVM.DeselectAll();
-                    DocManager.Inst.Redo();
-                }
-            }
-            else if (Keyboard.Modifiers == 0) // No midifiers
-            {
-                if (e.Key == Key.Delete)
-                {
-                    if (midiVM.SelectedNotes.Count > 0)
+                    if (e.Key == Key.A)
                     {
-                        DocManager.Inst.StartUndoGroup();
-                        DocManager.Inst.ExecuteCmd(new RemoveNoteCommand(midiVM.Part, midiVM.SelectedNotes));
-                        DocManager.Inst.EndUndoGroup();
+                        midiVM.SelectAll();
+                    }
+                    else if (e.Key == Key.Z)
+                    {
+                        midiVM.DeselectAll();
+                        DocManager.Inst.Undo();
+                    }
+                    else if (e.Key == Key.Y)
+                    {
+                        midiVM.DeselectAll();
+                        DocManager.Inst.Redo();
                     }
                 }
-                else if (e.Key == Key.I)
+                else if (Keyboard.Modifiers == 0) // No midifiers
                 {
-                    midiVM.ShowPitch = !midiVM.ShowPitch;
-                }
-                else if (e.Key == Key.O)
-                {
-                    midiVM.ShowPhoneme = !midiVM.ShowPhoneme;
-                }
-                else if (e.Key == Key.P)
-                {
-                    midiVM.Snap = !midiVM.Snap;
+                    if (e.Key == Key.Delete)
+                    {
+                        if (midiVM.SelectedNotes.Count > 0)
+                        {
+                            DocManager.Inst.StartUndoGroup();
+                            DocManager.Inst.ExecuteCmd(new RemoveNoteCommand(midiVM.Part, midiVM.SelectedNotes));
+                            DocManager.Inst.EndUndoGroup();
+                        }
+                    }
+                    else if (e.Key == Key.I)
+                    {
+                        midiVM.ShowPitch = !midiVM.ShowPitch;
+                    }
+                    else if (e.Key == Key.O)
+                    {
+                        midiVM.ShowPhoneme = !midiVM.ShowPhoneme;
+                    }
+                    else if (e.Key == Key.P)
+                    {
+                        midiVM.Snap = !midiVM.Snap;
+                    }
                 }
             }
         }

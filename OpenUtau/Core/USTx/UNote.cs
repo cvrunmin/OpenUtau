@@ -25,6 +25,8 @@ namespace OpenUtau.Core.USTx
 
         public int EndTick { get { return PosTick + DurTick; } }
 
+        public bool IsLyricBoxActive { get; internal set; }
+
         private UNote() {
             PitchBend = new PitchBendExpression(this);
             Vibrato = new VibratoExpression(this);

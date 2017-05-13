@@ -124,7 +124,7 @@ namespace OpenUtau.UI.Models
         }
 
         # endregion
-
+        public bool AnyNotesEditing { get; set; }
         Dictionary<string, FloatExpElement> expElements = new Dictionary<string, FloatExpElement>();
         public NotesElement notesElement;
         public PhonemesElement phonemesElement;
