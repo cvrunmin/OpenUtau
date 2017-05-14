@@ -18,7 +18,8 @@ namespace OpenUtau.Core.Render
         /// <summary>
         /// Pan. -1f (left) to 1f (right).
         /// </summary>
-        public float Pan { set { pan.Pan = value; } get { return pan.Pan; } }
+        //public float Pan { set { pan.Pan = value; } get { return pan.Pan; } }
+        public float Pan { set; get; }
 
         /// <summary>
         /// Volume. 0f to 1f.

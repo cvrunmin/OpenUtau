@@ -43,7 +43,7 @@ namespace OpenUtau.Core.Render
             trackSources = new List<TrackSampleProvider>();
             foreach (UTrack track in project.Tracks)
             {
-                trackSources.Add(new TrackSampleProvider() { Volume = DecibelToVolume(track.Volume) });
+                trackSources.Add(new TrackSampleProvider() { Volume = track.Mute ? 0 : DecibelToVolume(track.Volume), Pan = (float)track.Pan / 90f });
             }
             List<Task> tasks = new List<Task>();
             foreach (UPart part in project.Parts)
@@ -54,7 +54,7 @@ namespace OpenUtau.Core.Render
                     {
                         trackSources[part.TrackNo].AddSource(
                             BuildWavePartAudio(part as UWavePart, project),
-                            TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)));
+                            TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick) * 4 /*- 2000 * part.PosTick / project.Resolution / 4*/));
                     }
                 }
                 else
@@ -67,7 +67,7 @@ namespace OpenUtau.Core.Render
                         //lock (lockObject)
                         {
                             trackSources[part.TrackNo].AddSource(await BuildVoicePartAudio(part as UVoicePart, project, engine) ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(),
-                                TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)));
+                                TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick) * 4 - 2000 * part.PosTick / project.Resolution / 4));
                         }
                     }
                 }
@@ -82,7 +82,12 @@ namespace OpenUtau.Core.Render
             AudioFileReader stream;
             try { stream = new AudioFileReader(part.FilePath); }
             catch { return null; }
-            return new WaveToSampleProvider(stream);
+            var sample = new WaveToSampleProvider(stream);
+            if (sample.WaveFormat.SampleRate != 44100)
+            {
+                return new WdlResamplingSampleProvider(sample, 44100);
+            }
+            return sample;
         }
 
         private Task<SequencingSampleProvider> BuildVoicePartAudio(UVoicePart part, UProject project, IResamplerDriver engine)

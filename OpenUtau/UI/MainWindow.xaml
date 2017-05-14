@@ -30,8 +30,11 @@
                 </MenuItem>
                 <MenuItem Header="{DynamicResource MenuSave}" InputGestureText="Ctrl+S" Click="MenuSave_Click"/>
                 <MenuItem Header="{DynamicResource MenuSaveAs}" IsEnabled="False"/>
-                <MenuItem Header="{DynamicResource MenuImportAudio}" Click="MenuImportAudio_Click"/>
-                <MenuItem Header="{DynamicResource MenuImportMidi}" Click="MenuImportMidi_Click"/>
+                <MenuItem Header="{DynamicResource MenuImport}">
+                    <MenuItem Header="Track..." Click="MenuImportTrack_Click"/>
+                    <MenuItem Header="{DynamicResource MenuImportAudio}" Click="MenuImportAudio_Click"/>
+                    <MenuItem Header="{DynamicResource MenuImportMidi}" Click="MenuImportMidi_Click"/>
+                </MenuItem>
                 <MenuItem Header="{DynamicResource MenuRenderAll}" Click="MenuRenderAll_Click"/>
                 <MenuItem Header="{DynamicResource MenuRecentFile}" IsEnabled="False">
                     <MenuItem Header="1.vsqx"/>

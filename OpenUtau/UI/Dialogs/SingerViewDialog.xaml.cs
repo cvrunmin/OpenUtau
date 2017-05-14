@@ -88,36 +88,11 @@ namespace OpenUtau.UI.Dialogs
                     var result = dialog.EditingOto;
                     if (SelectedSinger.AliasMap.ContainsKey(result.Alias))
                     {
-                        UOto conflictedOto = SelectedSinger.AliasMap[result.Alias];
-                        if (!otoview.SelectedItem.Equals(conflictedOto) && !conflictedOto.Equals(result))
-                        {
-                            MessageBoxManager.Yes = Lang.LanguageManager.GetLocalized("Replace");
-                            MessageBoxManager.No = Lang.LanguageManager.GetLocalized("Duplicate");
-                            MessageBoxManager.Register();
-                            var warningResult = System.Windows.Forms.MessageBox.Show(string.Format("Singer {0} already has alia {1} (old: {2}({3}) , new: {4}({5})), replace or duplicate?", SelectedSinger.Name, result.Alias, conflictedOto.Alias, conflictedOto.File, result.Alias, result.File), "Conflict", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
-                            MessageBoxManager.Unregister();
-                            switch (warningResult)
-                            {
-                                case System.Windows.Forms.DialogResult.Yes:
-                                    SelectedSinger.AliasMap[result.Alias] = result;
-                                    break;
-                                case System.Windows.Forms.DialogResult.No:
-                                    int i = 1;
-                                    for (; SelectedSinger.AliasMap.ContainsKey(result.Alias + " (" + i + ")"); ++i) { }
-                                    result.Alias += " (" + i + ")";
-                                    SelectedSinger.AliasMap.Add(result.Alias, result);
-                                    break;
-                                case System.Windows.Forms.DialogResult.Cancel:
-                                    e1.Cancel = true;
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            SelectedSinger.AliasMap[result.Alias] = result;
-                        }
+                        FixConflictedOto(e1, result, result.Alias);
+                    }
+                    else if (SelectedSinger.AliasMap.ContainsKey(dialog.aliasBak))
+                    {
+                        FixConflictedOto(e1, result, dialog.aliasBak);
                     }
                     else
                     {
@@ -129,9 +104,65 @@ namespace OpenUtau.UI.Dialogs
             dialog.ShowDialog();
         }
 
+        private void FixConflictedOto(System.ComponentModel.CancelEventArgs e1, UOto result, string alias)
+        {
+            UOto conflictedOto = SelectedSinger.AliasMap[alias];
+            if (!otoview.SelectedItem.Equals(conflictedOto) && !conflictedOto.Equals(result))
+            {
+                MessageBoxManager.Yes = Lang.LanguageManager.GetLocalized("Replace");
+                MessageBoxManager.No = Lang.LanguageManager.GetLocalized("Duplicate");
+                MessageBoxManager.Register();
+                var warningResult = System.Windows.Forms.MessageBox.Show(string.Format("Singer {0} already has alia {1} (old: {2}({3}) , new: {4}({5})), replace or duplicate?", SelectedSinger.Name, result.Alias, conflictedOto.Alias, conflictedOto.File, result.Alias, result.File), "Conflict", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
+                MessageBoxManager.Unregister();
+                switch (warningResult)
+                {
+                    case System.Windows.Forms.DialogResult.Yes:
+                        SelectedSinger.AliasMap[alias] = result;
+                        break;
+                    case System.Windows.Forms.DialogResult.No:
+                        int i = 1;
+                        for (; SelectedSinger.AliasMap.ContainsKey(result.Alias + " (" + i + ")"); ++i) { }
+                        result.Alias += " (" + i + ")";
+                        SelectedSinger.AliasMap.Add(result.Alias, result);
+                        break;
+                    case System.Windows.Forms.DialogResult.Cancel:
+                        e1.Cancel = true;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                SelectedSinger.AliasMap[alias] = result;
+            }
+        }
+
         private void window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             SaveSinger(SelectedSinger);
+        }
+
+        private void butDuplicate_Click(object sender, RoutedEventArgs e)
+        {
+            if (otoview.SelectedItem != null && otoview.SelectedItem is UOto oto)
+            {
+                UOto newOto = new UOto() { Alias = oto.Alias, Consonant = oto.Consonant, Cutoff = oto.Cutoff, Duration = oto.Duration, File = oto.File, Offset = oto.Offset, Overlap = oto.Overlap, Preutter = oto.Preutter};
+                int i = 1;
+                for (; SelectedSinger.AliasMap.ContainsKey(newOto.Alias + " (" + i + ")"); ++i) { }
+                newOto.Alias += " (" + i + ")";
+                SelectedSinger.AliasMap.Add(newOto.Alias, newOto);
+                otoview.Items.Refresh();
+            }
+        }
+
+        private void butRemove_Click(object sender, RoutedEventArgs e)
+        {
+            if (otoview.SelectedItem != null && otoview.SelectedItem is UOto oto)
+            {
+                SelectedSinger.AliasMap.Remove(oto.Alias);
+                otoview.Items.Refresh();
+            }
         }
     }
 }

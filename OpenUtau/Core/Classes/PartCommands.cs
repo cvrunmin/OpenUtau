@@ -20,9 +20,12 @@ namespace OpenUtau.Core
         public override string ToString() { return "Add part"; }
         public override void Execute() {
             project.Parts.Add(part);
-            if(part is UVoicePart)
+            if(part is UVoicePart voice)
             {
-                foreach (var pair in project.ExpressionTable) { (part as UVoicePart).Expressions.Add(pair.Key, pair.Value); }
+                foreach (var pair in project.ExpressionTable) {
+                    if(!voice.Expressions.ContainsKey(pair.Key))
+                    voice.Expressions.Add(pair.Key, pair.Value);
+                }
             }
         }
         public override void Unexecute() { project.Parts.Remove(part); }

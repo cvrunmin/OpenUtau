@@ -48,12 +48,12 @@ namespace OpenUtau.Core
 
         public static double TickToMillisecond(double tick, double BPM, int beatUnit, int resolution)
         {
-            return tick * 60000.0 / BPM * beatUnit / 4 / resolution;
+            return 60000.0 / BPM * tick / resolution * beatUnit / 4;
         }
 
         public static int MillisecondToTick(double ms, double BPM, int beatUnit, int resolution)
         {
-            return (int)Math.Ceiling(ms / 60000.0 * BPM / beatUnit * 4 * resolution);
+            return (int)Math.Ceiling(ms / beatUnit * resolution / 60000.0 * BPM * 4);
         }
 
         public static double SinEasingInOut(double x0, double x1, double y0, double y1, double x)

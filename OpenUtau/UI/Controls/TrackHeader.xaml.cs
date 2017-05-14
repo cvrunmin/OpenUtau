@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 
 using OpenUtau.Core;
 using OpenUtau.Core.USTx;
+using System.Windows.Controls.Primitives;
 
 namespace OpenUtau.UI.Controls
 {
@@ -148,5 +149,21 @@ namespace OpenUtau.UI.Controls
         {
             DocManager.Inst.ExecuteCmd(new VolumeChangeNotification(this.Track.TrackNo, ((Slider)sender).Value));
         }
+
+        private void panSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            DocManager.Inst.ExecuteCmd(new PanChangeNotification(this.Track.TrackNo, ((Slider)sender).Value));
+        }
+
+        private void MuteToggle_Checked(object sender, RoutedEventArgs e)
+        {
+            DocManager.Inst.ExecuteCmd(new MuteNotification(this.Track.TrackNo, (bool)((ToggleButton)sender).IsChecked));
+        }
+
+        private void SoloToggle_Checked(object sender, RoutedEventArgs e)
+        {
+            DocManager.Inst.ExecuteCmd(new SoloNotification(this.Track.TrackNo, (bool)((ToggleButton)sender).IsChecked));
+        }
+
     }
 }

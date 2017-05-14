@@ -81,6 +81,7 @@ namespace OpenUtau.Core
         private async void BuildAudioAndPlay(UProject project) {
             //BuildAudio(project);
             masterMix = await RenderDispatcher.Inst.GetMixingSampleProvider(project);
+            trackSources = new List<TrackSampleProvider>(masterMix.MixerInputs.Cast<TrackSampleProvider>());
             /*if (pendingParts == 0)*/ StartPlayback(TimeSpan.Zero, true);
         }
 
@@ -115,12 +116,32 @@ namespace OpenUtau.Core
             else if (cmd is VolumeChangeNotification)
             {
                 var _cmd = cmd as VolumeChangeNotification;
-                if (masterMix != null && masterMix.MixerInputs.Count() > _cmd.TrackNo) {
+                if (masterMix != null && masterMix.MixerInputs.Count() > _cmd.TrackNo)
+                {
                     (masterMix.MixerInputs.ElementAt(_cmd.TrackNo) as TrackSampleProvider).Volume = DecibelToVolume(_cmd.Volume);
                 }
                 if (trackSources != null && trackSources.Count > _cmd.TrackNo)
                 {
                     trackSources[_cmd.TrackNo].Volume = DecibelToVolume(_cmd.Volume);
+                }
+            }
+            else if (cmd is PanChangeNotification)
+            {
+                var _cmd = cmd as PanChangeNotification;
+                if (masterMix != null && masterMix.MixerInputs.Count() > _cmd.TrackNo)
+                {
+                    (masterMix.MixerInputs.ElementAt(_cmd.TrackNo) as TrackSampleProvider).Pan = (float)_cmd.Pan / 90f;
+                }
+                if (trackSources != null && trackSources.Count > _cmd.TrackNo)
+                {
+                    trackSources[_cmd.TrackNo].Pan = (float)_cmd.Pan / 90f;
+                }
+            }
+            else if (cmd is MuteNotification mute)
+            {
+                if (masterMix != null && masterMix.MixerInputs.Count() > mute.TrackNo)
+                {
+                    (masterMix.MixerInputs.ElementAt(mute.TrackNo) as TrackSampleProvider).Volume = mute.Muted ? 0 : DecibelToVolume(trackSources[mute.TrackNo].Volume);
                 }
             }
         }

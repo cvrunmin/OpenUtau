@@ -24,6 +24,7 @@ namespace OpenUtau.UI.Dialogs
             InitializeComponent();
         }
         public UOto EditingOto { get; set; }
+        public string aliasBak { get; set; }
         OtoViewModel model;
         public OtoEditDialog(USinger singer, UOto oto) : this()
         {
@@ -41,6 +42,7 @@ namespace OpenUtau.UI.Dialogs
                 EditingOto = EditingOto.SetAlias(EditingOto.File.Substring(i > -1 ? i : 0).Replace(".wav", ""));
                 ForceUpdateTextBox();
             }
+            aliasBak = EditingOto.Alias;
             CreateWaveForm(singer, oto);
         }
         private USinger SavedSinger;

@@ -110,4 +110,28 @@ namespace OpenUtau.Core
         public VolumeChangeNotification(int trackNo, double volume) { this.TrackNo = trackNo; this.Volume = volume; }
         public override string ToString() { return string.Format("Set track {0} volume to {1}", TrackNo, Volume); }
     }
+
+    public class PanChangeNotification : UNotification
+    {
+        public double Pan;
+        public int TrackNo;
+        public PanChangeNotification(int trackNo, double pan) { this.TrackNo = trackNo; this.Pan = pan; }
+        public override string ToString() { return string.Format("Set track {0} pan to {1}", TrackNo, Pan); }
+    }
+
+    public class MuteNotification : UNotification
+    {
+        public bool Muted;
+        public int TrackNo;
+        public MuteNotification(int trackNo, bool mute) { this.TrackNo = trackNo; this.Muted = mute; }
+        public override string ToString() { return string.Format("{1} track {0}", TrackNo, Muted ? "Mute" : "Unmule"); }
+    }
+
+    public class SoloNotification : UNotification
+    {
+        public bool Solo;
+        public int TrackNo;
+        public SoloNotification(int trackNo, bool solo) { this.TrackNo = trackNo; this.Solo = solo; }
+        public override string ToString() { return string.Format("{1} track {0}", TrackNo, Solo ? "Solo" : "Remove solo of"); }
+    }
 }

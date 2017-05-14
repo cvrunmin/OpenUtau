@@ -41,7 +41,7 @@ namespace OpenUtau.Core.Formats
             else return ProjectFormats.Unknown;
         }
 
-        public static void LoadProject(string file)
+        public static void LoadProject(string file, bool append = false)
         {
             ProjectFormats format = DetectProjectFormat(file);
             UProject project = null;
@@ -53,7 +53,27 @@ namespace OpenUtau.Core.Formats
             {
                 System.Windows.MessageBox.Show("Unknown file format");
             }
-            if (project != null) { DocManager.Inst.ExecuteCmd(new LoadProjectNotification(project)); }
+            if (project != null) {
+                if (!append)
+                {
+                    DocManager.Inst.ExecuteCmd(new LoadProjectNotification(project));
+                }
+                else
+                {
+                    DocManager.Inst.Project.Singers.AddRange(project.Singers);
+                    int trackNo = DocManager.Inst.Project.Tracks.Count;
+                    foreach (var item in project.Tracks)
+                    {
+                        item.TrackNo += trackNo;
+                        DocManager.Inst.ExecuteCmd(new AddTrackCommand(DocManager.Inst.Project, item));
+                    }
+                    foreach (var item in project.Parts)
+                    {
+                        item.TrackNo += trackNo;
+                        DocManager.Inst.ExecuteCmd(new AddPartCommand(DocManager.Inst.Project, item));
+                    }
+                }
+            }
         }
 
         public static bool IsTextFile(string file)

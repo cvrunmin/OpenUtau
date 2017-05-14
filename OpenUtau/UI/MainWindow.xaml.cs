@@ -313,7 +313,7 @@ namespace OpenUtau.UI
                 if (trackVM.SelectedParts.Count == 0)
                 {
                     int newTrackNo = Math.Min(trackVM.Project.Tracks.Count - 1, Math.Max(0, trackVM.CanvasToTrack(mousePos.Y)));
-                    int newPosTick = Math.Max(0, (int)(trackVM.Project.Resolution * trackVM.CanvasToSnappedQuarter(mousePos.X)) - _partMoveRelativeTick);
+                    int newPosTick = Math.Max(0, (int)(trackVM.Project.Resolution * trackVM.CanvasToSnappedQuarter(mousePos.X) / trackVM.BeatUnit) - _partMoveRelativeTick);
                     if (newTrackNo != _hitPartElement.Part.TrackNo || newPosTick != _hitPartElement.Part.PosTick)
                         DocManager.Inst.ExecuteCmd(new MovePartCommand(trackVM.Project, _hitPartElement.Part, newPosTick, newTrackNo));
                 }
@@ -416,6 +416,20 @@ namespace OpenUtau.UI
         private void MenuExit_Click(object sender, RoutedEventArgs e) { CmdExit(); }
         private void MenuUndo_Click(object sender, RoutedEventArgs e) { DocManager.Inst.Undo(); }
         private void MenuRedo_Click(object sender, RoutedEventArgs e) { DocManager.Inst.Redo(); }
+
+        private void MenuImportTrack_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog()
+            {
+                Filter = "Project Files|*.ustx; *.vsqx; *.ust|All Files|*.*",
+                Multiselect = true,
+                CheckFileExists = true
+            };
+            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                CmdImportFile(openFileDialog.FileNames);
+            }
+        }
 
         private void MenuImportAudio_Click(object sender, RoutedEventArgs e)
         {
@@ -545,6 +559,16 @@ namespace OpenUtau.UI
             {
                 OpenUtau.Core.Formats.Ust.Load(files);
             }
+        }
+
+        private void CmdImportFile(string[] files)
+        {
+            DocManager.Inst.StartUndoGroup();
+            foreach (var file in files)
+            {
+                OpenUtau.Core.Formats.Formats.LoadProject(file, true);
+            }
+            DocManager.Inst.EndUndoGroup();
         }
 
         private void CmdSaveFile()

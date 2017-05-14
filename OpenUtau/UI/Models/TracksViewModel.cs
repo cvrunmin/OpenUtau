@@ -194,7 +194,7 @@ namespace OpenUtau.UI.Models
                 foreach (PartElement partElement in PartElements)
                 {
                     if (partElement.Modified) partElement.Redraw();
-                    partElement.X = -OffsetX + partElement.Part.PosTick * QuarterWidth / Project.Resolution;
+                    partElement.X = -OffsetX + partElement.Part.PosTick * QuarterWidth / Project.Resolution * BeatPerBar;
                     partElement.Y = -OffsetY + partElement.Part.TrackNo * TrackHeight + 1;
                     partElement.VisualHeight = TrackHeight - 2;
                     partElement.ScaleX = QuarterWidth / Project.Resolution;
@@ -298,7 +298,7 @@ namespace OpenUtau.UI.Models
             double snapUnit = GetSnapUnit();
             return Math.Round(quater / snapUnit) * snapUnit;
         }
-        public int CanvasToSnappedTick(double X) { return (int)(CanvasToSnappedQuarter(X) * Project.Resolution); }
+        public int CanvasToSnappedTick(double X) { return (int)(CanvasToSnappedQuarter(X) * Project.Resolution / BeatUnit); }
 
         # endregion
 

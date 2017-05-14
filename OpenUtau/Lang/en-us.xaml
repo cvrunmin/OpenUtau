@@ -10,6 +10,7 @@
     <s:String x:Key="MenuOpenAs">O_pen As</s:String>
     <s:String x:Key="MenuSave">_Save...</s:String>
     <s:String x:Key="MenuSaveAs">Save _As...</s:String>
+    <s:String x:Key="MenuImport">_Import...</s:String>
     <s:String x:Key="MenuImportAudio">_Import Audio...</s:String>
     <s:String x:Key="MenuImportMidi">_Import Midi...</s:String>
     <s:String x:Key="MenuRenderAll">Render All...</s:String>
