@@ -118,8 +118,8 @@ namespace OpenUtau.UI.Controls
                         {
                             var _noteExp = note.Expressions[Key] as IntExpression;
                             var _noteExpTemplate = Part.Expressions[Key] as IntExpression;
-                            double noteX1 = Math.Round(ScaleX * note.PosTick);
-                            double noteX2 = Math.Round(ScaleX * note.EndTick);
+                            double noteX1 = Math.Round(ScaleX * note.PosTick * DocManager.Inst.Project.BeatPerBar);
+                            double noteX2 = Math.Round(ScaleX * note.EndTick * DocManager.Inst.Project.BeatPerBar);
                             double valueHeight = Math.Round(VisualHeight - VisualHeight * (note.VirtualExpressions[Key] + (int)_noteExpTemplate.Data - _noteExpTemplate.Min) / (_noteExpTemplate.Max - _noteExpTemplate.Min));
                             double zeroHeight = partValueHeight;
                             cxt.DrawLine(pen3, new Point(noteX1 + 0.5, zeroHeight + 0.5), new Point(noteX1 + 0.5, valueHeight + 3));

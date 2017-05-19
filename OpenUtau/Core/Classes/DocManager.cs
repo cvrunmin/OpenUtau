@@ -66,6 +66,17 @@ namespace OpenUtau.Core
                     savedPoint = null;
                     this._project = ((LoadProjectNotification)cmd).project;
                     this.playPosTick = 0;
+                } else if (cmd is UpdateProjectPropertiesNotification uppn) {
+                    this.playPosTick = 0;
+                    _project.BPM = uppn.bpm;
+                    _project.BeatPerBar = uppn.beatPerBar;
+                    _project.BeatUnit = uppn.beatUnit;
+                    foreach (var item in _project.Parts)
+                    {
+                        if (item is UWavePart wave) {
+                            wave.DurTick = _project.MillisecondToTick(wave.FileDurMillisecond);
+                        }
+                    }
                 }
                 else if (cmd is SetPlayPosTickNotification)
                 {

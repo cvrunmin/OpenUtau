@@ -197,7 +197,7 @@ namespace OpenUtau.UI.Models
                     partElement.X = -OffsetX + partElement.Part.PosTick * QuarterWidth / Project.Resolution * BeatPerBar;
                     partElement.Y = -OffsetY + partElement.Part.TrackNo * TrackHeight + 1;
                     partElement.VisualHeight = TrackHeight - 2;
-                    partElement.ScaleX = QuarterWidth / Project.Resolution;
+                    partElement.ScaleX = QuarterWidth / Project.Resolution * BeatPerBar;
                     partElement.CanvasWidth = this.TrackCanvas.ActualWidth;
                 }
                 foreach (TrackHeader trackHeader in TrackHeaders)
@@ -217,7 +217,7 @@ namespace OpenUtau.UI.Models
             if (Project != null)
                 foreach (UPart part in Project.Parts)
                     if (part != null)
-                       quarterCount = Math.Max(quarterCount, (part.DurTick + part.PosTick) / Project.Resolution + UIConstants.SpareQuarterCount);
+                       quarterCount = Math.Max(quarterCount, (part.DurTick + part.PosTick) / Project.Resolution * BeatPerBar + UIConstants.SpareQuarterCount);
             QuarterCount = quarterCount;
 
             int trackCount = UIConstants.MinTrackCount;
@@ -260,7 +260,7 @@ namespace OpenUtau.UI.Models
 
         public void UpdatePlayPosMarker()
         {
-            double quarter = (double)playPosTick / DocManager.Inst.Project.Resolution;
+            double quarter = (double)playPosTick / DocManager.Inst.Project.Resolution * BeatPerBar;
             int playPosMarkerOffset = (int)Math.Round(QuarterToCanvas(quarter) + 0.5);
             Canvas.SetLeft(playPosMarker, playPosMarkerOffset - 6);
             playPosMarkerHighlight.Height = TrackCanvas.ActualHeight;
@@ -384,7 +384,7 @@ namespace OpenUtau.UI.Models
         private void OnPlayPosSet(int playPosTick)
         {
             this.playPosTick = playPosTick;
-            double playPosPix = QuarterToCanvas((double)playPosTick / Project.Resolution);
+            double playPosPix = QuarterToCanvas((double)playPosTick / Project.Resolution * BeatPerBar);
             if (playPosPix > TrackCanvas.ActualWidth * UIConstants.PlayPosMarkerMargin)
                 OffsetX += playPosPix - TrackCanvas.ActualWidth * UIConstants.PlayPosMarkerMargin;
             MarkUpdate();
@@ -442,6 +442,9 @@ namespace OpenUtau.UI.Models
             else if (cmd is LoadProjectNotification)
             {
                 OnProjectLoad(((LoadProjectNotification)cmd).project);
+            }else if (cmd is UpdateProjectPropertiesNotification uppn) {
+                BeatPerBar = uppn.beatPerBar;
+                BeatUnit = uppn.beatUnit;
             }
             else if (cmd is SetPlayPosTickNotification)
             {

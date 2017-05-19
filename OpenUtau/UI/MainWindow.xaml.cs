@@ -22,6 +22,7 @@ using OpenUtau.Core;
 using OpenUtau.Core.USTx;
 using System.Windows.Forms;
 using OpenUtau.Core.Render;
+using OpenUtau.UI.Dialogs;
 
 namespace OpenUtau.UI
 {
@@ -95,7 +96,7 @@ namespace OpenUtau.UI
         private void timelineCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             Point mousePos = e.GetPosition((UIElement)sender);
-            int tick = (int)(trackVM.CanvasToSnappedQuarter(mousePos.X) * trackVM.Project.Resolution);
+            int tick = (int)(trackVM.CanvasToSnappedQuarter(mousePos.X) * trackVM.Project.Resolution / trackVM.BeatPerBar);
             DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(Math.Max(0, tick)));
             ((Canvas)sender).CaptureMouse();
         }
@@ -110,7 +111,7 @@ namespace OpenUtau.UI
         {
             if (Mouse.LeftButton == MouseButtonState.Pressed && Mouse.Captured == timelineCanvas)
             {
-                int tick = (int)(trackVM.CanvasToSnappedQuarter(mousePos.X) * trackVM.Project.Resolution);
+                int tick = (int)(trackVM.CanvasToSnappedQuarter(mousePos.X) * trackVM.Project.Resolution / trackVM.BeatPerBar);
                 if (trackVM.playPosTick != tick)
                     DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(Math.Max(0, tick)));
             }
@@ -143,8 +144,8 @@ namespace OpenUtau.UI
         {
             Point mousePos = e.GetPosition((UIElement)sender);
 
-            var hit = VisualTreeHelper.HitTest(trackCanvas, mousePos).VisualHit;
-            System.Diagnostics.Debug.WriteLine("Mouse hit " + hit.ToString());
+            var hit = VisualTreeHelper.HitTest(trackCanvas, mousePos)?.VisualHit;
+            System.Diagnostics.Debug.WriteLine("Mouse hit " + hit?.ToString());
 
             if (Keyboard.Modifiers == ModifierKeys.Control || Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
             {
@@ -179,9 +180,10 @@ namespace OpenUtau.UI
                 }
                 Mouse.OverrideCursor = System.Windows.Input.Cursors.Cross;
             }
-            else if (hit is DrawingVisual)
+            else if (hit != null)
+            if (hit is DrawingVisual visual)
             {
-                PartElement partEl = ((DrawingVisual)hit).Parent as PartElement;
+                PartElement partEl = visual.Parent as PartElement;
                 _hitPartElement = partEl;
 
                 if (!trackVM.SelectedParts.Contains(_hitPartElement.Part)) trackVM.DeselectAll();
@@ -195,7 +197,7 @@ namespace OpenUtau.UI
                         midiWindow.Show();
                         midiWindow.Focus();
                     }
-                    else if(partEl is WavePartElement) //TODO
+                    else if(partEl is WavePartElement partWEl) //TODO
                     {
                         var dialog = new OpenFileDialog()
                         {
@@ -205,8 +207,19 @@ namespace OpenUtau.UI
                         };
                         if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                         {
+                            int trackNo = partWEl.Part.TrackNo;
+                            DocManager.Inst.StartUndoGroup();
                             DocManager.Inst.ExecuteCmd(new RemovePartCommand(DocManager.Inst.Project, partEl.Part), true);
-                            CmdImportAudio(dialog.FileName);
+                            UWavePart part = Core.Formats.Wave.CreatePart(dialog.FileName);
+                            if (part != null)
+                            {
+                                part.TrackNo = trackNo;
+                                part.PosTick = partWEl.Part.PosTick;
+                                //part.HeadTrimTick = ((UWavePart)partWEl.Part).HeadTrimTick;
+                                //part.TailTrimTick = ((UWavePart)partWEl.Part).TailTrimTick;
+                                DocManager.Inst.ExecuteCmd(new AddPartCommand(trackVM.Project, part), true);
+                            }
+                            DocManager.Inst.EndUndoGroup();
                         }
                     }
                 }
@@ -254,7 +267,7 @@ namespace OpenUtau.UI
                 {
                     PosTick = trackVM.CanvasToSnappedTick(mousePos.X),
                     TrackNo = trackVM.CanvasToTrack(mousePos.Y),
-                    DurTick = trackVM.Project.Resolution * 4 / trackVM.Project.BeatUnit * trackVM.Project.BeatPerBar
+                    DurTick = trackVM.Project.Resolution / trackVM.Project.BeatUnit * trackVM.Project.BeatPerBar
                 };
                 DocManager.Inst.StartUndoGroup();
                 DocManager.Inst.ExecuteCmd(new AddPartCommand(trackVM.Project, part));
@@ -320,7 +333,7 @@ namespace OpenUtau.UI
                 else
                 {
                     int deltaTrackNo = trackVM.CanvasToTrack(mousePos.Y) - _hitPartElement.Part.TrackNo;
-                    int deltaPosTick = (int)(trackVM.Project.Resolution * trackVM.CanvasToSnappedQuarter(mousePos.X) - _partMoveRelativeTick) - _hitPartElement.Part.PosTick;
+                    int deltaPosTick = (int)(trackVM.Project.Resolution * trackVM.CanvasToSnappedQuarter(mousePos.X) /trackVM.BeatUnit - _partMoveRelativeTick) - _hitPartElement.Part.PosTick;
                     bool changeTrackNo = deltaTrackNo + _partMovePartMin.TrackNo >= 0 && deltaTrackNo + _partMovePartMax.TrackNo < trackVM.Project.Tracks.Count;
                     bool changePosTick = deltaPosTick + _partMovePartLeft.PosTick >= 0;
                     if (changeTrackNo || changePosTick)
@@ -334,13 +347,13 @@ namespace OpenUtau.UI
             {
                 if (trackVM.SelectedParts.Count == 0)
                 {
-                    int newDurTick = (int)(trackVM.Project.Resolution * trackVM.CanvasRoundToSnappedQuarter(mousePos.X)) - _hitPartElement.Part.PosTick;
+                    int newDurTick = (int)(trackVM.Project.Resolution * trackVM.CanvasRoundToSnappedQuarter(mousePos.X) / trackVM.BeatUnit) - _hitPartElement.Part.PosTick;
                     if (newDurTick > _resizeMinDurTick && newDurTick != _hitPartElement.Part.DurTick)
                         DocManager.Inst.ExecuteCmd(new ResizePartCommand(trackVM.Project, _hitPartElement.Part, newDurTick));
                 }
                 else
                 {
-                    int deltaDurTick = (int)(trackVM.CanvasRoundToSnappedQuarter(mousePos.X) * trackVM.Project.Resolution) - _hitPartElement.Part.EndTick;
+                    int deltaDurTick = (int)(trackVM.CanvasRoundToSnappedQuarter(mousePos.X) * trackVM.Project.Resolution / trackVM.BeatUnit) - _hitPartElement.Part.EndTick;
                     if (deltaDurTick != 0 && _partResizeShortest.DurTick + deltaDurTick > _resizeMinDurTick)
                         foreach (UPart part in trackVM.SelectedParts)
                             DocManager.Inst.ExecuteCmd(new ResizePartCommand(trackVM.Project, part, part.DurTick + deltaDurTick));
@@ -477,6 +490,11 @@ namespace OpenUtau.UI
 
         private void MenuRenderAll_Click(object sender, RoutedEventArgs e)
         {
+            var dialog = new RenderDialog();
+            if (dialog.ShowDialog().Value) {
+
+            }
+            return;
             var savdialog = new SaveFileDialog() { DefaultExt = "wav", AddExtension = true, OverwritePrompt = true, Filter = "Wave file (*.wav)|*.wav|All Files|*.*"};
             if (savdialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
                 RenderDispatcher.Inst.WriteToFile(savdialog.FileName, DocManager.Inst.Project);
@@ -684,6 +702,9 @@ namespace OpenUtau.UI
         private void bpmText_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             // TODO: set bpm
+            var dialog = new BpmDialog() { Bpm = DocManager.Inst.Project.BPM, BeatPerBar = DocManager.Inst.Project.BeatPerBar, BeatUnit = DocManager.Inst.Project.BeatUnit };
+            dialog.ForceUpdateTextBox();
+            dialog.ShowDialog();
         }
 
         #endregion

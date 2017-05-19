@@ -43,11 +43,13 @@ namespace OpenUtau.Core.Formats
                     Error = true
                 };
             }
-            int durTick = DocManager.Inst.Project.MillisecondToTick(1000.0 * stream.Length / stream.WaveFormat.AverageBytesPerSecond);
+            var ms = 1000.0 * stream.Length / stream.WaveFormat.AverageBytesPerSecond;
+            int durTick = DocManager.Inst.Project.MillisecondToTick(ms);
             UWavePart uwavepart = new UWavePart()
             {
                 FilePath = filepath,
                 FileDurTick = durTick,
+                FileDurMillisecond = ms,
                 DurTick = durTick,
                 Channels = stream.WaveFormat.Channels
             };

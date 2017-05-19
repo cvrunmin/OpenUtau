@@ -48,6 +48,7 @@ namespace OpenUtau.Core.USTx
 
         public int Channels;
         public int FileDurTick;
+        public double FileDurMillisecond;
         public int HeadTrimTick = 0;
         public int TailTrimTick = 0;
         public override int DurTick

@@ -29,7 +29,10 @@ namespace OpenUtau.Core.Render
             worker.RunWorkerAsync(new Tuple<UVoicePart, UProject, IResamplerDriver>(part, project, engine));
         }
 
-        public Task<SequencingSampleProvider> ResamplePartNew(UVoicePart part, UProject project, IResamplerDriver engine)
+        public Task<SequencingSampleProvider> ResamplePartNew(UVoicePart part, UProject project, IResamplerDriver engine) {
+            return ResamplePartNew(part, project, engine, System.Threading.CancellationToken.None);
+        }
+        public Task<SequencingSampleProvider> ResamplePartNew(UVoicePart part, UProject project, IResamplerDriver engine, System.Threading.CancellationToken cancel)
         {
             return new TaskFactory().StartNew(() => RenderAsync(part, project, engine))
                 .ContinueWith(task => {
@@ -66,10 +69,13 @@ namespace OpenUtau.Core.Render
             List<RenderItem> renderItems = e.Result as List<RenderItem>;
             List<RenderItemSampleProvider> renderItemSampleProviders = new List<RenderItemSampleProvider>();
             foreach (var item in renderItems) renderItemSampleProviders.Add(new RenderItemSampleProvider(item));
-            DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, string.Format("")));
+            DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, ""));
             resampleDoneCallback(new SequencingSampleProvider(renderItemSampleProviders));
         }
-        private List<RenderItem> RenderAsync(UVoicePart part, UProject project, IResamplerDriver engine)
+        private List<RenderItem> RenderAsync(UVoicePart part, UProject project, IResamplerDriver engine) {
+            return RenderAsync(part, project, engine, System.Threading.CancellationToken.None);
+        }
+        private List<RenderItem> RenderAsync(UVoicePart part, UProject project, IResamplerDriver engine, System.Threading.CancellationToken cancel)
         {
             List<RenderItem> renderItems = new List<RenderItem>();
             Debug.Assert(engine != null, "Engine is not provided");
@@ -87,6 +93,7 @@ namespace OpenUtau.Core.Render
                 {
                     foreach (UPhoneme phoneme in note.Phonemes)
                     {
+                        cancel.ThrowIfCancellationRequested();
                         RenderItem item = BuildRenderItem(phoneme, part, project);
                         if (!item.Error)
                         {
@@ -100,11 +107,13 @@ namespace OpenUtau.Core.Render
                                     System.Diagnostics.Debug.WriteLine("Sound {0:x} resampling {1}", item.HashParameters(), item.GetResamplerExeArgs());
                                     DriverModels.EngineInput engineArgs = DriverModels.CreateInputModel(item, 0);
                                     System.IO.Stream output = engine.DoResampler(engineArgs);
+                                    cancel.ThrowIfCancellationRequested();
                                     sound = new CachedSound(output);
                                 }
                                 else
                                 {
                                     System.Diagnostics.Debug.WriteLine("Sound {0:x} found on disk {1}", item.HashParameters(), item.GetResamplerExeArgs());
+                                    cancel.ThrowIfCancellationRequested();
                                     sound = new CachedSound(cachefile);
                                 }
                                 RenderCache.Inst.Put(item.HashParameters(), sound, engine.GetInfo().ToString());
@@ -116,6 +125,7 @@ namespace OpenUtau.Core.Render
                         }
                         DocManager.Inst.ExecuteCmd(new ProgressBarNotification(100 * ++i / count, string.Format("Resampling \"{0}\" {1}/{2}", phoneme.Phoneme, i, count)));
                     }
+                    cancel.ThrowIfCancellationRequested();
                 }
             }
             watch.Stop();

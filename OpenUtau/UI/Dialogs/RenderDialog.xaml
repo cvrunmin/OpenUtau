@@ -1,0 +1,47 @@
+﻿<Window x:Class="OpenUtau.UI.Dialogs.RenderDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OpenUtau.UI.Dialogs"
+        mc:Ignorable="d"
+        Title="RenderDialog" Width="300" Height="400">
+    <Grid>
+        <Grid Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Label Content="Render Options" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top"/>
+            <UniformGrid Margin="0,30,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
+                <RadioButton x:Name="radioRenderMaster" Content="Master Track" HorizontalAlignment="Left" Margin="0,0,-38,0" VerticalAlignment="Top" GroupName="RenderOption" IsChecked="True" Checked="radioRenderOption_Checked"/>
+                <RadioButton x:Name="radioRenderSelected" Content="Selected Tracks" HorizontalAlignment="Left" Margin="-53,19,0,-7" VerticalAlignment="Top" GroupName="RenderOption" Checked="radioRenderOption_Checked"/>
+                <RadioButton x:Name="radioRenderSplitted" Content="Splitted Tracks" HorizontalAlignment="Left" Margin="0,12,-48,0" VerticalAlignment="Top" GroupName="RenderOption" Checked="radioRenderOption_Checked"/>
+
+            </UniformGrid>
+            <Label Content="Output Path" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top" Grid.Row="1"/>
+            <Grid Margin="0,30,0,0" Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="txtboxPath" Height="23" Text="" VerticalContentAlignment="Center" TextChanged="txtboxPath_TextChanged"/>
+                <Button x:Name="butBrowse" Content="Browse" Margin="0" Height="23" Grid.Column="1" Padding="5,1" Click="butBrowse_Click"/>
+            </Grid>
+            <Grid VerticalAlignment="Top" Grid.IsSharedSizeScope="True" Grid.Row="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="Functional"/>
+                    <ColumnDefinition Width="5px"/>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="Functional"/>
+                </Grid.ColumnDefinitions>
+                <Button x:Name="butOk" Content="Ok" VerticalAlignment="Top" Padding="10,1" Grid.Column="1" Click="butOk_Click"/>
+                <Button x:Name="butCancel" Content="{DynamicResource Cancel}" VerticalAlignment="Top" Padding="10,1" Grid.Column="3" Click="butCancel_Click"/>
+            </Grid>
+            <ListBox x:Name="listboxGenFiles" Margin="0" Grid.Row="2" BorderBrush="{x:Null}"/>
+
+        </Grid>
+    </Grid>
+</Window>

@@ -204,7 +204,7 @@ namespace OpenUtau.UI
 
         Rectangle selectionBox;
         Point? selectionStart;
-        int _lastNoteLength = 480;
+        int _lastNoteLength = 120;
 
         bool _inMove = false;
         bool _inResize = false;
@@ -395,7 +395,7 @@ namespace OpenUtau.UI
             }
             else if (_inPitMove)
             {
-                double tickX = midiVM.CanvasToQuarter(mousePos.X) * DocManager.Inst.Project.Resolution - _noteHit.PosTick;
+                double tickX = midiVM.CanvasToQuarter(mousePos.X) * DocManager.Inst.Project.Resolution / midiVM.BeatPerBar - _noteHit.PosTick;
                 double deltaX = DocManager.Inst.Project.TickToMillisecond(tickX) - _pitHit.X;
                 if (_pitHitIndex != 0) deltaX = Math.Max(deltaX, _noteHit.PitchBend.Points[_pitHitIndex - 1].X - _pitHit.X);
                 if (_pitHitIndex != _noteHit.PitchBend.Points.Count - 1) deltaX = Math.Min(deltaX, _noteHit.PitchBend.Points[_pitHitIndex + 1].X - _pitHit.X);
@@ -410,20 +410,20 @@ namespace OpenUtau.UI
                 if (midiVM.SelectedNotes.Count == 0)
                 {
                     int newNoteNum = Math.Max(0, Math.Min(UIConstants.MaxNoteNum - 1, midiVM.CanvasToNoteNum(mousePos.Y)));
-                    int newPosTick = Math.Max(0, Math.Min((int)(midiVM.QuarterCount * midiVM.Project.Resolution) - _noteHit.DurTick,
-                        (int)(midiVM.Project.Resolution * midiVM.CanvasToSnappedQuarter(mousePos.X)) - _tickMoveRelative));
+                    int newPosTick = Math.Max(0, Math.Min((int)(midiVM.QuarterCount * midiVM.Project.Resolution / midiVM.BeatPerBar) - _noteHit.DurTick,
+                        (int)(midiVM.Project.Resolution * midiVM.CanvasToSnappedQuarter(mousePos.X) / midiVM.BeatPerBar) - _tickMoveRelative));
                     if (newNoteNum != _noteHit.NoteNum || newPosTick != _noteHit.PosTick)
                         DocManager.Inst.ExecuteCmd(new MoveNoteCommand(midiVM.Part, _noteHit, newPosTick - _noteHit.PosTick, newNoteNum - _noteHit.NoteNum));
                 }
                 else
                 {
                     int deltaNoteNum = midiVM.CanvasToNoteNum(mousePos.Y) - _noteHit.NoteNum;
-                    int deltaPosTick = ((int)(midiVM.Project.Resolution * midiVM.CanvasToSnappedQuarter(mousePos.X)) - _tickMoveRelative) - _noteHit.PosTick;
+                    int deltaPosTick = ((int)(midiVM.Project.Resolution * midiVM.CanvasToSnappedQuarter(mousePos.X) / midiVM.BeatPerBar) - _tickMoveRelative) - _noteHit.PosTick;
 
                     if (deltaNoteNum != 0 || deltaPosTick != 0)
                     {
                         bool changeNoteNum = deltaNoteNum + _noteMoveNoteMin.NoteNum >= 0 && deltaNoteNum + _noteMoveNoteMax.NoteNum < UIConstants.MaxNoteNum;
-                        bool changePosTick = deltaPosTick + _noteMoveNoteLeft.PosTick >= 0 && deltaPosTick + _noteMoveNoteRight.EndTick <= midiVM.QuarterCount * midiVM.Project.Resolution;
+                        bool changePosTick = deltaPosTick + _noteMoveNoteLeft.PosTick >= 0 && deltaPosTick + _noteMoveNoteRight.EndTick <= midiVM.QuarterCount * midiVM.Project.Resolution / midiVM.BeatPerBar;
                         if (changeNoteNum || changePosTick)
 
                             DocManager.Inst.ExecuteCmd(new MoveNoteCommand(midiVM.Part, midiVM.SelectedNotes,
@@ -436,8 +436,8 @@ namespace OpenUtau.UI
             {
                 if (midiVM.SelectedNotes.Count == 0)
                 {
-                    int newDurTick = (int)(midiVM.CanvasRoundToSnappedQuarter(mousePos.X) * midiVM.Project.Resolution) - _noteHit.PosTick;
-                    if (newDurTick != _noteHit.DurTick && newDurTick >= midiVM.GetSnapUnit() * midiVM.Project.Resolution)
+                    int newDurTick = (int)(midiVM.CanvasRoundToSnappedQuarter(mousePos.X) * midiVM.Project.Resolution / midiVM.BeatPerBar) - _noteHit.PosTick;
+                    if (newDurTick != _noteHit.DurTick && newDurTick >= midiVM.GetSnapUnit() * midiVM.Project.Resolution / midiVM.BeatPerBar)
                     {
                         DocManager.Inst.ExecuteCmd(new ResizeNoteCommand(midiVM.Part, _noteHit, newDurTick - _noteHit.DurTick));
                         _lastNoteLength = newDurTick;
@@ -445,7 +445,7 @@ namespace OpenUtau.UI
                 }
                 else
                 {
-                    int deltaDurTick = (int)(midiVM.CanvasRoundToSnappedQuarter(mousePos.X) * midiVM.Project.Resolution) - _noteHit.EndTick;
+                    int deltaDurTick = (int)(midiVM.CanvasRoundToSnappedQuarter(mousePos.X) * midiVM.Project.Resolution / midiVM.BeatPerBar) - _noteHit.EndTick;
                     if (deltaDurTick != 0 && deltaDurTick + _noteResizeShortest.DurTick > midiVM.GetSnapUnit())
                     {
                         DocManager.Inst.ExecuteCmd(new ResizeNoteCommand(midiVM.Part, midiVM.SelectedNotes, deltaDurTick));

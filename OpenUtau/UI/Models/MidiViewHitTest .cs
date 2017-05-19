@@ -28,7 +28,7 @@ namespace OpenUtau.UI.Models
 
         public UNote HitTestNoteX(double x)
         {
-            int tick = (int)(midiVM.CanvasToQuarter(x) * Project.Resolution);
+            int tick = (int)(midiVM.CanvasToQuarter(x) * Project.Resolution / Project.BeatPerBar);
             foreach (UNote note in midiVM.Part.Notes)
                 if (note.PosTick <= tick && note.EndTick >= tick) return note;
             return null;
@@ -36,7 +36,7 @@ namespace OpenUtau.UI.Models
 
         public UNote HitTestNote(Point mousePos)
         {
-            int tick = (int)(midiVM.CanvasToQuarter(mousePos.X) * Project.Resolution);
+            int tick = (int)(midiVM.CanvasToQuarter(mousePos.X) * Project.Resolution / Project.BeatPerBar);
             int noteNum = midiVM.CanvasToNoteNum(mousePos.Y);
             foreach (UNote note in midiVM.Part.Notes)
                 if (note.PosTick <= tick && note.EndTick >= tick && note.NoteNum == noteNum) return note;
@@ -45,13 +45,13 @@ namespace OpenUtau.UI.Models
 
         public bool HitNoteResizeArea(UNote note, Point mousePos)
         {
-            double x = midiVM.QuarterToCanvas((double)note.EndTick / Project.Resolution);
+            double x = midiVM.QuarterToCanvas((double)note.EndTick / Project.Resolution * Project.BeatPerBar);
             return mousePos.X <= x && mousePos.X > x - UIConstants.ResizeMargin;
         }
 
         public UNote HitTestVibrato(Point mousePos)
         {
-            int tick = (int)(midiVM.CanvasToQuarter(mousePos.X) * Project.Resolution);
+            int tick = (int)(midiVM.CanvasToQuarter(mousePos.X) * Project.Resolution / Project.BeatPerBar);
             double pitch = midiVM.CanvasToPitch(mousePos.Y);
             foreach (UNote note in midiVM.Part.Notes)
                 if (note.PosTick + note.DurTick * (1 - note.Vibrato.Length / 100) <= tick && note.EndTick >= tick &&
@@ -94,7 +94,7 @@ namespace OpenUtau.UI.Models
                             double dis = double.IsNaN(castX) ? Math.Abs(castY) : Math.Cos(Math.Atan2(Math.Abs(castY), Math.Abs(castX))) * Math.Abs(castY);
                             if (dis < 3)
                             {
-                                double msX = DocManager.Inst.Project.TickToMillisecond(midiVM.CanvasToQuarter(mousePos.X) * DocManager.Inst.Project.Resolution - note.PosTick);
+                                double msX = DocManager.Inst.Project.TickToMillisecond(midiVM.CanvasToQuarter(mousePos.X) * DocManager.Inst.Project.Resolution / DocManager.Inst.Project.BeatPerBar - note.PosTick);
                                 double msY = (midiVM.CanvasToPitch(mousePos.Y) - note.NoteNum) * 10;
                                 return (new PitchPointHitTestResult() { Note = note, Index = i - 1, OnPoint = false, X = msX, Y = msY });
                             }

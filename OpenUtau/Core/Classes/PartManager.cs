@@ -155,6 +155,7 @@ namespace OpenUtau.Core
 
         private void UpdatePhonemeOto(UVoicePart part)
         {
+            if (part.TrackNo < 0 || part.TrackNo >= DocManager.Inst.Project.Tracks.Count) return;
             var singer = DocManager.Inst.Project.Tracks[part.TrackNo].Singer;
             if (singer == null || !singer.Loaded) return;
             foreach (UNote note in part.Notes)

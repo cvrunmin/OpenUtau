@@ -46,6 +46,20 @@ namespace OpenUtau.Core
         public override string ToString() { return "Save project"; }
     }
 
+    public class UpdateProjectPropertiesNotification : UNotification
+    {
+        public int beatPerBar, beatUnit;
+        public double bpm;
+        public UpdateProjectPropertiesNotification(UProject project, double bpm, int beatPerBar, int beatUnit)
+        {
+            this.project = project;
+            this.bpm = bpm;
+            this.beatPerBar = beatPerBar;
+            this.beatUnit = beatUnit;
+        }
+        public override string ToString() { return "Update project to " + bpm + "bpm and " + beatPerBar + "/" + beatUnit + " beat"; }
+    }
+
     public class RedrawNotesNotification : UNotification
     {
         public override string ToString() { return "Redraw Notes"; }

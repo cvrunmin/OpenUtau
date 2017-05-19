@@ -93,7 +93,21 @@ namespace OpenUtau.Core
         string NewLyric, OldLyric;
         public ChangeNoteLyricCommand(UVoicePart part, UNote note, string newLyric) { this.Part = part; this.Note = note; this.NewLyric = newLyric; this.OldLyric = note.Lyric; }
         public override string ToString() { return "Change notes lyric"; }
-        public override void Execute() { lock (Part) { Note.Lyric = NewLyric; } }
-        public override void Unexecute() { lock (Part) { Note.Lyric = OldLyric; } }
+        public override void Execute()
+        {
+            lock (Part)
+            {
+                Note.Lyric = NewLyric;
+                Note.Phonemes[0].Phoneme = NewLyric;
+            }
+        }
+        public override void Unexecute()
+        {
+            lock (Part)
+            {
+                Note.Lyric = OldLyric;
+                Note.Phonemes[0].Phoneme = OldLyric;
+            }
+        }
     }
 }

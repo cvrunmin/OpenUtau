@@ -90,9 +90,9 @@ namespace OpenUtau.UI.Controls
         private TextBox lyricBox = null;
         private void DrawLyricBox(UNote note)
         {
-            double left = note.PosTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution + 1 - midiVM.OffsetX;
+            double left = note.PosTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar + 1 - midiVM.OffsetX;
             double top = midiVM.TrackHeight * ((double)UIConstants.MaxNoteNum - 1 - note.NoteNum) + 1 - midiVM.OffsetY;
-            double width = Math.Max(2, note.DurTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution - 1);
+            double width = Math.Max(2, note.DurTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar - 1);
             double height = Math.Max(2, midiVM.TrackHeight - 2);
             if (lyricBox == null)
             {
@@ -105,6 +105,7 @@ namespace OpenUtau.UI.Controls
                     midiVM.MidiCanvas.Children.Remove(lyricBox);
                     note.IsLyricBoxActive = false;
                     midiVM.AnyNotesEditing = false;
+                    midiVM.MarkUpdate();
                     lyricBox = null;
                 }
                 lyricBox.InputBindings.Add(new System.Windows.Input.KeyBinding() { Command = new DelegateCommand(OnEnterPressed), Key = System.Windows.Input.Key.Return });
@@ -117,6 +118,7 @@ namespace OpenUtau.UI.Controls
                     midiVM.MidiCanvas.Children.Remove(lyricBox);
                     note.IsLyricBoxActive = false;
                     midiVM.AnyNotesEditing = false;
+                    midiVM.MarkUpdate();
                     lyricBox = null;
                 };
                 midiVM.MidiCanvas.Children.Add(lyricBox);
@@ -130,9 +132,9 @@ namespace OpenUtau.UI.Controls
 
         private void DrawNoteBody(UNote note, DrawingContext cxt)
         {
-            double left = note.PosTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution + 1;
+            double left = note.PosTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar + 1;
             double top = midiVM.TrackHeight * ((double)UIConstants.MaxNoteNum - 1 - note.NoteNum) + 1;
-            double width = Math.Max(2, note.DurTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution - 1);
+            double width = Math.Max(2, note.DurTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar - 1);
             double height = Math.Max(2, midiVM.TrackHeight - 2);
             cxt.DrawRoundedRectangle(
                 note.Error ?
@@ -176,10 +178,10 @@ namespace OpenUtau.UI.Controls
         {
             if (note.Vibrato == null) return;
             var vibrato = note.Vibrato;
-            double periodPix = DocManager.Inst.Project.MillisecondToTick(vibrato.Period) * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution;
-            double lengthPix = note.DurTick * vibrato.Length / 100 * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution;
+            double periodPix = DocManager.Inst.Project.MillisecondToTick(vibrato.Period) * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
+            double lengthPix = note.DurTick * vibrato.Length / 100 * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
 
-            double startX = (note.PosTick + note.DurTick * (1 - vibrato.Length / 100)) * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution;
+            double startX = (note.PosTick + note.DurTick * (1 - vibrato.Length / 100)) * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
             double startY = TrackHeight * (UIConstants.MaxNoteNum - 1.0 - note.NoteNum) + TrackHeight / 2;
             double inPix = lengthPix * vibrato.In / 100;
             double outPix = lengthPix * vibrato.Out / 100;
@@ -221,7 +223,7 @@ namespace OpenUtau.UI.Controls
             if (_pts.Count < 2) return;
 
             double pt0Tick = note.PosTick + MusicMath.MillisecondToTick(_pts[0].X, DocManager.Inst.Project.BPM, DocManager.Inst.Project.BeatUnit, DocManager.Inst.Project.Resolution);
-            double pt0X = midiVM.QuarterWidth * pt0Tick / DocManager.Inst.Project.Resolution;
+            double pt0X = midiVM.QuarterWidth * pt0Tick / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
             double pt0Pit = note.NoteNum + _pts[0].Y / 10.0;
             double pt0Y = TrackHeight * ((double)UIConstants.MaxNoteNum - 1.0 - pt0Pit) + TrackHeight / 2;
 
@@ -231,7 +233,7 @@ namespace OpenUtau.UI.Controls
             for (int i = 1; i < _pts.Count; i++)
             {
                 double pt1Tick = note.PosTick + MusicMath.MillisecondToTick(_pts[i].X, DocManager.Inst.Project.BPM, DocManager.Inst.Project.BeatUnit, DocManager.Inst.Project.Resolution);
-                double pt1X = midiVM.QuarterWidth * pt1Tick / DocManager.Inst.Project.Resolution;
+                double pt1X = midiVM.QuarterWidth * pt1Tick / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
                 double pt1Pit = note.NoteNum + _pts[i].Y / 10.0;
                 double pt1Y = TrackHeight * ((double)UIConstants.MaxNoteNum - 1.0 - pt1Pit) + TrackHeight / 2;
 

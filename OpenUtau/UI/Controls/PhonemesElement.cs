@@ -68,21 +68,21 @@ namespace OpenUtau.UI.Controls
             for (int i = 0; i < note.Phonemes.Count; i++)
             {
                 var phoneme = note.Phonemes[i];
-                double x = Math.Round(note.PosTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution) + 0.5;
+                double x = Math.Round(note.PosTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar) + 0.5;
                 double x0 = (note.PosTick + DocManager.Inst.Project.MillisecondToTick(phoneme.Envelope.Points[0].X))
-                    * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution;
+                    * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
                 double y0 = (1 - phoneme.Envelope.Points[0].Y / 100) * height;
                 double x1 = (note.PosTick + DocManager.Inst.Project.MillisecondToTick(phoneme.Envelope.Points[1].X))
-                    * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution;
+                    * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
                 double y1 = (1 - phoneme.Envelope.Points[1].Y / 100) * height;
                 double x2 = (note.PosTick + DocManager.Inst.Project.MillisecondToTick(phoneme.Envelope.Points[2].X))
-                    * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution;
+                    * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
                 double y2 = (1 - phoneme.Envelope.Points[2].Y / 100) * height;
                 double x3 = (note.PosTick + DocManager.Inst.Project.MillisecondToTick(phoneme.Envelope.Points[3].X))
-                    * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution;
+                    * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
                 double y3 = (1 - phoneme.Envelope.Points[3].Y / 100) * height;
                 double x4 = (note.PosTick + DocManager.Inst.Project.MillisecondToTick(phoneme.Envelope.Points[4].X))
-                    * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution;
+                    * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
                 double y4 = (1 - phoneme.Envelope.Points[4].Y / 100) * height;
 
                 Pen pen = note.Selected ? penEnvSel : penEnv;
