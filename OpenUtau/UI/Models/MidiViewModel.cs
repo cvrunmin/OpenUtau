@@ -229,8 +229,8 @@ namespace OpenUtau.UI.Models
         {
             if (quarter2 < quarter1) { double temp = quarter1; quarter1 = quarter2; quarter2 = temp; }
             if (noteNum2 < noteNum1) { int temp = noteNum1; noteNum1 = noteNum2; noteNum2 = temp; }
-            int tick1 = (int)(quarter1 * Project.Resolution);
-            int tick2 = (int)(quarter2 * Project.Resolution);
+            int tick1 = (int)(quarter1 * Project.Resolution / Project.BeatPerBar);
+            int tick2 = (int)(quarter2 * Project.Resolution / Project.BeatPerBar);
             foreach (UNote note in TempSelectedNotes) note.Selected = false;
             TempSelectedNotes.Clear();
             foreach (UNote note in Part.Notes)

@@ -19,15 +19,22 @@ namespace OpenUtau.Core.Render
         {
             this.RenderItem = renderItem;
             var cachedSampleProvider = new CachedSoundSampleProvider(RenderItem.Sound);
-            var offsetSampleProvider = new OffsetSampleProvider(new EnvelopeSampleProvider(cachedSampleProvider, RenderItem.Envelope, RenderItem.SkipOver))
+            try
             {
-                DelayBySamples = (int)(RenderItem.PosMs * cachedSampleProvider.WaveFormat.SampleRate / 1000),
-                TakeSamples = (int)(RenderItem.DurMs * cachedSampleProvider.WaveFormat.SampleRate / 1000),
-                SkipOverSamples = (int)(RenderItem.SkipOver * cachedSampleProvider.WaveFormat.SampleRate / 1000)
-            };
-            this.signalChain = offsetSampleProvider;
-            this.firstSample = offsetSampleProvider.DelayBySamples + offsetSampleProvider.SkipOverSamples;
-            this.lastSample = this.firstSample + offsetSampleProvider.TakeSamples;
+                var offsetSampleProvider = new OffsetSampleProvider(new EnvelopeSampleProvider(cachedSampleProvider, RenderItem.Envelope, RenderItem.SkipOver))
+                {
+                    DelayBySamples = (int)(RenderItem.PosMs * (cachedSampleProvider.WaveFormat?.SampleRate).GetValueOrDefault() / 1000),
+                    TakeSamples = (int)(RenderItem.DurMs * (cachedSampleProvider.WaveFormat?.SampleRate).GetValueOrDefault() / 1000),
+                    SkipOverSamples = (int)(RenderItem.SkipOver * (cachedSampleProvider.WaveFormat?.SampleRate).GetValueOrDefault() / 1000)
+                };
+                this.signalChain = offsetSampleProvider;
+                this.firstSample = offsetSampleProvider.DelayBySamples + offsetSampleProvider.SkipOverSamples;
+                this.lastSample = this.firstSample + offsetSampleProvider.TakeSamples;
+            }
+            catch (Exception)
+            {
+            }
+
         }
 
         /// <summary>
@@ -44,12 +51,12 @@ namespace OpenUtau.Core.Render
 
         public int Read(float[] buffer, int offset, int count)
         {
-            return signalChain.Read(buffer, offset, count);
+            return (signalChain?.Read(buffer, offset, count)).GetValueOrDefault();
         }
 
         public WaveFormat WaveFormat
         {
-            get { return signalChain.WaveFormat; }
+            get { return signalChain?.WaveFormat; }
         }
     }
 }

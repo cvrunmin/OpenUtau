@@ -108,7 +108,14 @@ namespace OpenUtau.Core.Render
                                     DriverModels.EngineInput engineArgs = DriverModels.CreateInputModel(item, 0);
                                     System.IO.Stream output = engine.DoResampler(engineArgs);
                                     cancel.ThrowIfCancellationRequested();
-                                    sound = new CachedSound(output);
+                                    try
+                                    {
+                                        sound = new CachedSound(output);
+                                    }
+                                    catch (IOException)
+                                    {
+                                        sound = null;
+                                    }
                                 }
                                 else
                                 {
@@ -121,7 +128,7 @@ namespace OpenUtau.Core.Render
                             else System.Diagnostics.Debug.WriteLine("Sound {0} found in cache {1}", item.HashParameters(), item.GetResamplerExeArgs());
 
                             item.Sound = sound;
-                            renderItems.Add(item);
+                            if(sound != null) renderItems.Add(item);
                         }
                         DocManager.Inst.ExecuteCmd(new ProgressBarNotification(100 * ++i / count, string.Format("Resampling \"{0}\" {1}/{2}", phoneme.Phoneme, i, count)));
                     }

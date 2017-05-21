@@ -98,7 +98,7 @@
             <Canvas x:Name="phonemeCanvas" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="48,40,20,0" Height="48"
                     ClipToBounds="True" SnapsToDevicePixels="True" Background="White" Opacity="0.75"
                     Visibility="{Binding PhonemeVisibility, Source={StaticResource midiVM}}"/>
-            <ScrollBar x:Name="horizontalScroll" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="20" Margin="48,0,20,0" Orientation="Horizontal" Minimum="0"
+            <ScrollBar x:Name="horizontalScroll" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="20" Margin="48,0,40,0" Orientation="Horizontal" Minimum="0"
                        Maximum="{Binding TotalWidth, Mode=OneWay, Source={StaticResource midiVM}}"
                        Value="{Binding OffsetX, Mode=TwoWay, Source={StaticResource midiVM}, UpdateSourceTrigger=PropertyChanged}"
                        ViewportSize="{Binding ViewportSizeX, Source={StaticResource midiVM}}"
@@ -119,6 +119,7 @@
                 </i:Interaction.Behaviors>
             </ScrollBar>
             <local:NavigateDrag x:Name="navigateDrag" HorizontalAlignment="Right" VerticalAlignment="Top" Width="20" Height="20" Margin="0,0,0,0" NavDrag="navigateDrag_NavDrag"/>
+            <local:ViewScaler x:Name="viewScalerX" Margin="0,0,20,0" VerticalAlignment="Top" Height="20" HorizontalAlignment="Right" Width="20" ViewScaled="viewScalerX_ViewScaled" HorizontallyScaled="True"/>
             <local:ViewScaler x:Name="viewScaler" HorizontalAlignment="Right" VerticalAlignment="Top" Width="20" Height="20" Margin="0,20,0,0"/>
             <Border x:Name="notesCanvasShadow" Grid.Row="0" Background="{x:Null}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="48,20,20,0" BorderThickness="0" ClipToBounds="True">
                 <Border Background="{x:Null}" BorderBrush="Black" BorderThickness="1" Margin="-1">

@@ -33,6 +33,23 @@ namespace OpenUtau.Core.USTx
         public bool PhonemeError = false;
 
         public UPhoneme() { Envelope = new EnvelopeExpression(this.Parent) { ParentPhoneme = this }; }
-        public UPhoneme Clone(UNote newParent) { var p = new UPhoneme() { Parent = newParent }; return p; }
+        public UPhoneme Clone(UNote newParent) {
+            var p = new UPhoneme() {
+                Parent = newParent,
+                PosTick = PosTick,
+                DurTick = DurTick,
+                Phoneme = Phoneme,
+                RemappedBank = RemappedBank,
+                AutoEnvelope = AutoEnvelope,
+                AutoRemapped = AutoRemapped,
+                Preutter = Preutter,
+                Overlap = Overlap,
+                TailIntrude = TailIntrude,
+                TailOverlap = TailOverlap,
+                Oto = Oto,
+
+            };
+            return p;
+        }
     }
 }

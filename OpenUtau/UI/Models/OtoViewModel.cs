@@ -111,6 +111,7 @@ namespace OpenUtau.UI.Models
 
         public virtual void RedrawIfUpdated() {
             if (!_updated) return;
+            Dispatcher.Invoke(() => { 
             DrawingContext cxt = visual.RenderOpen();
             cxt.DrawRectangle(offsetBrush, null, new Rect(new Point(0, 0), new Point(model.owner.ActualOffsetPosX, model.otoCanvas.ActualHeight)));
             cxt.DrawRectangle(consonantBrush, null, new Rect(new Point(model.owner.ActualOffsetPosX, 0), new Point(model.owner.ActualConsonantPosX, model.otoCanvas.ActualHeight)));
@@ -118,6 +119,7 @@ namespace OpenUtau.UI.Models
             cxt.DrawLine(new Pen(overlapBrush, 2), new Point(model.owner.ActualOverlapPosX, model.otoCanvas.ActualHeight * .2), new Point(model.owner.ActualOverlapPosX, model.otoCanvas.ActualHeight * .8));
             cxt.DrawLine(new Pen(preutteranceBrush, 2), new Point(model.owner.ActualPreutterPosX, model.otoCanvas.ActualHeight * .3), new Point(model.owner.ActualPreutterPosX, model.otoCanvas.ActualHeight * .7));
             cxt.Close();
+            });
             _updated = false;
         }
     }

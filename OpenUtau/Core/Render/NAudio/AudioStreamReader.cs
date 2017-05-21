@@ -21,15 +21,21 @@ namespace OpenUtau.Core.Render
         {
             lockObject = new object();
             CreateReaderStream(WavStream);
-            sourceBytesPerSample = (readerStream.WaveFormat.BitsPerSample / 8) * readerStream.WaveFormat.Channels;
-            sampleChannel = new SampleChannel(readerStream, false);
-            destBytesPerSample = 4*sampleChannel.WaveFormat.Channels;
-            length = SourceToDest(readerStream.Length);
+            try
+            {
+                sourceBytesPerSample = (readerStream.WaveFormat.BitsPerSample / 8) * readerStream.WaveFormat.Channels;
+                sampleChannel = new SampleChannel(readerStream, false);
+                destBytesPerSample = 4 * sampleChannel.WaveFormat.Channels;
+                length = SourceToDest(readerStream.Length);
+            }
+            catch (Exception)
+            {
+            }
         }
 
         public override WaveFormat WaveFormat
         {
-            get { return sampleChannel.WaveFormat; }
+            get { return sampleChannel?.WaveFormat; }
         }
 
         public override long Length
@@ -45,11 +51,17 @@ namespace OpenUtau.Core.Render
 
         private void CreateReaderStream(Stream WavStream)
         {
-            readerStream = new WaveFileReader(WavStream);
-            if (readerStream.WaveFormat.Encoding != WaveFormatEncoding.Pcm && readerStream.WaveFormat.Encoding != WaveFormatEncoding.IeeeFloat)
+            try
             {
-                readerStream = WaveFormatConversionStream.CreatePcmStream(readerStream);
-                readerStream = new BlockAlignReductionStream(readerStream);
+                readerStream = new WaveFileReader(WavStream);
+                if (readerStream.WaveFormat.Encoding != WaveFormatEncoding.Pcm && readerStream.WaveFormat.Encoding != WaveFormatEncoding.IeeeFloat)
+                {
+                    readerStream = WaveFormatConversionStream.CreatePcmStream(readerStream);
+                    readerStream = new BlockAlignReductionStream(readerStream);
+                }
+            }
+            catch (IOException)
+            {
             }
         }
 
@@ -93,7 +105,7 @@ namespace OpenUtau.Core.Render
         {
             lock (lockObject)
             {
-                return sampleChannel.Read(buffer, offset, count);
+                return (sampleChannel?.Read(buffer, offset, count)).GetValueOrDefault(0);
             }
         }
     }

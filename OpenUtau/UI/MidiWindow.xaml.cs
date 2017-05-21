@@ -48,6 +48,10 @@ namespace OpenUtau.UI
             viewScaler.Value = UIConstants.NoteDefaultHeight;
             viewScaler.ViewScaled += viewScaler_ViewScaled;
 
+            viewScalerX.Max = UIConstants.MidiQuarterMaxWidth;
+            viewScalerX.Min = UIConstants.MidiQuarterMinWidth;
+            viewScalerX.Value = UIConstants.MidiQuarterDefaultWidth;
+
             midiVM = (MidiViewModel)this.Resources["midiVM"];
             midiVM.TimelineCanvas = this.timelineCanvas;
             midiVM.MidiCanvas = this.notesCanvas;
@@ -581,6 +585,13 @@ namespace OpenUtau.UI
             midiVM.OffsetX = Math.Max(0, Math.Min(midiVM.TotalWidth, zoomCenter * midiVM.QuarterWidth - mousePos.X));
         }
 
+        private void viewScalerX_ViewScaled(object sender, EventArgs e)
+        {
+            if (e is ViewScaledEventArgs args) {
+                midiVM.QuarterWidth = args.Value;
+            }
+        }
+
         private void timelineCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (midiVM.Part == null) return;
@@ -755,5 +766,6 @@ namespace OpenUtau.UI
             midiVM.MarkUpdate();
             midiVM.RedrawIfUpdated();
         }
+
     }
 }

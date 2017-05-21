@@ -16,6 +16,7 @@ namespace OpenUtau.Core.Render
         public int NoteNum;
         public int Velocity;
         public int Volume;
+        public int Modulation;
         public string StrFlags;
         public List<int> PitchData;
         public int RequiredLength;
@@ -52,7 +53,7 @@ namespace OpenUtau.Core.Render
                 Oto.Consonant,
                 Oto.Cutoff,
                 Volume,
-                0,
+                Modulation,
 				Tempo,
                 String.Join(",",PitchData));
         }

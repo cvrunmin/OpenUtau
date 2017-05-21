@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
 namespace OpenUtau.UI.Dialogs
 {
@@ -48,6 +49,9 @@ namespace OpenUtau.UI.Dialogs
         private USinger SavedSinger;
         private void CreateWaveForm(USinger singer, UOto oto)
         {
+            //if(waveformCanvas.Children.Count > 1)
+            //waveformCanvas.Children.RemoveAt(1);
+            //waveformCanvas.Children.Add(CreateWaveFormLineAsync(singer,oto));
             waveformCanvas.Background = CreateWaveFormAsync(singer, oto);
             RenderOptions.SetBitmapScalingMode(waveformCanvas, BitmapScalingMode.NearestNeighbor);
             RenderOptions.SetEdgeMode(waveformCanvas, EdgeMode.Aliased);
@@ -65,8 +69,12 @@ namespace OpenUtau.UI.Dialogs
 
         private ImageBrush CreateWaveFormAsync(USinger singer, UOto oto)
         {
-            WriteableBitmap img = new NewWaveFormRenderer().Render(System.IO.Path.Combine(singer.Path, oto.File), new WaveFormRendererLib.StandardWaveFormRendererSettings() { TopHeight = 100, BottomHeight = 100, Width = (int)(800 * (model.element.ScaleX != 0 ? model.element.ScaleX : 1)), TopPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), BottomPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), DecibelScale = true, SpacerPixels = 1, TopSpacerPen = new System.Drawing.Pen(System.Drawing.Color.Cyan), BottomSpacerPen = new System.Drawing.Pen(System.Drawing.Color.Cyan) });
+            WriteableBitmap img = new NewWaveFormRenderer().RenderBitmap(System.IO.Path.Combine(singer.Path, oto.File), new WaveFormRendererLib.StandardWaveFormRendererSettings() { TopHeight = 100, BottomHeight = 100, Width = (int)(800 * (model.element.ScaleX != 0 ? model.element.ScaleX : 1)), TopPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), BottomPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), DecibelScale = true, SpacerPixels = 1, TopSpacerPen = new System.Drawing.Pen(System.Drawing.Color.Cyan), BottomSpacerPen = new System.Drawing.Pen(System.Drawing.Color.Cyan) });
             return new ImageBrush(img);
+        }
+        private Polyline CreateWaveFormLineAsync(USinger singer, UOto oto)
+        {
+            return new NewWaveFormRenderer().RenderPolyline(System.IO.Path.Combine(singer.Path, oto.File), new WaveFormRendererLib.StandardWaveFormRendererSettings() { TopHeight = 100, BottomHeight = 100, Width = (int)(800 * (model.element.ScaleX != 0 ? model.element.ScaleX : 1)), TopPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), BottomPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), DecibelScale = true, SpacerPixels = 1, TopSpacerPen = new System.Drawing.Pen(System.Drawing.Color.Cyan), BottomSpacerPen = new System.Drawing.Pen(System.Drawing.Color.Cyan) });
         }
 
         private void waveformCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

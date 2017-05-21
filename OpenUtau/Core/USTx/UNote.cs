@@ -43,6 +43,7 @@ namespace OpenUtau.Core.USTx
                 NoteNum = NoteNum,
                 Lyric = Lyric
             };
+            _note.Phonemes.Clear();
             foreach (var phoneme in this.Phonemes) _note.Phonemes.Add(phoneme.Clone(_note));
             foreach (var pair in this.Expressions) _note.Expressions.Add(pair.Key, pair.Value.Clone(_note));
             foreach (var pair in this.VirtualExpressions) _note.VirtualExpressions.Add(pair.Key, pair.Value);

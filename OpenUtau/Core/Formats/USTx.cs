@@ -500,7 +500,7 @@ namespace OpenUtau.Core.Formats
             {
                 foreach (var singer in project.Singers)
                 {
-                    if (track.Singer.Name == singer.Name)
+                    if (singer.Loaded && track.Singer.Name == singer.Name)
                     {
                         track.Singer = singer;
                     }

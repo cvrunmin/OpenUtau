@@ -118,6 +118,7 @@ namespace OpenUtau.Core.Formats
                         if (currentLines.Count != 0)
                         {
                             currentNote = NoteFromUst(project.CreateNote(), currentLines, version);
+                            currentNote.DurTick /= project.BeatPerBar;
                             currentNote.PosTick = currentTick;
                             if (!currentNote.Lyric.Replace("R", "").Replace("r", "").Equals("")) part.Notes.Add(currentNote);
                             currentTick += currentNote.DurTick;

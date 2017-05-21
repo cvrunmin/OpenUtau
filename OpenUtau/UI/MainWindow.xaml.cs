@@ -55,6 +55,9 @@ namespace OpenUtau.UI
             viewScaler.Max = UIConstants.TrackMaxHeight;
             viewScaler.Min = UIConstants.TrackMinHeight;
             viewScaler.Value = UIConstants.TrackDefaultHeight;
+            viewScalerX.Max = UIConstants.TrackQuarterMaxWidth;
+            viewScalerX.Min = UIConstants.TrackQuarterMinWidth;
+            viewScalerX.Value = UIConstants.TrackQuarterDefaultWidth;
 
             trackVM = this.Resources["tracksVM"] as TracksViewModel;
             trackVM.TimelineCanvas = this.timelineCanvas;
@@ -426,6 +429,10 @@ namespace OpenUtau.UI
         private void MenuNew_Click(object sender, RoutedEventArgs e) { CmdNewFile(); }
         private void MenuOpen_Click(object sender, RoutedEventArgs e) { CmdOpenFileDialog(); }
         private void MenuSave_Click(object sender, RoutedEventArgs e) { CmdSaveFile(); }
+        private void MenuSaveAs_Click(object sender, RoutedEventArgs e)
+        {
+            CmdSaveFile(true);
+        }
         private void MenuExit_Click(object sender, RoutedEventArgs e) { CmdExit(); }
         private void MenuUndo_Click(object sender, RoutedEventArgs e) { DocManager.Inst.Undo(); }
         private void MenuRedo_Click(object sender, RoutedEventArgs e) { DocManager.Inst.Redo(); }
@@ -499,6 +506,28 @@ namespace OpenUtau.UI
             if (savdialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
                 RenderDispatcher.Inst.WriteToFile(savdialog.FileName, DocManager.Inst.Project);
             }
+        }
+
+        private void MenuCopy_Click(object sender, RoutedEventArgs e)
+        {
+            trackVM.CopyParts();
+        }
+
+        private void MenuPaste_Click(object sender, RoutedEventArgs e)
+        {
+            int basedelta = int.MaxValue;
+            foreach (var part in trackVM.ClippedParts)
+            {
+                basedelta = Math.Min(basedelta, part.PosTick);
+            }
+            DocManager.Inst.StartUndoGroup();
+            foreach (var part in trackVM.ClippedParts)
+            {
+                var copied = part.UClone();
+                copied.PosTick = DocManager.Inst.playPosTick + part.PosTick - basedelta;
+                DocManager.Inst.ExecuteCmd(new AddPartCommand(DocManager.Inst.Project, copied));
+            }
+            DocManager.Inst.EndUndoGroup();
         }
 
         private void MenuAbout_Click(object sender, RoutedEventArgs e)
@@ -589,9 +618,9 @@ namespace OpenUtau.UI
             DocManager.Inst.EndUndoGroup();
         }
 
-        private void CmdSaveFile()
+        private void CmdSaveFile(bool saveAs = false)
         {
-            if (DocManager.Inst.Project.Saved == false)
+            if (!DocManager.Inst.Project.Saved || saveAs)
             {
                 SaveFileDialog dialog = new SaveFileDialog() { DefaultExt = "ustx", Filter = "Project Files|*.ustx", Title = "Save File" };
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)

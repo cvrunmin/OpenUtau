@@ -124,10 +124,13 @@ namespace OpenUtau.UI.Models
 
         public TracksViewModel() { }
 
-        # region Selection
+        #region Selection
 
         public List<UPart> SelectedParts = new List<UPart>();
+        public List<UPart> ClippedParts = new List<UPart>();
         List<UPart> TempSelectedParts = new List<UPart>();
+        public bool Copiable => SelectedParts.Any();
+        public bool Pastable => ClippedParts.Any();
 
         public void UpdateSelectedVisual()
         {
@@ -138,19 +141,28 @@ namespace OpenUtau.UI.Models
             }
         }
 
-        public void SelectAll() { SelectedParts.Clear(); foreach (UPart part in Project.Parts) SelectedParts.Add(part); UpdateSelectedVisual(); }
-        public void DeselectAll() { SelectedParts.Clear(); UpdateSelectedVisual(); }
+        public void SelectAll() { SelectedParts.Clear(); foreach (UPart part in Project.Parts) SelectedParts.Add(part); UpdateSelectedVisual(); OnPropertyChanged("Copiable"); }
+        public void DeselectAll() { SelectedParts.Clear(); UpdateSelectedVisual(); OnPropertyChanged("Copiable"); }
 
-        public void SelectPart(UPart part) { if (!SelectedParts.Contains(part)) SelectedParts.Add(part); }
-        public void DeselectPart(UPart part) { SelectedParts.Remove(part); }
+        public void SelectPart(UPart part) { if (!SelectedParts.Contains(part)) SelectedParts.Add(part); OnPropertyChanged("Copiable"); }
+        public void DeselectPart(UPart part) { SelectedParts.Remove(part); OnPropertyChanged("Copiable"); }
+
+        public void CopyParts() {
+            ClippedParts.Clear();
+            foreach (var selected in SelectedParts)
+            {
+                ClippedParts.Add(selected.UClone());
+            }
+            OnPropertyChanged("Pastable");
+        }
 
         public void SelectTempPart(UPart part) { TempSelectedParts.Add(part); }
         public void TempSelectInBox(double quarter1, double quarter2, int track1, int track2)
         {
             if (quarter2 < quarter1) { double temp = quarter1; quarter1 = quarter2; quarter2 = temp; }
             if (track2 < track1) { int temp = track1; track1 = track2; track2 = temp; }
-            int tick1 = (int)(quarter1 * Project.Resolution);
-            int tick2 = (int)(quarter2 * Project.Resolution);
+            int tick1 = (int)(quarter1 * Project.Resolution / Project.BeatPerBar);
+            int tick2 = (int)(quarter2 * Project.Resolution / Project.BeatPerBar);
             TempSelectedParts.Clear();
             foreach (UPart part in Project.Parts)
             {
@@ -445,6 +457,7 @@ namespace OpenUtau.UI.Models
             }else if (cmd is UpdateProjectPropertiesNotification uppn) {
                 BeatPerBar = uppn.beatPerBar;
                 BeatUnit = uppn.beatUnit;
+                OnPropertyChanged("BPM");
             }
             else if (cmd is SetPlayPosTickNotification)
             {

@@ -42,11 +42,13 @@ namespace OpenUtau.UI.Controls
         public double Max { set { SetValue(MaxProperty, value); } get { return (double)GetValue(MaxProperty); } }
         public double Value { set { SetValue(ValueProperty, value); } get { return (double)GetValue(ValueProperty); } }
         public Geometry PathData { set { SetValue(PathDataProperty, value); } get { return (Geometry)GetValue(PathDataProperty); } }
+        public bool HorizontallyScaled { set { SetValue(HorizontallyScaledProperty, value); } get { return (bool)GetValue(HorizontallyScaledProperty); } }
 
         public static readonly DependencyProperty MinProperty = DependencyProperty.Register("Min", typeof(double), typeof(ViewScaler), new PropertyMetadata(0.0, UpdatePathCallBack));
         public static readonly DependencyProperty MaxProperty = DependencyProperty.Register("Max", typeof(double), typeof(ViewScaler), new PropertyMetadata(0.0, UpdatePathCallBack));
         public static readonly DependencyProperty ValueProperty = DependencyProperty.Register("Value", typeof(double), typeof(ViewScaler), new PropertyMetadata(0.0, UpdatePathCallBack, CoerceValueCallBack));
         public static readonly DependencyProperty PathDataProperty = DependencyProperty.Register("PathData", typeof(Geometry), typeof(ViewScaler), new PropertyMetadata(new LineGeometry()));
+        public static readonly DependencyProperty HorizontallyScaledProperty = DependencyProperty.Register("HorizontallyScaled", typeof(bool), typeof(ViewScaler), new PropertyMetadata(false, UpdatePathCallBack));
 
         public static void UpdatePathCallBack(DependencyObject source, DependencyPropertyChangedEventArgs e) { ((ViewScaler)source).UpdatePath(); }
         public static object CoerceValueCallBack(DependencyObject source, object value) { ViewScaler vs = source as ViewScaler; return Math.Max(vs.Min, Math.Min(vs.Max, (double)value)); }
@@ -65,7 +67,7 @@ namespace OpenUtau.UI.Controls
             double size = offset < 4 ? 4 : 8 - offset;
             if (double.IsNaN(offset) || double.IsNaN(size) ||
                 double.IsInfinity(offset) || double.IsInfinity(size)) return;
-            PathData = Geometry.Parse(string.Format("M {0} {1} L 8 {2} L {3} {1} M {0} {4} L 8 {5} L {3} {4}",
+            PathData = Geometry.Parse(string.Format(HorizontallyScaled ? "M {1} {0} L {2} 8 L {1} {3} M {4} {0} L {5} 8 L {4} {3}" : "M {0} {1} L 8 {2} L {3} {1} M {0} {4} L 8 {5} L {3} {4}",
                 8 - size, offset + size, offset, 8 + size, 16 - size - offset, 16 - offset));
         }
 
@@ -107,9 +109,8 @@ namespace OpenUtau.UI.Controls
                 bool cursorWarpped = false;
                 Control el = (Control)sender;
 
-                Value *= 1 + zoomSpeed * (dragLastY - e.GetPosition(el).Y);
-                EventHandler handler = ViewScaled;
-                if (handler != null) handler(this, new ViewScaledEventArgs(Value));
+                Value *= 1 + zoomSpeed * (HorizontallyScaled ? dragLastX - e.GetPosition(el).X : dragLastY - e.GetPosition(el).Y);
+                ViewScaled?.Invoke(this, new ViewScaledEventArgs(Value));
 
                 dragLastX = e.GetPosition(el).X;
                 dragLastY = e.GetPosition(el).Y;

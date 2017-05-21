@@ -34,7 +34,7 @@ namespace OpenUtau.Core.Render
             {
                 WaveFormat = audioFileReader.WaveFormat;
                 var wholeFile = new List<float>((int)(audioFileReader.Length / 4));
-                var readBuffer = new float[audioFileReader.WaveFormat.SampleRate * audioFileReader.WaveFormat.Channels];
+                var readBuffer = new float[(WaveFormat?.SampleRate * audioFileReader.WaveFormat?.Channels).GetValueOrDefault(0)];
                 int samplesRead;
                 while ((samplesRead = audioFileReader.Read(readBuffer, 0, readBuffer.Length)) > 0)
                 {

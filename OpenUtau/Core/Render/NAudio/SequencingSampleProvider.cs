@@ -60,8 +60,8 @@ namespace OpenUtau.Core.Render
             }
             else
             {
-                if (this.WaveFormat.SampleRate != mixerInput.WaveFormat.SampleRate ||
-                    this.WaveFormat.Channels != mixerInput.WaveFormat.Channels)
+                if (this.WaveFormat.SampleRate != mixerInput.WaveFormat?.SampleRate ||
+                    this.WaveFormat.Channels != mixerInput.WaveFormat?.Channels)
                 {
                     throw new ArgumentException("All mixer inputs must have the same WaveFormat");
                 }

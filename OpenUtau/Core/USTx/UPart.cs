@@ -8,7 +8,7 @@ using NAudio.Wave;
 
 namespace OpenUtau.Core.USTx
 {
-    public abstract class UPart
+    public abstract class UPart : ICloneable
     {
         public string Name = "New Part";
         public string Comment = "";
@@ -22,12 +22,38 @@ namespace OpenUtau.Core.USTx
         public UPart() { }
 
         public abstract int GetMinDurTick(UProject project);
+        public abstract object Clone();
+        public UPart UClone()
+        {
+            return (UPart)Clone();
+        }
     }
 
     public class UVoicePart : UPart
     {
         public SortedSet<UNote> Notes = new SortedSet<UNote>();
         public Dictionary<string, UExpression> Expressions = new Dictionary<string, UExpression>();
+
+        public override object Clone()
+        {
+            var cloned = new UVoicePart() {
+                Name = Name,
+                Comment = Comment,
+                TrackNo = TrackNo,
+                PosTick = PosTick,
+                DurTick = DurTick
+            };
+            foreach (var note in Notes)
+            {
+                cloned.Notes.Add(note.Clone());
+            }
+            foreach (var expression in Expressions)
+            {
+                cloned.Expressions.Add(expression.Key, expression.Value.Clone(null));
+            }
+            return cloned;
+        }
+
         public override int GetMinDurTick(UProject project)
         {
             int durTick = 0;
@@ -57,5 +83,10 @@ namespace OpenUtau.Core.USTx
             set { TailTrimTick = FileDurTick - HeadTrimTick - value; }
         }
         public override int GetMinDurTick(UProject project) { return 60; }
+
+        public override object Clone()
+        {
+            return MemberwiseClone();
+        }
     }
 }

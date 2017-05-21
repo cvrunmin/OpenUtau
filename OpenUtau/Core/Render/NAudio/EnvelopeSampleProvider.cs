@@ -20,7 +20,7 @@ namespace OpenUtau.Core.Render
         {
             this.source = source;
             foreach (var pt in envelope) this.envelope.Add(pt.Clone());
-            int skipOverSamples = (int)(skipOver * WaveFormat.SampleRate / 1000);
+            int skipOverSamples = (int)(skipOver * (WaveFormat?.SampleRate).GetValueOrDefault(0) / 1000);
             ConvertEnvelope(skipOverSamples);
         }
 
@@ -81,7 +81,7 @@ namespace OpenUtau.Core.Render
             double shift = -envelope[0].X;
             foreach (var point in envelope)
             {
-                point.X = (int)((point.X + shift) * WaveFormat.SampleRate / 1000) + skipOverSamples;
+                point.X = (int)((point.X + shift) * (WaveFormat?.SampleRate).GetValueOrDefault() / 1000) + skipOverSamples;
                 point.Y /= 100;
             }
         }

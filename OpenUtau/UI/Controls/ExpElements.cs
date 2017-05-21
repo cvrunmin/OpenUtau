@@ -103,8 +103,8 @@ namespace OpenUtau.UI.Controls
                 {
                     var _exp = Part.Expressions[Key] as IntExpression;
                     var _expTemplate = DocManager.Inst.Project.ExpressionTable[Key] as IntExpression;
-                    double x1 = Math.Round(ScaleX * Part.PosTick);
-                    double x2 = Math.Round(ScaleX * Part.EndTick);
+                    double x1 = 0;
+                    double x2 = Math.Round(ScaleX * Part.DurTick * DocManager.Inst.Project.BeatPerBar);
                     double partValueHeight = Math.Round(VisualHeight - VisualHeight * ((int)_exp.Data - _expTemplate.Min) / (_expTemplate.Max - _expTemplate.Min));
                     double partZeroHeight = Math.Round(VisualHeight - VisualHeight * (0f - _expTemplate.Min) / (_expTemplate.Max - _expTemplate.Min));
                     cxt.DrawLine(pen5, new Point(x1 + 0.5, partZeroHeight + 0.5), new Point(x1 + 0.5, partValueHeight + 3));

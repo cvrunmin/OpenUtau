@@ -1,0 +1,9 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Canvas x:Key="ToolCursor" Width="32" Height="32" Canvas.Left="0" Canvas.Top="0">
+        <Path Width="16.64" Height="24.32" Canvas.Left="7.84" Canvas.Top="3.04" Stretch="Fill" StrokeThickness="0.32" StrokeLineJoin="Round" Stroke="#FF000000" Fill="#FFFFFFFF" Data="F1 M 8,23.539L 8,3.2L 23.9015,12.9627L 16.7877,16.6237L 24.32,26.3864L 23.4831,27.2L 15.1138,17.8441L 8,23.539 Z "/>
+    </Canvas>    <Canvas x:Key="ToolPaint" Width="32" Height="32" Canvas.Left="0" Canvas.Top="0">
+        <Path Width="23.68" Height="29.12" Canvas.Left="2.4" Canvas.Top="0.800001" Stretch="Fill" StrokeThickness="0.32" StrokeLineJoin="Round" Stroke="#FF000000" Fill="#FFFFFFFF" Data="F1 M 2.56,7.68L 14.4,0.960001L 21.3673,11.4618L 16,15.04L 25.92,28.8L 24.96,29.76L 15.04,16L 9.53699,19.2331L 2.56,7.68 Z "/>
+        <Path Width="12.16" Height="8" Canvas.Left="8.16" Canvas.Top="9.44" Stretch="Fill" StrokeThickness="0.32" StrokeLineJoin="Round" Stroke="#FF000000" Data="F1 M 8.32,17.28L 20.16,9.6"/>
+    </Canvas>
+</ResourceDictionary>
