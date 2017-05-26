@@ -217,7 +217,8 @@ namespace OpenUtau.UI
                             if (part != null)
                             {
                                 part.TrackNo = trackNo;
-                                part.PosTick = partWEl.Part.PosTick;
+                                    part.PosTick = partWEl.Part.PosTick;
+                                    part.PartNo = partWEl.Part.PartNo;
                                 //part.HeadTrimTick = ((UWavePart)partWEl.Part).HeadTrimTick;
                                 //part.TailTrimTick = ((UWavePart)partWEl.Part).TailTrimTick;
                                 DocManager.Inst.ExecuteCmd(new AddPartCommand(trackVM.Project, part), true);
@@ -715,17 +716,20 @@ namespace OpenUtau.UI
 
         private void playButton_Click(object sender, RoutedEventArgs e)
         {
-            PlaybackManager.Inst.Play(DocManager.Inst.Project);
+            //InstantPlaybackManager.Inst.Play(DocManager.Inst.Project);
+            PlaybackManager.GetActiveManager().Play(DocManager.Inst.Project);
         }
 
         private void pauseButton_Click(object sender, RoutedEventArgs e)
         {
-            PlaybackManager.Inst.PausePlayback();
+            //InstantPlaybackManager.Inst.PausePlayback();
+            PlaybackManager.GetActiveManager().PausePlayback();
         }
 
         private void stopButton_Click(object sender, RoutedEventArgs e)
         {
-            PlaybackManager.Inst.StopPlayback();
+            //InstantPlaybackManager.Inst.StopPlayback();
+            PlaybackManager.GetActiveManager().StopPlayback();
         }
 
         private void bpmText_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

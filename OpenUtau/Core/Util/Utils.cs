@@ -11,7 +11,7 @@ using System.Windows.Controls;
 
 namespace OpenUtau.Core.Util
 {
-    class Utils
+    static class Utils
     {
         public static void SetExpresstionValue(UExpression expression, object obj)
         {
@@ -33,6 +33,106 @@ namespace OpenUtau.Core.Util
             if (expression is FloatExpression)
             {
                 expression.Data = float.Parse(obj);
+            }
+        }
+
+        public static List<UPart> SplitPart(UPart src, int splitTick) {
+            var dest1 = src.UClone();
+            dest1.DurTick = splitTick - dest1.PosTick;
+            if (dest1 is UWavePart wave)
+            {
+                wave.TailTrimTick = wave.HeadTrimTick + wave.DurTick;
+            } else if (dest1 is UVoicePart voice) {
+                voice.Notes.RemoveWhere(note => note.PosTick > voice.DurTick);
+            }
+            var dest2 = src.UClone();
+            dest2.DurTick = dest2.EndTick - splitTick;
+            dest2.PosTick = splitTick;
+            if (dest2 is UWavePart wave1)
+            {
+                wave1.HeadTrimTick = ((UWavePart)dest1).HeadTrimTick + dest1.DurTick;
+            } else if (dest2 is UVoicePart voice1) {
+                voice1.Notes.RemoveWhere(note => note.PosTick < dest1.DurTick);
+                foreach (var item in voice1.Notes)
+                {
+                    item.PosTick -= dest1.DurTick;
+                }
+            }
+            return new List<UPart>() { dest1, dest2 };
+        }
+
+        public static UVoicePart MergePart(int preferedPartNo, params UVoicePart[] parts) {
+            if (!ValidateMergingParts(parts))
+            {
+                throw new ArgumentException("Not all parts are in the same track", nameof(parts));
+            }
+            var dest = new UVoicePart() { PosTick = parts[0].PosTick, DurTick = parts[0].DurTick, PartNo = preferedPartNo, TrackNo = parts[0].TrackNo };
+            int noteNo = 0;
+            foreach (var note in parts[0].Notes)
+            {
+                var cloned = note.Clone();
+                cloned.NoteNo = noteNo;
+                cloned.PartNo = preferedPartNo;
+                dest.Notes.Add(cloned);
+                ++noteNo;
+            }
+            var relativePosTick = dest.DurTick;
+            for (int i = 1; i < parts.Length; i++)
+            {
+                dest.DurTick += parts[i].DurTick + (parts[i].PosTick - parts[i - 1].EndTick);
+                foreach (var note in parts[i].Notes)
+                {
+                    var cloned = note.Clone();
+                    cloned.NoteNo = noteNo;
+                    cloned.PartNo = preferedPartNo;
+                    cloned.PosTick += relativePosTick;
+                    dest.Notes.Add(cloned);
+                    ++noteNo;
+                }
+                relativePosTick += parts[i].DurTick + (parts[i].PosTick - parts[i - 1].EndTick);
+            }
+            return dest;
+        }
+
+        private static bool ValidateMergingParts(UVoicePart[] parts) {
+            var expectedTrackNo = parts[0].TrackNo;
+            foreach (var part in parts)
+            {
+                if (part.TrackNo != expectedTrackNo)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public static UWavePart MergeParts(int expectedPartNo, params UWavePart[] parts) {
+            ValidateMergingParts(parts);
+            UWavePart dest = new UWavePart() { PartNo = expectedPartNo, FilePath = parts[0].FilePath, PosTick = parts[0].PosTick, DurTick = parts[0].DurTick, TrackNo = parts[0].TrackNo, FileDurMillisecond = parts[0].FileDurMillisecond, FileDurTick = parts[0].FileDurTick, Channels = parts[0].Channels};
+            dest.HeadTrimTick = parts[0].HeadTrimTick;
+            dest.TailTrimTick = parts[parts.Length - 1].TailTrimTick;
+            dest.DurTick = parts.Sum(part => part.DurTick);
+            return dest;
+        }
+
+        private static void ValidateMergingParts(UWavePart[] parts)
+        {
+            var expectedTrackNo = parts[0].TrackNo;
+            var expectedFile = parts[0].FilePath;
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (parts[i].TrackNo != expectedTrackNo)
+                {
+                    throw new ArgumentException("Not all parts are in the same track", nameof(parts));
+                }
+                if (parts[i].FilePath != expectedFile)
+                {
+                    throw new ArgumentException("Not all parts have the same file", nameof(parts));
+                }
+                if (i > 0 && parts[i].EndTick != parts[i - 1].PosTick)
+                {
+                    throw new ArgumentException("Non-continous parts", nameof(parts));
+                }
             }
         }
     }

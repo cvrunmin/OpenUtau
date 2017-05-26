@@ -88,6 +88,7 @@ namespace OpenUtau.UI.Controls
             }
         }
         private TextBox lyricBox = null;
+        public TextBox LyricBox { get { return lyricBox; } }
         private void DrawLyricBox(UNote note)
         {
             double left = note.PosTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar + 1 - midiVM.OffsetX;
@@ -107,6 +108,7 @@ namespace OpenUtau.UI.Controls
                     midiVM.AnyNotesEditing = false;
                     midiVM.MarkUpdate();
                     lyricBox = null;
+                    if (Core.Util.Preferences.Default.RenderNoteAtInstant) OpenUtau.Core.Render.ResamplerInterface.RenderNote(midiVM.Project, midiVM.Part, note);
                 }
                 lyricBox.InputBindings.Add(new System.Windows.Input.KeyBinding() { Command = new DelegateCommand(OnEnterPressed), Key = System.Windows.Input.Key.Return });
                 lyricBox.InputBindings.Add(new System.Windows.Input.KeyBinding() { Command = new DelegateCommand(OnEnterPressed), Key = System.Windows.Input.Key.Enter });
@@ -120,7 +122,10 @@ namespace OpenUtau.UI.Controls
                     midiVM.AnyNotesEditing = false;
                     midiVM.MarkUpdate();
                     lyricBox = null;
+                    if (Core.Util.Preferences.Default.RenderNoteAtInstant) OpenUtau.Core.Render.ResamplerInterface.RenderNote(midiVM.Project, midiVM.Part, note);
                 };
+                lyricBox.Focus();
+                lyricBox.SelectAll();
                 midiVM.MidiCanvas.Children.Add(lyricBox);
                 DocManager.Inst.StartUndoGroup();
             }
@@ -128,6 +133,7 @@ namespace OpenUtau.UI.Controls
             lyricBox.Height = height;
             Canvas.SetLeft(lyricBox, left);
             Canvas.SetTop(lyricBox, top);
+            lyricBox.Focus();
         }
 
         private void DrawNoteBody(UNote note, DrawingContext cxt)

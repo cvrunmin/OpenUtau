@@ -44,31 +44,33 @@
                 <ComboBoxItem Content="ASIO"/>
             </ComboBox>
         </Grid>
-        <Grid x:Name="renderingGrid" Margin="170,2,10,10" Visibility="Hidden">
-            <GroupBox Header="{DynamicResource ResamplingPreviewTitle}" Height="80" VerticalAlignment="Top">
+        <Grid x:Name="renderingGrid" Margin="170,2,10,10">
+            <ScrollViewer>
                 <Grid>
-                    <RadioButton x:Name="previewRatioInternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,10,0,0" GroupName="preview" Checked="previewEngine_Checked">
-                        <DynamicResource ResourceKey="ResamplingInternal"/>
-                    </RadioButton>
-                    <RadioButton x:Name="previewRatioExternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,36,0,0" GroupName="preview" Checked="previewEngine_Checked">
-                        <DynamicResource ResourceKey="ResamplingExternal"/>
-                    </RadioButton>
-                    <ComboBox x:Name="previewEngineCombo" Margin="110,34,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="256" SelectionChanged="previewEngineCombo_SelectionChanged"/>
+                    
+                    <GroupBox Header="{DynamicResource ResamplingPreviewTitle}" Height="80" VerticalAlignment="Top" Margin="0,76,0,0">
+                        <Grid>
+                            <RadioButton x:Name="previewRatioInternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,10,0,0" GroupName="preview" Checked="previewEngine_Checked" Content="{DynamicResource ResamplingInternal}"/>
+                            <RadioButton x:Name="previewRatioExternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,36,0,0" GroupName="preview" Checked="previewEngine_Checked" Content="{DynamicResource ResamplingExternal}"/>
+                            <ComboBox x:Name="previewEngineCombo" Margin="110,34,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="256" SelectionChanged="previewEngineCombo_SelectionChanged"/>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="{DynamicResource ResamplingExportTitle}" Height="80" VerticalAlignment="Top" Margin="0,156,0,0">
+                        <Grid>
+                            <RadioButton x:Name="exportRatioInternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,10,0,0" GroupName="export" Checked="exportEngine_Checked" Content="{DynamicResource ResamplingInternal}"/>
+                            <RadioButton x:Name="exportRatioExternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,36,0,0" GroupName="export" Checked="exportEngine_Checked" Content="{DynamicResource ResamplingExternal}"/>
+                            <ComboBox x:Name="exportEngineCombo" Margin="110,34,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="256" SelectionChanged="exportEngineCombo_SelectionChanged"/>
+                        </Grid>
+                    </GroupBox>
+                    <TextBlock TextWrapping="Wrap" Text="{DynamicResource ResamplingNotes}" Margin="9,238,0,0"/>
+                    <CheckBox x:Name="chkboxInstantRender" Content="Render at instant" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Click="chkboxInstantRender_Click"/>
+                    <Label Content="Rendering Manager" HorizontalAlignment="Left" Margin="10,20,0,0" VerticalAlignment="Top"/>
+                    <ComboBox x:Name="comboRenderMana" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top" Width="150" SelectionChanged="comboRenderMana_SelectionChanged">
+                        <ComboBoxItem Content="Instant"/>
+                        <ComboBoxItem Content="Pre-render"/>
+                    </ComboBox>
                 </Grid>
-            </GroupBox>
-            <GroupBox Header="{DynamicResource ResamplingExportTitle}" Height="80" VerticalAlignment="Top" Margin="0,80,0,0">
-                <Grid>
-                    <RadioButton x:Name="exportRatioInternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,10,0,0" GroupName="export" Checked="exportEngine_Checked">
-                        <DynamicResource ResourceKey="ResamplingInternal"/>
-                    </RadioButton>
-                    <RadioButton x:Name="exportRatioExternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,36,0,0" GroupName="export" Checked="exportEngine_Checked">
-                        <DynamicResource ResourceKey="ResamplingExternal"/>
-                    </RadioButton>
-                    <ComboBox x:Name="exportEngineCombo" Margin="110,34,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="256" SelectionChanged="exportEngineCombo_SelectionChanged"/>
-                </Grid>
-            </GroupBox>
-            <TextBlock Margin="9,162,0,0" TextWrapping="Wrap" Text="{DynamicResource ResamplingNotes}">
-            </TextBlock>
+            </ScrollViewer>
         </Grid>
     </Grid>
 </Window>

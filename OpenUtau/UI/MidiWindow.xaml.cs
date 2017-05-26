@@ -290,6 +290,9 @@ namespace OpenUtau.UI
                         _noteHit = noteHit;
                         if (!midiVM.SelectedNotes.Contains(noteHit)) midiVM.DeselectAll();
                         if (!noteHit.IsLyricBoxActive && e.ClickCount >= 2) {
+                            if (midiVM.AnyNotesEditing) {
+                                midiVM.notesElement?.LyricBox?.RaiseEvent(new RoutedEventArgs() { RoutedEvent = ContentControl.LostFocusEvent });
+                            }
                             noteHit.IsLyricBoxActive = true;
                             midiVM.AnyNotesEditing = true;
                             midiVM.MarkUpdate();
@@ -337,6 +340,8 @@ namespace OpenUtau.UI
                             midiVM.CanvasToNoteNum(mousePos.Y),
                             midiVM.CanvasToSnappedTick(mousePos.X),
                             _lastNoteLength);
+                        newNote.PartNo = midiVM.Part.PartNo;
+                        newNote.NoteNo = midiVM.Part.Notes.Count;
 
                         DocManager.Inst.StartUndoGroup();
                         DocManager.Inst.ExecuteCmd(new AddNoteCommand(midiVM.Part, newNote));
@@ -358,8 +363,11 @@ namespace OpenUtau.UI
         private void notesCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (midiVM.Part == null) return;
-            if(_inMove || _inResize)
+            if (_inMove || _inResize)
+            {
                 DocManager.Inst.EndUndoGroup();
+                if(Core.Util.Preferences.Default.RenderNoteAtInstant) OpenUtau.Core.Render.ResamplerInterface.RenderNote(midiVM.Project, midiVM.Part, _noteHit);
+            }
             _inMove = false;
             _inResize = false;
             _noteHit = null;

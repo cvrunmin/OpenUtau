@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using OpenUtau.Core.Render.NAudio;
 
 namespace OpenUtau.Core.Render
 {
@@ -45,6 +46,8 @@ namespace OpenUtau.Core.Render
         /// </summary>
         public float Volume => Muted ? 0f : PlainVolume;
 
+        public int TrackNo { get; set; }
+
         //public float Volume { set { volume.Volume = value; } get { return volume.Volume; } }
 
 
@@ -73,8 +76,16 @@ namespace OpenUtau.Core.Render
             if (source.WaveFormat.Channels == 1) _source = new MonoToStereoSampleProvider(source);
             else if (source.WaveFormat.Channels == 2) _source = source;
             else return;
-            mix.AddMixerInput(new OffsetSampleProvider(_source) { DelayBy = delayBy });
+            mix.AddMixerInput(new UOffsetSampleProvider(_source) { DelayBy = delayBy });
         }
-        
+
+        public TrackSampleProvider Clone() {
+            var cloned = new TrackSampleProvider();
+            foreach (var item in mix.MixerInputs)
+            {
+                cloned.mix.AddMixerInput(((UOffsetSampleProvider)item).Clone());
+            }
+            return cloned;
+        }
     }
 }

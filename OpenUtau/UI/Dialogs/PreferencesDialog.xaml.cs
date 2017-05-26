@@ -146,7 +146,20 @@ namespace OpenUtau.UI.Dialogs
             Core.Util.Preferences.Save();
         }
 
-        # endregion
+        #endregion
+        
+        private void chkboxInstantRender_Click(object sender, RoutedEventArgs e)
+        {
+            Core.Util.Preferences.Default.RenderNoteAtInstant = chkboxInstantRender.IsChecked.Value;
+            Core.Util.Preferences.Save();
+        }
 
+        private string[] RenderManager = new string[] { "Instant", "PreRender" };
+
+        private void comboRenderMana_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Core.Util.Preferences.Default.RenderManager = RenderManager[comboRenderMana.SelectedIndex];
+            Core.Util.Preferences.Save();
+        }
     }
 }

@@ -30,5 +30,9 @@ namespace OpenUtau.Core.Render
         }
 
         public WaveFormat WaveFormat { get { return cachedSound.WaveFormat; } }
+
+        public CachedSoundSampleProvider Clone() {
+            return new CachedSoundSampleProvider(cachedSound.Clone());
+        }
     }
 }

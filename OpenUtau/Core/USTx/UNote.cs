@@ -14,6 +14,8 @@ namespace OpenUtau.Core.USTx
         public int PosTick;
         public int DurTick;
         public int NoteNum;
+        public int NoteNo;
+        public int PartNo;
         public string Lyric = "a";
         public List<UPhoneme> Phonemes = new List<UPhoneme>();
         public Dictionary<string, UExpression> Expressions = new Dictionary<string, UExpression>();

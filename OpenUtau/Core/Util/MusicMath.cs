@@ -8,9 +8,11 @@ namespace OpenUtau.Core
 {
     public static class MusicMath
     {
-        public static string[] noteStrings = new String[12] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+        public static string[] noteStringsSharpStyle = new String[12] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 
-        public static string GetNoteString(int noteNum) { return noteNum < 0 ? "" : noteStrings[noteNum % 12] + (noteNum / 12 - 1).ToString(); }
+        public static string[] noteStringsFlatStyle = new String[12] { "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B" };
+
+        public static string GetNoteString(int noteNum, bool isFlatStyle = false) { return noteNum < 0 ? "" : (isFlatStyle ? noteStringsFlatStyle[noteNum % 12] : noteStringsSharpStyle[noteNum % 12]) + (noteNum / 12 - 1).ToString(); }
 
         public static int[] BlackNoteNums = { 1, 3, 6, 8, 10 };
         public static bool IsBlackKey(int noteNum) { return BlackNoteNums.Contains(noteNum % 12); }
@@ -121,5 +123,10 @@ namespace OpenUtau.Core
         public static double DecibelToLinear(double db) { return Math.Pow(10, db / 20); }
 
         public static double LinearToDecibel(double v) { return Math.Log10(v) * 20; }
+
+        public static float DecibelToVolume(double db)
+        {
+            return db == -24 ? 0 : db < -16 ? (float)DecibelToLinear(db * 2 + 16) : (float)DecibelToLinear(db);
+        }
     }
 }

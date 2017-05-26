@@ -40,6 +40,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -49,6 +50,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup />
@@ -112,6 +114,15 @@
     </Compile>
     <Compile Include="Core\Formats\UtauSoundbank.cs" />
     <Compile Include="Core\Lib\MessageBoxManager.cs" />
+    <Compile Include="Core\Lib\NAudio\ISampleChunkConverter.cs" />
+    <Compile Include="Core\Lib\NAudio\Mono16SampleChunkConverter.cs" />
+    <Compile Include="Core\Lib\NAudio\Mono24SampleChunkConverter.cs" />
+    <Compile Include="Core\Lib\NAudio\Mono8SampleChunkConverter.cs" />
+    <Compile Include="Core\Lib\NAudio\MonoFloatSampleChunkConverter.cs" />
+    <Compile Include="Core\Lib\NAudio\Stereo16SampleChunkConverter.cs" />
+    <Compile Include="Core\Lib\NAudio\Stereo24SampleChunkConverter.cs" />
+    <Compile Include="Core\Lib\NAudio\Stereo8SampleChunkConverter.cs" />
+    <Compile Include="Core\Lib\NAudio\StereoFloatSampleChunkConverter.cs" />
     <Compile Include="Core\Lib\WaveFormRenderer\AveragePeakProvider.cs" />
     <Compile Include="Core\Lib\WaveFormRenderer\DecibelPeakProvider.cs" />
     <Compile Include="Core\Lib\WaveFormRenderer\IPeakProvider.cs" />
@@ -133,6 +144,9 @@
     <Compile Include="Core\Render\NAudio\EnvelopeSampleProvider.cs" />
     <Compile Include="Core\Render\NAudio\TrackSampleProvider.cs" />
     <Compile Include="Core\Render\NAudio\SequencingSampleProvider.cs" />
+    <Compile Include="Core\Render\NAudio\TrackWaveChannel.cs" />
+    <Compile Include="Core\Render\NAudio\UOffsetSampleProvider.cs" />
+    <Compile Include="Core\Render\NAudio\UWaveMixerStream32.cs" />
     <Compile Include="Core\Render\RenderItem.cs" />
     <Compile Include="Core\Render\RenderCache.cs" />
     <Compile Include="Core\Render\NAudio\RenderItemSampleProvider.cs" />

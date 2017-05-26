@@ -220,7 +220,7 @@ namespace OpenUtau.UI.Models
                 UpdatePlayPosMarker();
             }
             _updated = false;
-            PlaybackManager.Inst.UpdatePlayPos();
+            PlaybackManager.GetActiveManager().UpdatePlayPos();
         }
 
         public void UpdateViewSize()

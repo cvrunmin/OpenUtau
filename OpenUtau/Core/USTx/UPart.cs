@@ -14,6 +14,7 @@ namespace OpenUtau.Core.USTx
         public string Comment = "";
 
         public int TrackNo;
+        public int PartNo;
         public int PosTick = 0;
         public bool Error { get; set; }
         public virtual int DurTick { set; get; }

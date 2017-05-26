@@ -9,6 +9,8 @@
     "SingerSearchPaths": [
         "Singers"
     ],
+	"RenderNoteAtInstant": false,
+	"RenderManager": "PreRender",
     "InternalEnginePreview": true,
     "InternalEngineExport": true,
     "ExternalPreviewEngine": "",

@@ -33,7 +33,7 @@ namespace OpenUtau.UI.Dialogs
         TaskDialogProgressBar taskprogress;
         private void butOk_Click(object sender, RoutedEventArgs e)
         {
-            if (File.GetAttributes(txtboxPath.Text).HasFlag(FileAttributes.Directory) && radioRenderMaster.IsChecked.Value) {
+            if (!System.IO.Path.HasExtension(txtboxPath.Text) && radioRenderMaster.IsChecked.Value) {
                 MessageBox.Show("Invalid path, please check if it is a file path");
                 return;
             }
@@ -50,7 +50,7 @@ namespace OpenUtau.UI.Dialogs
             {
                 foreach (var item in listboxGenFiles.Items)
                 {
-                    if (item is CheckBox chkbox && chkbox.IsChecked.Value) skipped.Add((int)chkbox.Tag);
+                    if (item is CheckBox chkbox && !chkbox.IsChecked.Value) skipped.Add((int)chkbox.Tag);
                 }
             }
             taskdialog.Text = GenTextInfo(task:"Rendering tracks");
@@ -69,15 +69,8 @@ namespace OpenUtau.UI.Dialogs
                     int i = 0;
                     foreach (var track in tracks)
                     {
-                        while (skipped.Contains(i)) {
-                            ++i;
-                            Dispatcher.Invoke(()=>
-                            {
-                                taskprogress.Value = (int)(i / (float)DocManager.Inst.Project.Tracks.Count * 1000);
-                                taskdialog.Text = GenTextInfo(task: "Writing into files", status: "Writing track " + i + "/" + DocManager.Inst.Project.Tracks.Count);
-                            });
-                        }
-                        WaveFileWriter.CreateWaveFile(System.IO.Path.Combine(path, System.IO.Path.GetFileNameWithoutExtension(DocManager.Inst.Project.FilePath) + "_Track-" + i + ".wav"), track.ToWaveProvider());
+                        if(!skipped.Contains(i))
+                            WaveFileWriter.CreateWaveFile(System.IO.Path.Combine(path, System.IO.Path.GetFileNameWithoutExtension(DocManager.Inst.Project.FilePath) + "_Track-" + i + ".wav"), track.ToWaveProvider());
                         ++i;
                         Dispatcher.Invoke(()=>
                         {
@@ -108,15 +101,16 @@ namespace OpenUtau.UI.Dialogs
         private void butBrowse_Click(object sender, RoutedEventArgs e)
         {
             if (radioRenderMaster.IsChecked == true) {
-                var dialog = new CommonSaveFileDialog() { OverwritePrompt = true};
+                var dialog = new CommonSaveFileDialog() { OverwritePrompt = true, AlwaysAppendDefaultExtension = true, EnsurePathExists = true, EnsureValidNames = true};
                 dialog.Filters.Add(new CommonFileDialogFilter("Wave file", "*.wav"));
+                dialog.DefaultExtension = "wav";
                 if (dialog.ShowDialog() == CommonFileDialogResult.Ok) {
                     txtboxPath.Text = dialog.FileName;
                 }
             }
             else
             {
-                var dialog = new CommonOpenFileDialog() { IsFolderPicker = true };
+                var dialog = new CommonOpenFileDialog() { IsFolderPicker = true, EnsurePathExists = true };
                 if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
                 {
                     txtboxPath.Text = dialog.FileName;
@@ -170,7 +164,7 @@ namespace OpenUtau.UI.Dialogs
         {
             if (cmd is ProgressBarNotification pbn && taskprogress != null) {
                 double progress = 1f / (RequiredRenderItem + 10) * 1000 + decimals;
-                taskprogress.Value += (int)progress;
+                if(taskprogress.Value < taskprogress.Maximum)taskprogress.Value += (int)progress;
                 decimals = progress - (int)progress;
                 taskdialog.Text = GenTextInfo("Rendering Tracks", pbn.Info);
             }

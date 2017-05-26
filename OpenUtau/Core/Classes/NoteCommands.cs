@@ -28,8 +28,34 @@ namespace OpenUtau.Core
         public RemoveNoteCommand(UVoicePart part, UNote note) { this.Part = part; this.Notes = new UNote[] { note }; }
         public RemoveNoteCommand(UVoicePart part, List<UNote> notes) { this.Part = part; this.Notes = notes.ToArray(); }
         public override string ToString() { return "Remove note"; }
-        public override void Execute() { lock (Part) { foreach (var note in Notes) Part.Notes.Remove(note); } }
-        public override void Unexecute() { lock (Part) { foreach (var note in Notes) Part.Notes.Add(note); } }
+        public override void Execute()
+        {
+            lock (Part)
+            {
+                foreach (var note in Notes)
+                {
+                    Part.Notes.Remove(note);
+                }
+                for (int i = 0; i < Part.Notes.Count; i++)
+                {
+                    Part.Notes.ElementAt(i).NoteNo = i;
+                }
+            }
+        }
+        public override void Unexecute()
+        {
+            lock (Part)
+            {
+                foreach (var note in Notes)
+                {
+                    Part.Notes.Add(note);
+                }
+                for (int i = 0; i < Part.Notes.Count; i++)
+                {
+                    Part.Notes.ElementAt(i).NoteNo = i;
+                }
+            }
+        }
     }
 
     public class MoveNoteCommand : NoteCommand

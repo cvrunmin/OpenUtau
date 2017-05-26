@@ -13,6 +13,9 @@ namespace OpenUtau.Core.Render
         public int MemSize { get { return AudioData.Length * sizeof(float); } }
         public float[] AudioData { get; private set; }
         public WaveFormat WaveFormat { get; private set; }
+
+        private CachedSound() { }
+
         public CachedSound(string audioFileName)
         {
             using (var audioFileReader = new AudioFileReader(audioFileName))
@@ -42,6 +45,10 @@ namespace OpenUtau.Core.Render
                 }
                 AudioData = wholeFile.ToArray();
             }
+        }
+
+        public CachedSound Clone() {
+            return new CachedSound() { AudioData = AudioData, WaveFormat = WaveFormat};
         }
     }
 

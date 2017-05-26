@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using NAudio.Utils;
 
 namespace OpenUtau.Core.Render
 {
@@ -35,6 +36,15 @@ namespace OpenUtau.Core.Render
             {
                 throw new ArgumentException("Must provide at least one input in this constructor");
             }
+        }
+
+        public SequencingSampleProvider Clone() {
+            var list = new List<RenderItemSampleProvider>();
+            foreach (var item in sources)
+            {
+                list.Add(item.Clone());
+            }
+            return new SequencingSampleProvider(list);
         }
 
         /// <summary>
@@ -124,7 +134,7 @@ namespace OpenUtau.Core.Render
         public int Read(float[] buffer, int offset, int count)
         {
             int outputSamples = 0;
-            this.sourceBuffer = NAudio.Utils.BufferHelpers.Ensure(this.sourceBuffer, count);
+            this.sourceBuffer = BufferHelpers.Ensure(this.sourceBuffer, count);
             lock (sources)
             {
                 int index = sources.Count - 1;

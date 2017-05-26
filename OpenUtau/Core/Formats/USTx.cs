@@ -195,7 +195,9 @@ namespace OpenUtau.Core.Formats
                     var notes = dictionary["notes"] as ArrayList;
                     foreach (var note in notes)
                     {
-                        _result.Notes.Add(serializer.ConvertToType<UNote>(note));
+                        UNote uNote = serializer.ConvertToType<UNote>(note);
+                        uNote.NoteNo = _result.Notes.Count;
+                        _result.Notes.Add(uNote);
                     }
                     foreach (var pair in (Dictionary<string, object>)(dictionary["expression"]))
                     {
@@ -296,7 +298,18 @@ namespace OpenUtau.Core.Formats
                 }
 
                 foreach (var part in dictionary["parts"] as ArrayList)
-                    result.Parts.Add(serializer.ConvertToType(part, typeof(UPart)) as UPart);
+                {
+                    UPart uPart = serializer.ConvertToType(part, typeof(UPart)) as UPart;
+                    uPart.PartNo = result.Parts.Count;
+                    if (uPart is UVoicePart voice)
+                    {
+                        foreach (var note in voice.Notes)
+                        {
+                            note.PartNo = uPart.PartNo;
+                        }
+                    }
+                    result.Parts.Add(uPart);
+                }
 
                 USTx.Project = null;
                 return result;

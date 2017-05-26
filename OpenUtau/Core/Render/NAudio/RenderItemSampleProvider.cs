@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using OpenUtau.Core.Render.NAudio;
 
 namespace OpenUtau.Core.Render
 {
@@ -21,7 +22,7 @@ namespace OpenUtau.Core.Render
             var cachedSampleProvider = new CachedSoundSampleProvider(RenderItem.Sound);
             try
             {
-                var offsetSampleProvider = new OffsetSampleProvider(new EnvelopeSampleProvider(cachedSampleProvider, RenderItem.Envelope, RenderItem.SkipOver))
+                var offsetSampleProvider = new UOffsetSampleProvider(new EnvelopeSampleProvider(cachedSampleProvider, RenderItem.Envelope, RenderItem.SkipOver))
                 {
                     DelayBySamples = (int)(RenderItem.PosMs * (cachedSampleProvider.WaveFormat?.SampleRate).GetValueOrDefault() / 1000),
                     TakeSamples = (int)(RenderItem.DurMs * (cachedSampleProvider.WaveFormat?.SampleRate).GetValueOrDefault() / 1000),
@@ -35,6 +36,10 @@ namespace OpenUtau.Core.Render
             {
             }
 
+        }
+
+        public RenderItemSampleProvider Clone() {
+            return new RenderItemSampleProvider(RenderItem);
         }
 
         /// <summary>

@@ -23,6 +23,7 @@ namespace OpenUtau.Core.USTx
         public List<UTrack> Tracks = new List<UTrack>();
         public List<UPart> Parts = new List<UPart>();
         public List<USinger> Singers = new List<USinger>();
+        public Dictionary<int, double> SubBPM = new Dictionary<int, double>();
 
         public Dictionary<string, UExpression> ExpressionTable = new Dictionary<string, UExpression>();
 
@@ -51,7 +52,7 @@ namespace OpenUtau.Core.USTx
         }
 
         public UVoicePart CreateVoicePart(int TrackNo, int PosTick) {
-            UVoicePart part = new UVoicePart() { TrackNo = TrackNo, PosTick = PosTick };
+            UVoicePart part = new UVoicePart() { TrackNo = TrackNo, PosTick = PosTick, PartNo = Parts.Count };
             foreach (var pair in ExpressionTable) { part.Expressions.Add(pair.Key, pair.Value); }
             Parts.Add(part);
             return part;
@@ -61,12 +62,49 @@ namespace OpenUtau.Core.USTx
 
         public int MillisecondToTick(double ms)
         {
-            return MusicMath.MillisecondToTick(ms, BPM, BeatUnit, Resolution);
+            int tick = MusicMath.MillisecondToTick(ms, BPM, BeatUnit, Resolution);
+            int processed = tick;
+            var passedBpm = SubBPM.Where(pair => pair.Key < tick).OrderBy(pair => pair.Key);
+            double passedMs = ms;
+            if (passedBpm.Any())
+            {
+                processed = passedBpm.First().Key;
+                passedMs -= MusicMath.TickToMillisecond(passedBpm.First().Key, BPM, BeatUnit, Resolution);
+                for (int i = 0; i < passedBpm.Count(); i++)
+                {
+                    if (i < passedBpm.Count() - 1)
+                    {
+                        double expectMs = MusicMath.TickToMillisecond(passedBpm.ElementAt(i + 1).Key - passedBpm.ElementAt(i).Key, passedBpm.ElementAt(i).Value, BeatUnit, Resolution);
+                        passedMs -= expectMs;
+                        processed += MusicMath.MillisecondToTick(passedMs < 0 ? expectMs + passedMs : expectMs, passedBpm.ElementAt(i).Value, BeatUnit, Resolution);
+                        if (passedMs <= 0) break;
+                    }
+                    else
+                    {
+                        processed += MusicMath.MillisecondToTick(passedMs, passedBpm.ElementAt(i).Value, BeatUnit, Resolution);
+                    }
+                }
+            }
+            return processed;
         }
 
         public double TickToMillisecond(double tick)
         {
-            return MusicMath.TickToMillisecond(tick, BPM, BeatUnit, Resolution);
+            var passedBpm = SubBPM.Where(pair => pair.Key < tick).OrderBy(pair => pair.Key);
+            double ms;
+            if (passedBpm.Any())
+            {
+                ms = MusicMath.TickToMillisecond(passedBpm.First().Key, BPM, BeatUnit, Resolution);
+                for (int i = 0; i < passedBpm.Count(); i++)
+                {
+                    ms += MusicMath.TickToMillisecond(i == passedBpm.Count() + 1 ? tick : passedBpm.ElementAt(i + 1).Key - passedBpm.ElementAt(i).Key, passedBpm.ElementAt(i).Value, BeatUnit, Resolution);
+                }
+            }
+            else
+            {
+                ms = MusicMath.TickToMillisecond(tick, BPM, BeatUnit, Resolution);
+            }
+            return ms;
         }
 
     }

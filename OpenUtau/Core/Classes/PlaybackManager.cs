@@ -9,23 +9,60 @@ using NAudio.Wave.SampleProviders;
 using OpenUtau.Core.USTx;
 using OpenUtau.Core.Render;
 using OpenUtau.Core.ResamplerDriver;
+using OpenUtau.Core.Render.NAudio;
 
 namespace OpenUtau.Core
 {
-    class PlaybackManager : ICmdSubscriber
+    abstract class PlaybackManager : ICmdSubscriber
+    {
+        protected PlaybackManager() { Subscribe(DocManager.Inst); }
+
+        public abstract void Play(UProject project);
+
+        public abstract void StopPlayback();
+
+        public abstract void PausePlayback();
+
+        public abstract void OnNext(UCommand cmd, bool isUndo);
+
+        public abstract void UpdatePlayPos();
+
+        public void Subscribe(ICmdPublisher publisher)
+        {
+            publisher?.Subscribe(this);
+        }
+
+        public static PlaybackManager GetActiveManager() {
+            try
+            {
+                switch (Util.Preferences.Default.RenderManager)
+                {
+                    case "Instant":
+                        return InstantPlaybackManager.Inst;
+                    case "PreRender":
+                    default:
+                        return PreRenderPlaybackManager.Inst;
+                }
+            }
+            catch (Exception)
+            {
+                return InstantPlaybackManager.Inst;
+            }
+        }
+    }
+    class PreRenderPlaybackManager : PlaybackManager
     {
         private WaveOut outDevice;
 
-        private PlaybackManager() { this.Subscribe(DocManager.Inst); }
+        private PreRenderPlaybackManager() : base() { }
 
-        private static PlaybackManager _s;
-        public static PlaybackManager Inst { get { if (_s == null) { _s = new PlaybackManager(); } return _s; } }
+        private static PreRenderPlaybackManager _s;
+        public static PreRenderPlaybackManager Inst { get { if (_s == null) { _s = new PreRenderPlaybackManager(); } return _s; } }
+        
+        UWaveMixerStream32 masterMix;
+        List<TrackWaveChannel> trackSources = new List<TrackWaveChannel>();
 
-        MixingSampleProvider masterMix;
-        List<TrackSampleProvider> trackSources = new List<TrackSampleProvider>();
-        List<TrackSampleProvider> trackSourcesRaw = new List<TrackSampleProvider>();
-
-        public void Play(UProject project)
+        public override void Play(UProject project)
         {
             if (pendingParts > 0) return;
             else if (outDevice != null)
@@ -37,13 +74,154 @@ namespace OpenUtau.Core
             BuildAudioAndPlay(project);
         }
 
-        public void StopPlayback()
+        public override void StopPlayback()
         {
             if (outDevice != null) outDevice.Stop();
             SkipedTimeSpan = TimeSpan.Zero;
         }
 
-        public void PausePlayback()
+        public override void PausePlayback()
+        {
+            if (outDevice != null) outDevice.Pause();
+        }
+
+        private void StartPlayback(bool preMade = false)
+        {
+            if (outDevice != null && outDevice.PlaybackState == PlaybackState.Paused)
+            {
+                outDevice.Resume();
+                return;
+            }
+            if (!preMade)
+            {
+                masterMix = new UWaveMixerStream32();
+                foreach (var source in trackSources) masterMix.AddInputStream(source);
+            }
+            outDevice = new WaveOut();
+            outDevice.PlaybackStopped += (sender, e) => {
+                StopPlayback();
+            };
+            outDevice.Init(masterMix);
+            outDevice.Play();
+        }
+
+        int pendingParts = 0;
+        object lockObject = new object();
+
+
+        private async void BuildAudioAndPlay(UProject project)
+        {
+            masterMix = await RenderDispatcher.Inst.GetMixingStream(project);
+            trackSources = new List<TrackWaveChannel>(masterMix.InputStreams.Cast<TrackWaveChannel>());
+            masterMix.CurrentTime = SkipedTimeSpan;
+            StartPlayback(true);
+        }
+
+        public override void UpdatePlayPos()
+        {
+            if (outDevice != null && outDevice.PlaybackState == PlaybackState.Playing)
+            {
+                double ms = masterMix.CurrentTime.TotalMilliseconds;
+                int tick = DocManager.Inst.Project.MillisecondToTick(ms);
+                DocManager.Inst.ExecuteCmd(new SetPlayPosTickNotification(tick), true);
+            }
+        }
+
+        private float DecibelToVolume(double db)
+        {
+            return db == -24 ? 0 : db < -16 ? (float)MusicMath.DecibelToLinear(db * 2 + 16) : (float)MusicMath.DecibelToLinear(db);
+        }
+
+        public TimeSpan SkipedTimeSpan { get; private set; }
+
+        # region ICmdSubscriber
+
+        public override void OnNext(UCommand cmd, bool isUndo)
+        {
+
+            if (cmd is SeekPlayPosTickNotification)
+            {
+                var _cmd = cmd as SeekPlayPosTickNotification;
+                int tick = _cmd.playPosTick;
+                DocManager.Inst.ExecuteCmd(new SetPlayPosTickNotification(tick));
+                SkipedTimeSpan = TimeSpan.FromMilliseconds(DocManager.Inst.Project.TickToMillisecond(tick));
+                if (outDevice != null)
+                {
+                    masterMix.CurrentTime = SkipedTimeSpan;
+                }
+            }
+            else if (cmd is VolumeChangeNotification)
+            {
+                var _cmd = cmd as VolumeChangeNotification;
+                if (masterMix != null && masterMix.InputCount > _cmd.TrackNo)
+                {
+                    (masterMix.InputStreams.ElementAt(_cmd.TrackNo) as TrackWaveChannel).PlainVolume = DecibelToVolume(_cmd.Volume);
+                }
+                if (trackSources != null && trackSources.Count > _cmd.TrackNo)
+                {
+                    trackSources[_cmd.TrackNo].PlainVolume = DecibelToVolume(_cmd.Volume);
+                }
+            }
+            else if (cmd is PanChangeNotification)
+            {
+                var _cmd = cmd as PanChangeNotification;
+                if (masterMix != null && masterMix.InputCount > _cmd.TrackNo)
+                {
+                    (masterMix.InputStreams.ElementAt(_cmd.TrackNo) as TrackWaveChannel).Pan = (float)_cmd.Pan / 90f;
+                }
+                if (trackSources != null && trackSources.Count > _cmd.TrackNo)
+                {
+                    trackSources[_cmd.TrackNo].Pan = (float)_cmd.Pan / 90f;
+                }
+            }
+            else if (cmd is MuteNotification mute)
+            {
+                if (masterMix != null && masterMix.InputCount > mute.TrackNo)
+                {
+                    (masterMix.InputStreams.ElementAt(mute.TrackNo) as TrackWaveChannel).Muted = mute.Muted;
+                }
+                if (trackSources != null && trackSources.Count > mute.TrackNo)
+                {
+                    trackSources[mute.TrackNo].Muted = mute.Muted;
+                }
+            }
+        }
+
+        # endregion
+    }
+
+    class InstantPlaybackManager : PlaybackManager
+    {
+        private WaveOut outDevice;
+
+        private InstantPlaybackManager() : base() { }
+
+        private static InstantPlaybackManager _s;
+        public static InstantPlaybackManager Inst { get { if (_s == null) { _s = new InstantPlaybackManager(); } return _s; } }
+
+        MixingSampleProvider masterMix;
+        List<TrackSampleProvider> trackSources = new List<TrackSampleProvider>();
+        List<TrackSampleProvider> trackSourcesRaw = new List<TrackSampleProvider>();
+
+        public override void Play(UProject project)
+        {
+            if (pendingParts > 0) return;
+            else if (outDevice != null)
+            {
+                if (outDevice.PlaybackState == PlaybackState.Playing) return;
+                else if (outDevice.PlaybackState == PlaybackState.Paused) { outDevice.Resume(); return; }
+                else outDevice.Dispose();
+            }
+            BuildAudioAndPlay(project);
+        }
+
+        public override void StopPlayback()
+        {
+            if (outDevice != null) outDevice.Stop();
+            SkipedTimeSpan = TimeSpan.Zero;
+        }
+
+        public override void PausePlayback()
         {
             if (outDevice != null) outDevice.Pause();
         }
@@ -69,14 +247,14 @@ namespace OpenUtau.Core
             outDevice.PlaybackStopped += (sender, e) => {
                 StopPlayback();
             };
-            if (span != TimeSpan.Zero)
-            {
-                outDevice.Init(masterMix.Skip(span));
-            }
-            else
-            {
-                outDevice.Init(masterMix);
-            }
+            //if (span != TimeSpan.Zero)
+            //{
+                outDevice.Init(masterMix.USkip(span));
+            //}
+            //else
+            //{
+            //    outDevice.Init(masterMix);
+            //}
             outDevice.Play();
         }
 
@@ -88,12 +266,12 @@ namespace OpenUtau.Core
             //BuildAudio(project);
             masterMix = await RenderDispatcher.Inst.GetMixingSampleProvider(project);
             trackSources = new List<TrackSampleProvider>(masterMix.MixerInputs.Cast<TrackSampleProvider>());
-            trackSourcesRaw = DeepClone(trackSources);
+            Task.Run(()=> trackSourcesRaw = DeepClone(trackSources)).Wait();
             /*if (pendingParts == 0)*/
             StartPlayback(SkipedTimeSpan, true);
         }
 
-        public void UpdatePlayPos()
+        public override void UpdatePlayPos()
         {
             if (outDevice != null && outDevice.PlaybackState == PlaybackState.Playing)
             {
@@ -108,10 +286,6 @@ namespace OpenUtau.Core
             return db == -24 ? 0 : db < -16 ? (float)MusicMath.DecibelToLinear(db * 2 + 16) : (float)MusicMath.DecibelToLinear(db);
         }
 
-        # region ICmdSubscriber
-
-        public void Subscribe(ICmdPublisher publisher) { if (publisher != null) publisher.Subscribe(this); }
-
         public TimeSpan SkipedTimeSpan { get; private set; }
 
         List<TrackSampleProvider> DeepClone(List<TrackSampleProvider> src)
@@ -119,40 +293,23 @@ namespace OpenUtau.Core
             List<TrackSampleProvider> list = new List<TrackSampleProvider>();
             foreach (var item in src)
             {
-                var cloned = new TrackSampleProvider() { Muted = item.Muted, Pan = item.Pan, PlainVolume = item.PlainVolume };
-                foreach (var mixsrc in item.Sources)
-                {
-                    if (mixsrc is OffsetSampleProvider offset)
-                    {
-                        var field = typeof(OffsetSampleProvider).GetField("sourceProvider", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                        var innersrc = field.GetValue(offset) as ISampleProvider;
-                        cloned.AddSource(innersrc, offset.DelayBy);
-                    }
-                }
-                list.Add(cloned);
+                list.Add(item.Clone());
             }
             return list;
         }
 
-        public void OnNext(UCommand cmd, bool isUndo)
+        # region ICmdSubscriber
+
+        public override void OnNext(UCommand cmd, bool isUndo)
         {
 
             if (cmd is SeekPlayPosTickNotification)
             {
-                bool oStop = false;
-                if (outDevice?.PlaybackState == PlaybackState.Stopped) oStop = true;
                 StopPlayback();
                 var _cmd = cmd as SeekPlayPosTickNotification;
                 int tick = _cmd.playPosTick;
                 DocManager.Inst.ExecuteCmd(new SetPlayPosTickNotification(tick));
-                if(outDevice == null || outDevice.PlaybackState != PlaybackState.Paused)
-                    SkipedTimeSpan = TimeSpan.FromMilliseconds(DocManager.Inst.Project.TickToMillisecond(tick));
-                if (outDevice != null && outDevice.PlaybackState == PlaybackState.Stopped && !oStop)
-                {
-                    trackSources = DeepClone(trackSourcesRaw);
-                    outDevice.Dispose();
-                    StartPlayback(SkipedTimeSpan);
-                }
+                SkipedTimeSpan = TimeSpan.FromMilliseconds(DocManager.Inst.Project.TickToMillisecond(tick));
             }
             else if (cmd is VolumeChangeNotification)
             {

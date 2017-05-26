@@ -24,6 +24,7 @@ namespace OpenUtau.Core.Formats
                     return new UWavePart()
                     {
                         FilePath = filepath,
+                        PartNo = _part.PartNo,
                         FileDurTick = _part.FileDurTick,
                         DurTick = _part.DurTick,
                         Channels = _part.Channels,
@@ -40,6 +41,7 @@ namespace OpenUtau.Core.Formats
             {
                 return new UWavePart() {
                     FilePath = filepath,
+                    PartNo = DocManager.Inst.Project.Parts.Count,
                     Error = true
                 };
             }
@@ -51,6 +53,7 @@ namespace OpenUtau.Core.Formats
                 FileDurTick = durTick,
                 FileDurMillisecond = ms,
                 DurTick = durTick,
+                PartNo = DocManager.Inst.Project.Parts.Count,
                 Channels = stream.WaveFormat.Channels
             };
             stream.Close();

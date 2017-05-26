@@ -26,6 +26,10 @@ namespace OpenUtau.Core
                     if(!voice.Expressions.ContainsKey(pair.Key))
                     voice.Expressions.Add(pair.Key, pair.Value);
                 }
+                foreach (var item in voice.Notes)
+                {
+                    item.PartNo = part.PartNo;
+                }
             }
         }
         public override void Unexecute() { project.Parts.Remove(part); }
@@ -35,8 +39,34 @@ namespace OpenUtau.Core
     {
         public RemovePartCommand(UProject project, UPart part) { this.project = project; this.part = part; }
         public override string ToString() { return "Remove parts"; }
-        public override void Execute() { project.Parts.Remove(part); }
-        public override void Unexecute() { project.Parts.Add(part); }
+        public override void Execute() {
+            project.Parts.Remove(part);
+            for (int i = 0; i < project.Parts.Count; i++)
+            {
+                project.Parts[i].PartNo = i;
+                if (project.Parts[i] is UVoicePart voice)
+                {
+                    foreach (var item in voice.Notes)
+                    {
+                        item.PartNo = i;
+                    }
+                }
+            }
+        }
+        public override void Unexecute() {
+            project.Parts.Add(part);
+            for (int i = 0; i < project.Parts.Count; i++)
+            {
+                project.Parts[i].PartNo = i;
+                if (project.Parts[i] is UVoicePart voice)
+                {
+                    foreach (var item in voice.Notes)
+                    {
+                        item.PartNo = i;
+                    }
+                }
+            }
+        }
     }
 
     public class MovePartCommand : PartCommand

@@ -15,13 +15,19 @@ namespace OpenUtau.Core.Render
         private readonly ISampleProvider source;
         private readonly List<ExpPoint> envelope = new List<ExpPoint>();
         private int samplePosition = 0;
+        private double skipOver;
 
         public EnvelopeSampleProvider(ISampleProvider source, List<ExpPoint> envelope, double skipOver)
         {
             this.source = source;
             foreach (var pt in envelope) this.envelope.Add(pt.Clone());
+            this.skipOver = skipOver;
             int skipOverSamples = (int)(skipOver * (WaveFormat?.SampleRate).GetValueOrDefault(0) / 1000);
             ConvertEnvelope(skipOverSamples);
+        }
+
+        public EnvelopeSampleProvider Clone() {
+            return new EnvelopeSampleProvider(source, envelope, skipOver);
         }
 
         public int Read(float[] buffer, int offset, int count)
@@ -60,10 +66,10 @@ namespace OpenUtau.Core.Render
 
         private float GetGain()
         {
-            while (nextPoint < envelope.Count() && samplePosition >= envelope[nextPoint].X)
+            while (nextPoint < envelope.Count && samplePosition >= envelope[nextPoint].X)
             {
                 nextPoint++;
-                if (nextPoint > 0 && nextPoint < envelope.Count())
+                if (nextPoint > 0 && nextPoint < envelope.Count)
                 {
                     x0 = (int)envelope[nextPoint - 1].X;
                     x1 = (int)envelope[nextPoint].X;
@@ -72,7 +78,7 @@ namespace OpenUtau.Core.Render
                 }
             }
             if (nextPoint == 0) return (float)envelope[0].Y;
-            else if (nextPoint == envelope.Count()) return (float)envelope.Last().Y;
+            else if (nextPoint == envelope.Count) return (float)envelope.Last().Y;
             else return y0 + (y1 - y0) * (samplePosition - x0) / (x1 - x0);
         }
 
