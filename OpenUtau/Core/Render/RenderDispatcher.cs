@@ -50,7 +50,7 @@ namespace OpenUtau.Core.Render
             foreach (UTrack track in project.Tracks)
             {
                 //if(!skippedTracks.Contains(track.TrackNo))
-                trackSources.Add(new TrackSampleProvider() { PlainVolume = DecibelToVolume(track.Volume), Muted = track.Mute, Pan = (float)track.Pan / 90f });
+                trackSources.Add(new TrackSampleProvider() { TrackNo = track.TrackNo, PlainVolume = DecibelToVolume(track.Volume), Muted = track.Mute, Pan = (float)track.Pan / 90f });
             }
             foreach (UPart part in project.Parts)
             {
@@ -60,9 +60,11 @@ namespace OpenUtau.Core.Render
                     {
                         var src = BuildWavePartAudio(part as UWavePart, project);
                         if (src != null)
+                        {
                             trackSources[part.TrackNo].AddSource(
                                 src,
                                 TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)));
+                        }
                     }
                 }
                 else
@@ -105,7 +107,7 @@ namespace OpenUtau.Core.Render
                     }
                     ++i;
                     var src1 = new RawSourceWaveStream(str, source.WaveFormat);
-                    var src2 = new TrackWaveChannel(src1) { PlainVolume = source.PlainVolume, Pan = source.Pan, Muted = source.Muted };
+                    var src2 = new TrackWaveChannel(src1) { TrackNo = source.TrackNo, PlainVolume = source.PlainVolume, Pan = source.Pan, Muted = source.Muted };
                     masterMix.AddInputStream(src2);
                     DocManager.Inst.ExecuteCmd(new ProgressBarNotification((int)((float)i / trackSources.Count * 100), $"Rendering Tracks {i}/{trackSources.Count}"));
                 }));

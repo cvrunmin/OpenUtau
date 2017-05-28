@@ -45,6 +45,7 @@ namespace OpenUtau.UI.Dialogs
             pathsItem.IsSelected = true;
             UpdateSingerPaths();
             UpdateEngines();
+            UpdateRenders();
         }
 
         # region Paths
@@ -160,6 +161,11 @@ namespace OpenUtau.UI.Dialogs
         {
             Core.Util.Preferences.Default.RenderManager = RenderManager[comboRenderMana.SelectedIndex];
             Core.Util.Preferences.Save();
+        }
+
+        private void UpdateRenders() {
+            comboRenderMana.SelectedItem = Core.Util.Preferences.Default.RenderManager;
+            chkboxInstantRender.IsChecked = Core.Util.Preferences.Default.RenderNoteAtInstant;
         }
     }
 }

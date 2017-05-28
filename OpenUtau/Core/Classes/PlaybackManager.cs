@@ -111,9 +111,11 @@ namespace OpenUtau.Core
 
         private async void BuildAudioAndPlay(UProject project)
         {
+            pendingParts = 1;
             masterMix = await RenderDispatcher.Inst.GetMixingStream(project);
             trackSources = new List<TrackWaveChannel>(masterMix.InputStreams.Cast<TrackWaveChannel>());
             masterMix.CurrentTime = SkipedTimeSpan;
+            pendingParts = 0;
             StartPlayback(true);
         }
 
@@ -155,11 +157,11 @@ namespace OpenUtau.Core
                 var _cmd = cmd as VolumeChangeNotification;
                 if (masterMix != null && masterMix.InputCount > _cmd.TrackNo)
                 {
-                    (masterMix.InputStreams.ElementAt(_cmd.TrackNo) as TrackWaveChannel).PlainVolume = DecibelToVolume(_cmd.Volume);
+                    (masterMix.InputStreams.Find(stream=> ((TrackWaveChannel)stream).TrackNo == _cmd.TrackNo) as TrackWaveChannel).PlainVolume = DecibelToVolume(_cmd.Volume);
                 }
                 if (trackSources != null && trackSources.Count > _cmd.TrackNo)
                 {
-                    trackSources[_cmd.TrackNo].PlainVolume = DecibelToVolume(_cmd.Volume);
+                    trackSources.Find(stream => stream.TrackNo == _cmd.TrackNo).PlainVolume = DecibelToVolume(_cmd.Volume);
                 }
             }
             else if (cmd is PanChangeNotification)
@@ -167,22 +169,22 @@ namespace OpenUtau.Core
                 var _cmd = cmd as PanChangeNotification;
                 if (masterMix != null && masterMix.InputCount > _cmd.TrackNo)
                 {
-                    (masterMix.InputStreams.ElementAt(_cmd.TrackNo) as TrackWaveChannel).Pan = (float)_cmd.Pan / 90f;
+                    (masterMix.InputStreams.Find(stream => ((TrackWaveChannel)stream).TrackNo == _cmd.TrackNo) as TrackWaveChannel).Pan = (float)_cmd.Pan / 90f;
                 }
                 if (trackSources != null && trackSources.Count > _cmd.TrackNo)
                 {
-                    trackSources[_cmd.TrackNo].Pan = (float)_cmd.Pan / 90f;
+                    trackSources.Find(stream => stream.TrackNo == _cmd.TrackNo).Pan = (float)_cmd.Pan / 90f;
                 }
             }
             else if (cmd is MuteNotification mute)
             {
                 if (masterMix != null && masterMix.InputCount > mute.TrackNo)
                 {
-                    (masterMix.InputStreams.ElementAt(mute.TrackNo) as TrackWaveChannel).Muted = mute.Muted;
+                    (masterMix.InputStreams.Find(stream => ((TrackWaveChannel)stream).TrackNo == mute.TrackNo) as TrackWaveChannel).Muted = mute.Muted;
                 }
                 if (trackSources != null && trackSources.Count > mute.TrackNo)
                 {
-                    trackSources[mute.TrackNo].Muted = mute.Muted;
+                    trackSources.Find(stream => stream.TrackNo == mute.TrackNo).Muted = mute.Muted;
                 }
             }
         }

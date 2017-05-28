@@ -72,6 +72,7 @@ namespace OpenUtau.Core.Formats
             using (var stream = new AudioFileReader(path))
             {
                 double peaksSamples = (int)((double)stream.Length / stream.WaveFormat.BlockAlign / stream.WaveFormat.SampleRate * peaksRate);
+                if (channels != stream.WaveFormat.Channels) channels = stream.WaveFormat.Channels;
                 peaks = new float[(int)(peaksSamples + 1) * channels];
                 double blocksPerPixel = stream.Length / stream.WaveFormat.BlockAlign / peaksSamples;
 

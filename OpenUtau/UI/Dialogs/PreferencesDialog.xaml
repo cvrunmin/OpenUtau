@@ -44,7 +44,7 @@
                 <ComboBoxItem Content="ASIO"/>
             </ComboBox>
         </Grid>
-        <Grid x:Name="renderingGrid" Margin="170,2,10,10">
+        <Grid x:Name="renderingGrid" Margin="170,2,10,10" Visibility="Hidden">
             <ScrollViewer>
                 <Grid>
                     

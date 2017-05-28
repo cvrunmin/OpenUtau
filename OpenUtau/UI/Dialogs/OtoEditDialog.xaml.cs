@@ -44,6 +44,7 @@ namespace OpenUtau.UI.Dialogs
                 ForceUpdateTextBox();
             }
             aliasBak = EditingOto.Alias;
+            peaks = Core.Formats.Wave.BuildPeaks(EditingOto.File, 1, new BackgroundWorker());
             CreateWaveForm(singer, oto);
         }
         private USinger SavedSinger;
@@ -69,8 +70,9 @@ namespace OpenUtau.UI.Dialogs
 
         private ImageBrush CreateWaveFormAsync(USinger singer, UOto oto)
         {
-            WriteableBitmap img = new NewWaveFormRenderer().RenderBitmap(System.IO.Path.Combine(singer.Path, oto.File), new WaveFormRendererLib.StandardWaveFormRendererSettings() { TopHeight = 100, BottomHeight = 100, Width = (int)(800 * (model.element.ScaleX != 0 ? model.element.ScaleX : 1)), TopPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), BottomPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), DecibelScale = true, SpacerPixels = 1, TopSpacerPen = new System.Drawing.Pen(System.Drawing.Color.Cyan), BottomSpacerPen = new System.Drawing.Pen(System.Drawing.Color.Cyan) });
-            return new ImageBrush(img);
+            DrawWaveform();
+            //WriteableBitmap img = new NewWaveFormRenderer().RenderBitmap(System.IO.Path.Combine(singer.Path, oto.File), new WaveFormRendererLib.StandardWaveFormRendererSettings() { TopHeight = 100, BottomHeight = 100, Width = (int)(800 * (model.element.ScaleX != 0 ? model.element.ScaleX : 1)), TopPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), BottomPeakPen = new System.Drawing.Pen(System.Drawing.Color.Blue), DecibelScale = true, SpacerPixels = 1, TopSpacerPen = new System.Drawing.Pen(System.Drawing.Color.Cyan), BottomSpacerPen = new System.Drawing.Pen(System.Drawing.Color.Cyan) });
+            return new ImageBrush(partBitmap);
         }
         private Polyline CreateWaveFormLineAsync(USinger singer, UOto oto)
         {
@@ -113,6 +115,8 @@ namespace OpenUtau.UI.Dialogs
         internal double ActualPreutterPosX  => (     EditingOto.Preutter  / EditingOto.Duration  * waveformCanvas.ActualWidth) + ActualOffsetPosX;
         internal double ActualCutoffPosX    => (1d - EditingOto.Cutoff    / EditingOto.Duration) * waveformCanvas.ActualWidth;
         internal EditStatus Status = EditStatus.NotCaptured;
+        private float[] peaks;
+        private WriteableBitmap partBitmap;
 
         private void waveformCanvas_SetValHelper(System.Windows.Point pt)
         {
@@ -264,6 +268,66 @@ namespace OpenUtau.UI.Dialogs
                 model.element.ScaleX *= 0.5;
                 canvasGrid.Width *= 0.5;
                 CreateWaveForm(SavedSinger, EditingOto);
+            }
+        }
+        private void DrawWaveform()
+        {
+            int x = 0;
+            double width = (int)(800 * (model.element.ScaleX != 0 ? model.element.ScaleX : 1));
+            double height = 200;
+            double samplesPerPixel = peaks.Length / width;
+            partBitmap = BitmapFactory.New((int)width, (int)height);
+            using (BitmapContext cxt = partBitmap.GetBitmapContext())
+            {
+                double monoChnlAmp = (height - 4) / 2;
+                double stereoChnlAmp = (height - 6) / 4;
+
+                int channels = 1;
+                partBitmap.Clear();
+                float left, right, lmax, lmin, rmax, rmin;
+                lmax = lmin = rmax = rmin = 0;
+                double position = 0;
+                
+                for (int i = (int)(position / channels) * channels; i < peaks.Length; i += channels)
+                {
+                    left = peaks[i];
+                    right = peaks[i + 1];
+                    lmax = Math.Max(left, lmax);
+                    lmin = Math.Min(left, lmin);
+                    if (channels > 1)
+                    {
+                        rmax = Math.Max(right, rmax);
+                        rmin = Math.Min(right, rmin);
+                    }
+                    if (i > position)
+                    {
+                        if (channels > 1)
+                        {
+                            WriteableBitmapExtensions.DrawLine(
+                                partBitmap,
+                                x, (int)(stereoChnlAmp * (1 + lmin)) + 2,
+                                x, (int)(stereoChnlAmp * (1 + lmax)) + 2,
+                                Colors.White);
+                            WriteableBitmapExtensions.DrawLine(
+                                partBitmap,
+                                x, (int)(stereoChnlAmp * (1 + rmin) + monoChnlAmp) + 3,
+                                x, (int)(stereoChnlAmp * (1 + rmax) + monoChnlAmp) + 3,
+                                Colors.White);
+                        }
+                        else
+                        {
+                            WriteableBitmapExtensions.DrawLine(
+                                partBitmap,
+                                x, (int)(monoChnlAmp * (1 + lmin)) + 2,
+                                x, (int)(monoChnlAmp * (1 + lmax)) + 2,
+                                Colors.White);
+                        }
+                        lmax = lmin = rmax = rmin = 0;
+                        position += samplesPerPixel;
+                        x++;
+                        //if (x > CanvasWidth) break;
+                    }
+                }
             }
         }
     }
