@@ -408,7 +408,7 @@ namespace OpenUtau.UI
             else if (_inPitMove)
             {
                 double tickX = midiVM.CanvasToQuarter(mousePos.X) * DocManager.Inst.Project.Resolution / midiVM.BeatPerBar - _noteHit.PosTick;
-                double deltaX = DocManager.Inst.Project.TickToMillisecond(tickX) - _pitHit.X;
+                double deltaX = DocManager.Inst.Project.TickToMillisecond(tickX, midiVM.Part.PosTick) - _pitHit.X;
                 if (_pitHitIndex != 0) deltaX = Math.Max(deltaX, _noteHit.PitchBend.Points[_pitHitIndex - 1].X - _pitHit.X);
                 if (_pitHitIndex != _noteHit.PitchBend.Points.Count - 1) deltaX = Math.Min(deltaX, _noteHit.PitchBend.Points[_pitHitIndex + 1].X - _pitHit.X);
                 double deltaY = Keyboard.Modifiers == ModifierKeys.Shift ? Math.Round(midiVM.CanvasToPitch(mousePos.Y) - _noteHit.NoteNum) * 10 - _pitHit.Y :
@@ -604,7 +604,7 @@ namespace OpenUtau.UI
         {
             if (midiVM.Part == null) return;
             Point mousePos = e.GetPosition((UIElement)sender);
-            int tick = (int)(midiVM.CanvasToSnappedQuarter(mousePos.X) * midiVM.Project.Resolution);
+            int tick = (int)(midiVM.CanvasToSnappedQuarter(mousePos.X) * midiVM.Project.Resolution / midiVM.Project.BeatPerBar);
             DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(Math.Max(0, tick) + midiVM.Part.PosTick));
             ((Canvas)sender).CaptureMouse();
         }
@@ -618,7 +618,7 @@ namespace OpenUtau.UI
         {
             if (Mouse.LeftButton == MouseButtonState.Pressed && Mouse.Captured == timelineCanvas)
             {
-                int tick = (int)(midiVM.CanvasToSnappedQuarter(mousePos.X) * midiVM.Project.Resolution);
+                int tick = (int)(midiVM.CanvasToSnappedQuarter(mousePos.X) * midiVM.Project.Resolution / midiVM.Project.BeatPerBar);
                 if (midiVM.playPosTick != tick + midiVM.Part.PosTick)
                     DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(Math.Max(0, tick) + midiVM.Part.PosTick));
             }
@@ -666,7 +666,7 @@ namespace OpenUtau.UI
         {
             if (Keyboard.Modifiers == ModifierKeys.Alt && e.SystemKey == Key.F4)
             {
-                this.Hide();
+                this.Close();
             }
             else if (midiVM.Part != null && !midiVM.AnyNotesEditing)
             {
@@ -716,8 +716,8 @@ namespace OpenUtau.UI
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            e.Cancel = true;
-            this.Hide();
+            //e.Cancel = true;
+            //this.Hide();
         }
         private void expCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {

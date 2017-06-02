@@ -47,7 +47,7 @@ namespace OpenUtau.Core.USTx
             note.NoteNum = noteNum;
             note.PosTick = posTick;
             note.DurTick = durTick;
-            note.PitchBend.Points[1].X = Math.Min(25, DocManager.Inst.Project.TickToMillisecond(note.DurTick) / 2);
+            note.PitchBend.Points[1].X = Math.Min(25, DocManager.Inst.Project.TickToMillisecond(note.DurTick, posTick) / 2);
             return note;
         }
 
@@ -88,7 +88,13 @@ namespace OpenUtau.Core.USTx
             return processed;
         }
 
-        public double TickToMillisecond(double tick)
+        public double TickToMillisecond(double tick, double offsetTick = 0) {
+            var ms1 = TickToMillisecondImpl(tick + offsetTick);
+            var ms2 = TickToMillisecondImpl(offsetTick);
+            return ms1 - ms2;
+        }
+
+        private double TickToMillisecondImpl(double tick)
         {
             var passedBpm = SubBPM.Where(pair => pair.Key < tick).OrderBy(pair => pair.Key);
             double ms;
@@ -97,7 +103,7 @@ namespace OpenUtau.Core.USTx
                 ms = MusicMath.TickToMillisecond(passedBpm.First().Key, BPM, BeatUnit, Resolution);
                 for (int i = 0; i < passedBpm.Count(); i++)
                 {
-                    ms += MusicMath.TickToMillisecond(i == passedBpm.Count() + 1 ? tick : passedBpm.ElementAt(i + 1).Key - passedBpm.ElementAt(i).Key, passedBpm.ElementAt(i).Value, BeatUnit, Resolution);
+                    ms += MusicMath.TickToMillisecond((i == passedBpm.Count() - 1 ? tick : passedBpm.ElementAt(i + 1).Key) - passedBpm.ElementAt(i).Key, passedBpm.ElementAt(i).Value, BeatUnit, Resolution);
                 }
             }
             else

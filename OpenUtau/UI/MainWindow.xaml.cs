@@ -61,6 +61,7 @@ namespace OpenUtau.UI
 
             trackVM = this.Resources["tracksVM"] as TracksViewModel;
             trackVM.TimelineCanvas = this.timelineCanvas;
+            trackVM.TimelineBG = timelineBackground;
             trackVM.TrackCanvas = this.trackCanvas;
             trackVM.HeaderCanvas = this.headerCanvas;
             trackVM.Subscribe(DocManager.Inst);
@@ -100,8 +101,14 @@ namespace OpenUtau.UI
         {
             Point mousePos = e.GetPosition((UIElement)sender);
             int tick = (int)(trackVM.CanvasToSnappedQuarter(mousePos.X) * trackVM.Project.Resolution / trackVM.BeatPerBar);
-            DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(Math.Max(0, tick)));
-            ((Canvas)sender).CaptureMouse();
+            if (e.ClickCount >= 2) {
+                new BpmDialog() { Bpm = trackVM.Project.SubBPM.ContainsKey(tick) ? trackVM.Project.SubBPM[tick] : trackVM.BPM, TickLoc = tick, SubBpm = true }.ShowDialog();
+            }
+            else
+            {
+                DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(Math.Max(0, tick)));
+                ((Canvas)sender).CaptureMouse();
+            }
         }
 
         private void timelineCanvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
@@ -195,8 +202,13 @@ namespace OpenUtau.UI
                 {
                     if (partEl is VoicePartElement) // load part into midi window
                     {
-                        if (midiWindow == null) midiWindow = new MidiWindow();
-                        DocManager.Inst.ExecuteCmd(new LoadPartNotification(partEl.Part, trackVM.Project));
+                        if (midiWindow == null)
+                            {
+                                midiWindow = new MidiWindow();
+                                midiWindow.Closed += (sender1, e1) => midiWindow = null;
+                            }
+
+                            DocManager.Inst.ExecuteCmd(new LoadPartNotification(partEl.Part, trackVM.Project));
                         midiWindow.Show();
                         midiWindow.Focus();
                     }

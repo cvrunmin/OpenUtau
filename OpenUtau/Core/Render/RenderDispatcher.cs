@@ -75,7 +75,7 @@ namespace OpenUtau.Core.Render
                         System.IO.FileInfo ResamplerFile = new System.IO.FileInfo(PathManager.Inst.GetPreviewEnginePath());
                         IResamplerDriver engine = ResamplerDriver.ResamplerDriver.LoadEngine(ResamplerFile.FullName);
                         trackSources[part.TrackNo].AddSource(await BuildVoicePartAudio(part as UVoicePart, project, engine) ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(),
-                            TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick) - project.TickToMillisecond(480) * part.PosTick / project.Resolution));
+                            TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick) - project.TickToMillisecond(480, part.PosTick) * part.PosTick / project.Resolution));
                     }
                 }
             }
@@ -83,11 +83,19 @@ namespace OpenUtau.Core.Render
             masterMix = new UWaveMixerStream32();
             var schedule = new List<Task>();
             DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, $"Rendering Tracks 0/{trackSources.Count}"));
+            int pending = 0;
+            int total = trackSources.Count;
             foreach (var source in trackSources)
             {
-                var str = new System.IO.MemoryStream();
+                var str = new System.IO.MemoryStream(source.WaveFormat.AverageBytesPerSecond * 60);
 
                 schedule.Add(Task.Run(async () => {
+                    /*while (true)
+                    {
+                        if (pending < 2) break;
+                        await Task.Delay(1000);
+                    }*/
+                    ++pending;
                     var wave = source.ToWaveProvider();
                     var buffer = new byte[source.WaveFormat.AverageBytesPerSecond * 4];
                     while (true)
@@ -101,18 +109,21 @@ namespace OpenUtau.Core.Render
                         }
                         await str.WriteAsync(buffer, 0, bytesRead);
                     }
+                    buffer = null;
+                    wave = null;
                 }).ContinueWith(task=> {
-                    if (task.IsFaulted) {
-                        throw task.Exception;
-                    }
+                    //if (task.IsFaulted) throw task.Exception;
+                    trackSources.Remove(source);
                     ++i;
+                    --pending;
                     var src1 = new RawSourceWaveStream(str, source.WaveFormat);
                     var src2 = new TrackWaveChannel(src1) { TrackNo = source.TrackNo, PlainVolume = source.PlainVolume, Pan = source.Pan, Muted = source.Muted };
                     masterMix.AddInputStream(src2);
-                    DocManager.Inst.ExecuteCmd(new ProgressBarNotification((int)((float)i / trackSources.Count * 100), $"Rendering Tracks {i}/{trackSources.Count}"));
+                    DocManager.Inst.ExecuteCmd(new ProgressBarNotification((int)((float)i / total * 100), $"Rendering Tracks {i}/{total}"));
                 }));
             }
             await Task.WhenAll(schedule);
+            trackSources.Clear();
             return masterMix;
         }
         public async Task<MixingSampleProvider> GetMixingSampleProvider(UProject project, int[] skippedTracks)
@@ -151,7 +162,7 @@ namespace OpenUtau.Core.Render
                         System.IO.FileInfo ResamplerFile = new System.IO.FileInfo(PathManager.Inst.GetPreviewEnginePath());
                         IResamplerDriver engine = ResamplerDriver.ResamplerDriver.LoadEngine(ResamplerFile.FullName);
                             trackSources[part.TrackNo].AddSource(await BuildVoicePartAudio(part as UVoicePart, project, engine, cancel) ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(),
-                                TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick) - project.TickToMillisecond(480) * part.PosTick / project.Resolution));
+                                TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick) - project.TickToMillisecond(480, part.PosTick) * part.PosTick / project.Resolution));
                     }
                 }
                 cancel.ThrowIfCancellationRequested();
@@ -173,7 +184,7 @@ namespace OpenUtau.Core.Render
                 stream = new WaveFormatConversionStream(new WaveFormat(44100, stream.WaveFormat.BitsPerSample, stream.WaveFormat.Channels), stream);
             }
             ISampleProvider sample = new WaveToSampleProvider(stream);
-            var offseted = new UOffsetSampleProvider(sample) { SkipOver = new TimeSpan(0,0,0,0,(int)project.TickToMillisecond(part.HeadTrimTick)), Take = new TimeSpan(0,0,0,0,(int)project.TickToMillisecond(part.DurTick))};
+            var offseted = new UOffsetSampleProvider(sample) { SkipOver = new TimeSpan(0,0,0,0,(int)project.TickToMillisecond(part.HeadTrimTick, part.PosTick - part.HeadTrimTick)), Take = new TimeSpan(0,0,0,0,(int)project.TickToMillisecond(part.DurTick, part.PosTick))};
             return offseted;
         }
 

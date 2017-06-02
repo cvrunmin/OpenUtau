@@ -60,9 +60,12 @@ namespace OpenUtau.Core.Formats
             return uwavepart;
         }
         public static float[] BuildPeaks(UWavePart part, System.ComponentModel.BackgroundWorker worker) {
-            return BuildPeaks(part.FilePath, part.Channels, worker);
+            return BuildPeaks(part.FilePath, part.Channels, worker, new TimeSpan(0, 0, 0, 0, (int)DocManager.Inst.Project.TickToMillisecond(part.HeadTrimTick)), new TimeSpan(0, 0, 0, 0, (int)DocManager.Inst.Project.TickToMillisecond(part.DurTick)));
         }
-        public static float[] BuildPeaks(string path, int channels, System.ComponentModel.BackgroundWorker worker)
+        public static float[] BuildPeaks(string path, int channels, System.ComponentModel.BackgroundWorker worker) {
+            return BuildPeaks(path, channels, worker, TimeSpan.Zero, TimeSpan.MinValue);
+        }
+        public static float[] BuildPeaks(string path, int channels, System.ComponentModel.BackgroundWorker worker, TimeSpan startPos, TimeSpan durPos)
         {
             if (!File.Exists(path)) return new float[0];
             const double peaksRate = 4000;
@@ -71,44 +74,48 @@ namespace OpenUtau.Core.Formats
             float[] peaks;
             using (var stream = new AudioFileReader(path))
             {
-                double peaksSamples = (int)((double)stream.Length / stream.WaveFormat.BlockAlign / stream.WaveFormat.SampleRate * peaksRate);
-                if (channels != stream.WaveFormat.Channels) channels = stream.WaveFormat.Channels;
-                peaks = new float[(int)(peaksSamples + 1) * channels];
-                double blocksPerPixel = stream.Length / stream.WaveFormat.BlockAlign / peaksSamples;
-
-                var converted = new WaveToSampleProvider(stream);
-
-                float[] buffer = new float[4096];
-
-                int readed;
-                int readPos = 0;
-                int peaksPos = 0;
-                double bufferPos = 0;
-                float lmax = 0, lmin = 0, rmax = 0, rmin = 0;
-                while ((readed = converted.Read(buffer, 0, 4096)) != 0)
+                using (var offset = new WaveOffsetStream(new Wave32To16Stream(stream), TimeSpan.Zero, startPos, durPos != TimeSpan.MinValue ? durPos : stream.TotalTime))
                 {
-                    readPos += readed;
-                    for (int i = 0; i < readed; i += channels)
+                    double peaksSamples = (int)((double)offset.Length / offset.WaveFormat.BlockAlign / offset.WaveFormat.SampleRate * peaksRate);
+                    if (channels != offset.WaveFormat.Channels) channels = offset.WaveFormat.Channels;
+                    peaks = new float[(int)(peaksSamples + 1) * channels];
+                    double blocksPerPixel = offset.Length / offset.WaveFormat.BlockAlign / peaksSamples;
+
+                    var converted =  (offset.ToSampleProvider());
+
+                    float[] buffer = new float[4096];
+
+                    int readed;
+                    int readPos = 0;
+                    int peaksPos = 0;
+                    double bufferPos = 0;
+                    float lmax = 0, lmin = 0, rmax = 0, rmin = 0;
+                    while ((readed = converted.Read(buffer, 0, 4096)) != 0)
                     {
-                        lmax = Math.Max(lmax, buffer[i]);
-                        lmin = Math.Min(lmin, buffer[i]);
-                        if (channels > 1)
+                        if (offset.Position > offset.Length) break; //over-run
+                        readPos += readed;
+                        for (int i = 0; i < readed; i += channels)
                         {
-                            rmax = Math.Max(rmax, buffer[i + 1]);
-                            rmin = Math.Min(rmin, buffer[i + 1]);
+                            lmax = Math.Max(lmax, buffer[i]);
+                            lmin = Math.Min(lmin, buffer[i]);
+                            if (channels > 1)
+                            {
+                                rmax = Math.Max(rmax, buffer[i + 1]);
+                                rmin = Math.Min(rmin, buffer[i + 1]);
+                            }
+                            if (i > bufferPos)
+                            {
+                                lmax = -lmax; lmin = -lmin; rmax = -rmax; rmin = -rmin; // negate peaks to fipped waveform
+                                peaks[peaksPos * channels] = lmax == 0 ? lmin : lmin == 0 ? lmax : (lmin + lmax) / 2;
+                                peaks[peaksPos * channels + 1] = rmax == 0 ? rmin : rmin == 0 ? rmax : (rmin + rmax) / 2;
+                                peaksPos++;
+                                lmax = lmin = rmax = rmin = 0;
+                                bufferPos += blocksPerPixel * stream.WaveFormat.Channels;
+                            }
                         }
-                        if (i > bufferPos)
-                        {
-                            lmax = -lmax; lmin = -lmin; rmax = -rmax; rmin = -rmin; // negate peaks to fipped waveform
-                            peaks[peaksPos * channels] = lmax == 0 ? lmin : lmin == 0 ? lmax : (lmin + lmax) / 2;
-                            peaks[peaksPos * channels + 1] = rmax == 0 ? rmin : rmin == 0 ? rmax : (rmin + rmax) / 2;
-                            peaksPos++;
-                            lmax = lmin = rmax = rmin = 0;
-                            bufferPos += blocksPerPixel * stream.WaveFormat.Channels;
-                        }
+                        bufferPos -= readed;
+                        worker.ReportProgress((int)((double)readPos * sizeof(float) * 100 / stream.Length));
                     }
-                    bufferPos -= readed;
-                    worker.ReportProgress((int)((double)readPos * sizeof(float) * 100 / stream.Length));
                 }
             }
             sw.Stop();

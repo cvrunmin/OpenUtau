@@ -23,6 +23,8 @@ namespace OpenUtau.UI.Dialogs
         public double Bpm { get; set; }
         public int BeatPerBar { get; set; }
         public int BeatUnit { get; set; }
+        public int TickLoc { get; set; }
+        public bool SubBpm { get; set; }
         public BpmDialog()
         {
             InitializeComponent();
@@ -30,7 +32,15 @@ namespace OpenUtau.UI.Dialogs
 
         private void butOk_Click(object sender, RoutedEventArgs e)
         {
-            DocManager.Inst.ExecuteCmd(new UpdateProjectPropertiesNotification(DocManager.Inst.Project, Bpm, BeatPerBar, BeatUnit));
+            if (SubBpm)
+            {
+                DocManager.Inst.ExecuteCmd(new UpdateProjectBpmsNotification(DocManager.Inst.Project, Bpm, TickLoc, Bpm == DocManager.Inst.Project.BPM ^ (Bpm != DocManager.Inst.Project.SubBPM.LastOrDefault(pair => pair.Key < TickLoc).Value && DocManager.Inst.Project.SubBPM.LastOrDefault(pair => pair.Key < TickLoc).Value != 0)));
+            }
+            else
+            {
+                DocManager.Inst.ExecuteCmd(new UpdateProjectPropertiesNotification(DocManager.Inst.Project, Bpm, BeatPerBar, BeatUnit));
+            }
+
             DialogResult = true;
             Close();
         }
@@ -50,6 +60,14 @@ namespace OpenUtau.UI.Dialogs
                     textbox.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
                 }
             }
+        }
+
+        private void window_Loaded(object sender, RoutedEventArgs e)
+        {
+            lblts.Visibility = SubBpm ? Visibility.Collapsed : Visibility.Visible;
+            txtboxBeatPerBar.Visibility = SubBpm ? Visibility.Collapsed : Visibility.Visible;
+            txtboxBeatUnit.Visibility = SubBpm ? Visibility.Collapsed : Visibility.Visible;
+            ForceUpdateTextBox();
         }
     }
 }

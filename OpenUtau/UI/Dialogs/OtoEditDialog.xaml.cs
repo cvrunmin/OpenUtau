@@ -44,7 +44,12 @@ namespace OpenUtau.UI.Dialogs
                 ForceUpdateTextBox();
             }
             aliasBak = EditingOto.Alias;
-            peaks = Core.Formats.Wave.BuildPeaks(EditingOto.File, 1, new BackgroundWorker());
+            string rawfile = Core.Lib.EncodingUtil.ConvertEncoding(singer.FileEncoding, singer.PathEncoding, oto.File);
+            if (!string.IsNullOrWhiteSpace(rawfile))
+            {
+                rawfile = System.IO.Path.Combine(singer.Path, rawfile);
+                peaks = Core.Formats.Wave.BuildPeaks(rawfile, 1, new BackgroundWorker() { WorkerReportsProgress = true });
+            }
             CreateWaveForm(singer, oto);
         }
         private USinger SavedSinger;
@@ -263,7 +268,7 @@ namespace OpenUtau.UI.Dialogs
 
         private void PART_ZoomOutButton_Click(object sender, RoutedEventArgs e)
         {
-            if (model.element.ScaleX > 0.125)
+            if (model.element.ScaleX > 0.5)
             {
                 model.element.ScaleX *= 0.5;
                 canvasGrid.Width *= 0.5;
@@ -284,6 +289,7 @@ namespace OpenUtau.UI.Dialogs
 
                 int channels = 1;
                 partBitmap.Clear();
+                partBitmap.FillRectangle(0, 0, (int)width, (int)height, Colors.LightCyan);
                 float left, right, lmax, lmin, rmax, rmin;
                 lmax = lmin = rmax = rmin = 0;
                 double position = 0;
@@ -291,11 +297,11 @@ namespace OpenUtau.UI.Dialogs
                 for (int i = (int)(position / channels) * channels; i < peaks.Length; i += channels)
                 {
                     left = peaks[i];
-                    right = peaks[i + 1];
                     lmax = Math.Max(left, lmax);
                     lmin = Math.Min(left, lmin);
                     if (channels > 1)
                     {
+                        right = peaks[i + 1];
                         rmax = Math.Max(right, rmax);
                         rmin = Math.Min(right, rmin);
                     }
@@ -307,12 +313,12 @@ namespace OpenUtau.UI.Dialogs
                                 partBitmap,
                                 x, (int)(stereoChnlAmp * (1 + lmin)) + 2,
                                 x, (int)(stereoChnlAmp * (1 + lmax)) + 2,
-                                Colors.White);
+                                Colors.Blue);
                             WriteableBitmapExtensions.DrawLine(
                                 partBitmap,
                                 x, (int)(stereoChnlAmp * (1 + rmin) + monoChnlAmp) + 3,
                                 x, (int)(stereoChnlAmp * (1 + rmax) + monoChnlAmp) + 3,
-                                Colors.White);
+                                Colors.Blue);
                         }
                         else
                         {
@@ -320,7 +326,7 @@ namespace OpenUtau.UI.Dialogs
                                 partBitmap,
                                 x, (int)(monoChnlAmp * (1 + lmin)) + 2,
                                 x, (int)(monoChnlAmp * (1 + lmax)) + 2,
-                                Colors.White);
+                                Colors.Blue);
                         }
                         lmax = lmin = rmax = rmin = 0;
                         position += samplesPerPixel;

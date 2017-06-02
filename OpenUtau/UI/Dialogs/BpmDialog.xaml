@@ -7,7 +7,7 @@
         xmlns:utils="clr-namespace:OpenUtau.Core.Util"
         xmlns:s="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="BpmDialog" Height="200" Width="200">
+        Title="BpmDialog" Height="200" Width="200" Loaded="window_Loaded">
     <Grid x:Name="gridProp" Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -33,7 +33,7 @@
                 </Binding>
             </TextBox.Text>
         </TextBox>
-        <Label Content="Time signature" HorizontalAlignment="Left" Margin="10,49,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblts" Content="Time signature" HorizontalAlignment="Left" Margin="10,49,0,0" VerticalAlignment="Top"/>
         <TextBox x:Name="txtboxBeatPerBar" HorizontalAlignment="Left" Height="23" Margin="109,38,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="50">
             <TextBox.Text>
                 <Binding Path="BeatPerBar" ElementName="window" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" ValidatesOnDataErrors="True" ValidatesOnExceptions="True" ValidatesOnNotifyDataErrors="True">

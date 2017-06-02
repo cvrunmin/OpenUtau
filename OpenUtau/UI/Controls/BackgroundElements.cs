@@ -170,6 +170,11 @@ namespace OpenUtau.UI.Controls
             get { return (int)GetValue(TickModeProperty); }
         }
 
+        public int Resolution {
+            set { SetValue(ResolutionProperty, value); }
+            get { return (int)GetValue(ResolutionProperty); }
+        }
+
         public static readonly DependencyProperty QuarterWidthProperty = DependencyProperty.Register("QuarterWidth", typeof(double), typeof(TickBackground), new PropertyMetadata(0.0, MarkUpdateCallback));
         public static readonly DependencyProperty MinTickWidthProperty = DependencyProperty.Register("MinTickWidth", typeof(double), typeof(TickBackground), new PropertyMetadata(0.0, MarkUpdateCallback));
         public static readonly DependencyProperty OffsetXProperty = DependencyProperty.Register("OffsetX", typeof(double), typeof(TickBackground), new PropertyMetadata(0.0, MarkUpdateCallback));
@@ -177,6 +182,7 @@ namespace OpenUtau.UI.Controls
         public static readonly DependencyProperty BeatPerBarProperty = DependencyProperty.Register("BeatPerBar", typeof(int), typeof(TickBackground), new PropertyMetadata(0, MarkUpdateCallback));
         public static readonly DependencyProperty BeatUnitProperty = DependencyProperty.Register("BeatUnit", typeof(int), typeof(TickBackground), new PropertyMetadata(0, MarkUpdateCallback));
         public static readonly DependencyProperty TickModeProperty = DependencyProperty.Register("TickMode", typeof(int), typeof(TickBackground), new PropertyMetadata(0, MarkUpdateCallback));
+        public static readonly DependencyProperty ResolutionProperty = DependencyProperty.Register("Resolution", typeof(int), typeof(TickBackground), new PropertyMetadata(0, MarkUpdateCallback));
 
         protected Pen darkPen, lightPen, dashedPen;
 
@@ -231,6 +237,7 @@ namespace OpenUtau.UI.Controls
     class TimelineBackground : TickBackground
     {
         Dictionary<int, FormattedText> fTextPool = new Dictionary<int, FormattedText>();
+        Dictionary<int, FormattedText> fTextPoolSubBpm = new Dictionary<int, FormattedText>();
 
         protected override void OnRender(DrawingContext drawingContext)
         {
@@ -260,7 +267,33 @@ namespace OpenUtau.UI.Controls
                         fTextPool.Add(barNumber, fText);
                     }
                     else fText = fTextPool[barNumber];
-                    drawingContext.DrawText(fText, new Point(snappedLeft + 3, 3));
+                    drawingContext.DrawText(fText, new Point(snappedLeft + 3, 8));
+                }
+                if (DocManager.Inst.Project.SubBPM.ContainsKey((int)(tick * zoomRatio * Resolution / BeatPerBar)))
+                {
+                    FormattedText fText;
+                    if (!fTextPoolSubBpm.ContainsKey((int)(tick * zoomRatio * Resolution / BeatPerBar)))
+                    {
+                        fText = new FormattedText(
+                            DocManager.Inst.Project.SubBPM[(int)(tick * zoomRatio * Resolution / BeatPerBar)].ToString(),
+                            System.Threading.Thread.CurrentThread.CurrentUICulture,
+                            FlowDirection.LeftToRight, SystemFonts.CaptionFontFamily.GetTypefaces().First(),
+                            12,
+                            darkPen.Brush);
+                        fTextPoolSubBpm.Add((int)(tick * zoomRatio * Resolution / BeatPerBar), fText);
+                    }
+                    else if (!fTextPoolSubBpm[(int)(tick * zoomRatio * Resolution / BeatPerBar)].Text.Equals(DocManager.Inst.Project.SubBPM[(int)(tick * zoomRatio * Resolution / BeatPerBar)].ToString()))
+                    {
+                        fText = new FormattedText(
+    DocManager.Inst.Project.SubBPM[(int)(tick * zoomRatio * Resolution / BeatPerBar)].ToString(),
+    System.Threading.Thread.CurrentThread.CurrentUICulture,
+    FlowDirection.LeftToRight, SystemFonts.CaptionFontFamily.GetTypefaces().First(),
+    12,
+    darkPen.Brush);
+                        fTextPoolSubBpm[(int)(tick * zoomRatio * Resolution / BeatPerBar)]= fText;
+                    }
+                    else fText = fTextPoolSubBpm[(int)(tick * zoomRatio * Resolution / BeatPerBar)];
+                    drawingContext.DrawText(fText, new Point(snappedLeft + 3, 0));
                 }
                 left += interval;
                 tick++;

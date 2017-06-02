@@ -76,7 +76,13 @@ namespace OpenUtau.Core
 
         public override void StopPlayback()
         {
-            if (outDevice != null) outDevice.Stop();
+            if (outDevice != null)
+            {
+                outDevice.Stop();
+                outDevice.Dispose();
+                outDevice = null;
+            }
+
             SkipedTimeSpan = TimeSpan.Zero;
         }
 
@@ -268,7 +274,7 @@ namespace OpenUtau.Core
             //BuildAudio(project);
             masterMix = await RenderDispatcher.Inst.GetMixingSampleProvider(project);
             trackSources = new List<TrackSampleProvider>(masterMix.MixerInputs.Cast<TrackSampleProvider>());
-            Task.Run(()=> trackSourcesRaw = DeepClone(trackSources)).Wait();
+            //Task.Run(()=> trackSourcesRaw = DeepClone(trackSources)).Wait();
             /*if (pendingParts == 0)*/
             StartPlayback(SkipedTimeSpan, true);
         }

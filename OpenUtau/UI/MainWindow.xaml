@@ -109,7 +109,7 @@
                         <local:TimelineBackground x:Name="timelineBackground" QuarterOffset="{Binding QuarterOffset, Source={StaticResource tracksVM}}"
                                       QuarterWidth="{Binding QuarterWidth, Source={StaticResource tracksVM}}" OffsetX="{Binding OffsetX, Source={StaticResource tracksVM}}"
                                       MinTickWidth="{Binding MinTickWidth, Source={StaticResource tracksVM}}" BeatPerBar="{Binding BeatPerBar, Source={StaticResource tracksVM}}"
-                                      BeatUnit="{Binding BeatUnit, Source={StaticResource tracksVM}}"/>
+                                      BeatUnit="{Binding BeatUnit, Source={StaticResource tracksVM}}" Resolution="{Binding Resolution, Source={StaticResource tracksVM}}"/>
                     </Grid>
                     <Canvas x:Name="timelineCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="20" Margin="0,20,20,0"
                     ClipToBounds="True" Background="Transparent"

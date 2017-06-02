@@ -15,7 +15,7 @@
         <Binding Mode="OneWay" Source="{StaticResource oto}"/>
     </Window.DataContext>
     <Grid>
-        <ScrollViewer x:Name="scrollViewer" Margin="10,90,10,30" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True" PanningMode="HorizontalOnly" Template="{DynamicResource ScrollViewerControlTemplate}">
+        <ScrollViewer x:Name="scrollViewer" Margin="10,90,10,30" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True" PanningMode="HorizontalOnly" Template="{DynamicResource ScrollViewerControlTemplate}" Background="#FF999999">
             <ScrollViewer.Resources>
                 <ControlTemplate x:Key="ScrollViewerControlTemplate" TargetType="{x:Type ScrollViewer}">
                     <Grid x:Name="Grid" Background="{TemplateBinding Background}">
@@ -31,7 +31,7 @@
                     </Grid>
                 </ControlTemplate>
             </ScrollViewer.Resources>
-            <Grid x:Name="canvasGrid" Width="1008" Background="#FF999999">
+            <Grid x:Name="canvasGrid" Width="1008">
                 <Canvas x:Name="waveformCanvas" Margin="168,0" MouseLeftButtonDown="waveformCanvas_MouseLeftButtonDown" MouseMove="waveformCanvas_MouseMove" MouseLeftButtonUp="waveformCanvas_MouseLeftButtonUp" SizeChanged="waveformCanvas_SizeChanged" MouseLeave="waveformCanvas_MouseLeave"/>
             </Grid>
         </ScrollViewer>

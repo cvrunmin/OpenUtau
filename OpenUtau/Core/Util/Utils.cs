@@ -41,7 +41,8 @@ namespace OpenUtau.Core.Util
             dest1.DurTick = splitTick - dest1.PosTick;
             if (dest1 is UWavePart wave)
             {
-                wave.TailTrimTick = wave.HeadTrimTick + wave.DurTick;
+                wave.HeadTrimTick = ((UWavePart)src).HeadTrimTick;
+                wave.TailTrimTick = wave.FileDurTick - wave.HeadTrimTick - wave.DurTick;
             } else if (dest1 is UVoicePart voice) {
                 voice.Notes.RemoveWhere(note => note.PosTick > voice.DurTick);
             }
@@ -51,6 +52,7 @@ namespace OpenUtau.Core.Util
             if (dest2 is UWavePart wave1)
             {
                 wave1.HeadTrimTick = ((UWavePart)dest1).HeadTrimTick + dest1.DurTick;
+                wave1.TailTrimTick = ((UWavePart)src).TailTrimTick;
             } else if (dest2 is UVoicePart voice1) {
                 voice1.Notes.RemoveWhere(note => note.PosTick < dest1.DurTick);
                 foreach (var item in voice1.Notes)

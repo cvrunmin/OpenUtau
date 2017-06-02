@@ -78,6 +78,43 @@ namespace OpenUtau.Core
                         }
                     }
                 }
+                else if (cmd is UpdateProjectBpmsNotification upbn)
+                {
+                    if (upbn.removal && _project.SubBPM.ContainsKey(upbn.value.Key))
+                    {
+                        _project.SubBPM.Remove(upbn.value.Key);
+                    }
+                    else
+                    {
+                        if (_project.SubBPM.ContainsKey(upbn.value.Key)) {
+                            _project.SubBPM[upbn.value.Key] = upbn.value.Value;
+                        }
+                        else
+                        {
+                            _project.SubBPM.Add(upbn.value.Key, upbn.value.Value);
+                            var removalParts = new List<UPart>();
+                            var additalParts = new List<UPart>();
+                            foreach (var part in _project.Parts)
+                            {
+                                if (part.PosTick < upbn.value.Key && part.EndTick > upbn.value.Key)
+                                {
+                                    removalParts.Add(part);
+                                    additalParts.AddRange(Util.Utils.SplitPart(part, upbn.value.Key));
+                                }
+                            }
+                            StartUndoGroup();
+                            foreach (var item in removalParts)
+                            {
+                                ExecuteCmd(new RemovePartCommand(_project, item));
+                            }
+                            foreach (var item in additalParts)
+                            {
+                                ExecuteCmd(new AddPartCommand(_project, item));
+                            }
+                            EndUndoGroup();
+                        }
+                    }
+                }
                 else if (cmd is SetPlayPosTickNotification)
                 {
                     var _cmd = cmd as SetPlayPosTickNotification;

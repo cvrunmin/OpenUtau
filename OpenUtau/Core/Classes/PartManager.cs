@@ -90,7 +90,7 @@ namespace OpenUtau.Core
                     phoneme.Envelope.Points[0].X = -phoneme.Preutter;
                     phoneme.Envelope.Points[1].X = phoneme.Envelope.Points[0].X + (phoneme.Overlapped ? phoneme.Overlap : 5);
                     phoneme.Envelope.Points[2].X = Math.Max(0, phoneme.Envelope.Points[1].X);
-                    phoneme.Envelope.Points[3].X = DocManager.Inst.Project.TickToMillisecond(phoneme.DurTick) - phoneme.TailIntrude;
+                    phoneme.Envelope.Points[3].X = DocManager.Inst.Project.TickToMillisecond(phoneme.DurTick, part.PosTick + note.PosTick + phoneme.PosTick) - phoneme.TailIntrude;
                     phoneme.Envelope.Points[4].X = phoneme.Envelope.Points[3].X + phoneme.TailOverlap;
 
                     phoneme.Envelope.Points[1].Y = (int)phoneme.Parent.Expressions["volume"].Data;
@@ -115,11 +115,11 @@ namespace OpenUtau.Core
                     if (lastPhoneme != null)
                     {
                         int gapTick = phoneme.Parent.PosTick + phoneme.PosTick - lastPhoneme.Parent.PosTick - lastPhoneme.EndTick;
-                        double gapMs = DocManager.Inst.Project.TickToMillisecond(gapTick);
+                        double gapMs = DocManager.Inst.Project.TickToMillisecond(gapTick, part.PosTick + note.PosTick + phoneme.PosTick);
                         if (gapMs < phoneme.Preutter)
                         {
                             phoneme.Overlapped = true;
-                            double lastDurMs = DocManager.Inst.Project.TickToMillisecond(lastPhoneme.DurTick);
+                            double lastDurMs = DocManager.Inst.Project.TickToMillisecond(lastPhoneme.DurTick, part.PosTick + note.PosTick + phoneme.PosTick);
                             double correctionRatio = (lastDurMs + Math.Min(0, gapMs)) / 2 / (phoneme.Preutter - phoneme.Overlap);
                             if (phoneme.Preutter - phoneme.Overlap > gapMs + lastDurMs / 2)
                             {

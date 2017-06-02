@@ -60,6 +60,19 @@ namespace OpenUtau.Core
         public override string ToString() { return "Update project to " + bpm + "bpm and " + beatPerBar + "/" + beatUnit + " beat"; }
     }
 
+    public class UpdateProjectBpmsNotification : UNotification
+    {
+        public KeyValuePair<int, double> value;
+        public bool removal;
+        public UpdateProjectBpmsNotification(UProject project, double bpm, int tick, bool removeal)
+        {
+            this.project = project;
+            this.value = new KeyValuePair<int, double>(tick, bpm);
+            this.removal = removeal;
+        }
+        public override string ToString() { return (!removal ? "Add" : "Remove") + " project\'s bpm " + value.Value + " at tick " + value.Key; }
+    }
+
     public class RedrawNotesNotification : UNotification
     {
         public override string ToString() { return "Redraw Notes"; }

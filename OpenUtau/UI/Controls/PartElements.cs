@@ -97,7 +97,7 @@ namespace OpenUtau.UI.Controls
             DrawingContext cxt = frameVisual.RenderOpen();
             if(Part != null)
             {
-                cxt.DrawRoundedRectangle(GetFrameBrush(), null, new Rect(0, 0, Part.DurTick * ScaleX, _height), 4, 4);
+                cxt.DrawRoundedRectangle(GetFrameBrush(), null, new Rect(0, 0, Math.Max(0,Part.DurTick * ScaleX), _height), 4, 4);
             }
 
             cxt.Close();

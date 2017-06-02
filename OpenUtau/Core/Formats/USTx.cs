@@ -212,7 +212,11 @@ namespace OpenUtau.Core.Formats
                     }
                 }
                 else if (dictionary.ContainsKey("path"))
+                {
                     result = Wave.CreatePart(dictionary["path"] as string);
+                    ((UWavePart)result).HeadTrimTick = Convert.ToInt32(dictionary["headtrimtick"]);
+                    ((UWavePart)result).TailTrimTick = Convert.ToInt32(dictionary["tailtrimtick"]);
+                }
 
                 if (result != null)
                 {
@@ -242,6 +246,8 @@ namespace OpenUtau.Core.Formats
                 {
                     var _obj = obj as UWavePart;
                     result.Add("path", _obj.FilePath);
+                    result.Add("headtrimtick", _obj.HeadTrimTick);
+                    result.Add("tailtrimtick", _obj.TailTrimTick);
                 }
                 else if (obj is UVoicePart)
                 {
@@ -274,6 +280,11 @@ namespace OpenUtau.Core.Formats
                 result.BeatPerBar = Convert.ToInt32(dictionary["bpbar"]);
                 result.BeatUnit = Convert.ToInt32(dictionary["bunit"]);
                 result.Resolution = Convert.ToInt32(dictionary["res"]);
+
+                foreach (var pair in (Dictionary<string, object>)dictionary["subbpm"])
+                {
+                    result.SubBPM.Add(Convert.ToInt32(pair.Key), Convert.ToDouble(pair.Value));
+                }
 
                 foreach (var pair in (Dictionary<string, object>)(dictionary["exptable"]))
                 {
@@ -327,6 +338,12 @@ namespace OpenUtau.Core.Formats
                     result.Add("output", _obj.OutputDir);
                     result.Add("cache", _obj.CacheDir);
                     result.Add("bpm", _obj.BPM);
+                    var processed = new Dictionary<string, object>();
+                    foreach (var item in _obj.SubBPM)
+                    {
+                        processed.Add(item.Key.ToString(), item.Value);
+                    }
+                    result.Add("subbpm", processed);
                     result.Add("bpbar", _obj.BeatPerBar);
                     result.Add("bunit", _obj.BeatUnit);
                     result.Add("res", _obj.Resolution);

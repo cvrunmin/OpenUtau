@@ -34,6 +34,7 @@ namespace OpenUtau.UI.Models
 
         public UProject Project { get { return DocManager.Inst.Project; } }
         public Canvas TimelineCanvas;
+        public TimelineBackground TimelineBG;
         public Canvas TrackCanvas;
         public Canvas HeaderCanvas;
 
@@ -89,6 +90,7 @@ namespace OpenUtau.UI.Models
         public double QuarterOffset { set { _quarterOffset = value; HorizontalPropertiesChanged(); } get { return _quarterOffset; } }
         public double MinTickWidth { set { _minTickWidth = value; HorizontalPropertiesChanged(); } get { return _minTickWidth; } }
         public double BPM { get { return Project.BPM; } }
+        public int Resolution => Project.Resolution;
         public int BeatPerBar { set { _beatPerBar = value; HorizontalPropertiesChanged(); } get { return _beatPerBar; } }
         public int BeatUnit { set { _beatUnit = value; HorizontalPropertiesChanged(); } get { return _beatUnit; } }
         public TimeSpan PlayPosTime { get { return TimeSpan.FromMilliseconds((int)Project.TickToMillisecond(playPosTick)); } }
@@ -458,6 +460,10 @@ namespace OpenUtau.UI.Models
                 BeatPerBar = uppn.beatPerBar;
                 BeatUnit = uppn.beatUnit;
                 OnPropertyChanged("BPM");
+            }
+            else if(cmd is UpdateProjectBpmsNotification)
+            {
+                BackgroundElement.MarkUpdateCallback(TimelineBG, new DependencyPropertyChangedEventArgs());
             }
             else if (cmd is SetPlayPosTickNotification)
             {

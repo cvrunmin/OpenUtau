@@ -220,7 +220,7 @@ namespace OpenUtau.Core.Render
                 // For connector
                 SkipOver = phoneme.Oto.Preutter * strechRatio - phoneme.Preutter,
                 PosMs = project.TickToMillisecond(part.PosTick + phoneme.Parent.PosTick + phoneme.PosTick) - phoneme.Preutter,
-                DurMs = project.TickToMillisecond(phoneme.DurTick) + lengthAdjustment,
+                DurMs = project.TickToMillisecond(phoneme.DurTick, part.PosTick + phoneme.Parent.PosTick + phoneme.PosTick) + lengthAdjustment,
                 Envelope = phoneme.Envelope.Points
             };
 
@@ -245,7 +245,7 @@ namespace OpenUtau.Core.Render
 
             if (lastNoteInvolved)
             {
-                double offsetMs = DocManager.Inst.Project.TickToMillisecond(phoneme.Parent.PosTick - lastNote.PosTick);
+                double offsetMs = DocManager.Inst.Project.TickToMillisecond(phoneme.Parent.PosTick - lastNote.PosTick, part.PosTick + lastNote.PosTick);
                 foreach (PitchPoint pp in lastNote.PitchBend.Points)
                 {
                     var newpp = pp.Clone();
@@ -255,7 +255,7 @@ namespace OpenUtau.Core.Render
                 }
                 if (lastNote.Vibrato.Depth != 0)
                 {
-                    lastVibratoStartMs = -DocManager.Inst.Project.TickToMillisecond(lastNote.DurTick) * lastNote.Vibrato.Length / 100;
+                    lastVibratoStartMs = -DocManager.Inst.Project.TickToMillisecond(lastNote.DurTick, part.PosTick + lastNote.PosTick) * lastNote.Vibrato.Length / 100;
                     lastVibratoEndMs = 0;
                 }
             }
@@ -263,13 +263,13 @@ namespace OpenUtau.Core.Render
             foreach (PitchPoint pp in phoneme.Parent.PitchBend.Points) pps.Add(pp);
             if (phoneme.Parent.Vibrato.Depth != 0)
             {
-                vibratoEndMs = DocManager.Inst.Project.TickToMillisecond(phoneme.Parent.DurTick);
+                vibratoEndMs = DocManager.Inst.Project.TickToMillisecond(phoneme.Parent.DurTick, part.PosTick + phoneme.Parent.PosTick);
                 vibratoStartMs = vibratoEndMs * (1 - phoneme.Parent.Vibrato.Length / 100);
             }
 
             if (nextNoteInvolved)
             {
-                double offsetMs = DocManager.Inst.Project.TickToMillisecond(phoneme.Parent.PosTick - nextNote.PosTick);
+                double offsetMs = DocManager.Inst.Project.TickToMillisecond(phoneme.Parent.PosTick - nextNote.PosTick, part.PosTick + nextNote.PosTick);
                 foreach (PitchPoint pp in nextNote.PitchBend.Points)
                 {
                     var newpp = pp.Clone();
@@ -279,8 +279,8 @@ namespace OpenUtau.Core.Render
                 }
             }
 
-            double startMs = DocManager.Inst.Project.TickToMillisecond(phoneme.PosTick) - phoneme.Oto.Preutter;
-            double endMs = DocManager.Inst.Project.TickToMillisecond(phoneme.DurTick) -
+            double startMs = DocManager.Inst.Project.TickToMillisecond(phoneme.PosTick, part.PosTick + phoneme.Parent.PosTick) - phoneme.Oto.Preutter;
+            double endMs = DocManager.Inst.Project.TickToMillisecond(phoneme.DurTick, part.PosTick + phoneme.Parent.PosTick) -
                 (nextNote != null && nextNote.Phonemes[0].Overlapped ? nextNote.Phonemes[0].Preutter - nextNote.Phonemes[0].Overlap : 0);
             if (pps.Count > 0)
             {
@@ -294,7 +294,7 @@ namespace OpenUtau.Core.Render
 
             // Interpolation
             const int intervalTick = 5;
-            double intervalMs = DocManager.Inst.Project.TickToMillisecond(intervalTick);
+            double intervalMs = DocManager.Inst.Project.TickToMillisecond(intervalTick, part.PosTick + phoneme.Parent.PosTick);
             double currMs = startMs;
             int i = 0;
 
@@ -320,7 +320,7 @@ namespace OpenUtau.Core.Render
 
         private double InterpolateVibrato(VibratoExpression vibrato, double posMs)
         {
-            double lengthMs = vibrato.Length / 100 * DocManager.Inst.Project.TickToMillisecond(vibrato.Parent.DurTick);
+            double lengthMs = vibrato.Length / 100 * DocManager.Inst.Project.TickToMillisecond(vibrato.Parent.DurTick, DocManager.Inst.Project.Parts[vibrato.Parent.PartNo].PosTick + vibrato.Parent.PosTick);
             double inMs = lengthMs * vibrato.In / 100;
             double outMs = lengthMs * vibrato.Out / 100;
 

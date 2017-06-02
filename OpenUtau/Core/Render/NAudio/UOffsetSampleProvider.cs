@@ -45,7 +45,7 @@ namespace OpenUtau.Core.Render.NAudio
                 {
                     throw new ArgumentException("DelayBySamples must be a multiple of WaveFormat.Channels");
                 }
-                delayBySamples = value;
+                delayBySamples = Math.Max(value, 0);
             }
         }
 
@@ -55,7 +55,7 @@ namespace OpenUtau.Core.Render.NAudio
         public TimeSpan DelayBy
         {
             get { return SamplesToTimeSpan(delayBySamples); }
-            set { delayBySamples = TimeSpanToSamples(value); }
+            set { delayBySamples = Math.Max(TimeSpanToSamples(value),0); }
         }
 
         /// <summary>
