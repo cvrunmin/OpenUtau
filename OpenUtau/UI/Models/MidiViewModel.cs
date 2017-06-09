@@ -211,18 +211,31 @@ namespace OpenUtau.UI.Models
             Canvas.SetLeft(playPosMarkerHighlight, left);
         }
 
-        # endregion
+        #endregion
 
-        # region Selection
+        #region Selection
 
         public List<UNote> SelectedNotes = new List<UNote>();
         public List<UNote> TempSelectedNotes = new List<UNote>();
+        public List<UNote> ClippedNotes = new List<UNote>();
+        public bool Copiable => SelectedNotes.Any();
+        public bool Pastable => ClippedNotes.Any();
 
-        public void SelectAll() { SelectedNotes.Clear(); foreach (UNote note in Part.Notes) { SelectedNotes.Add(note); note.Selected = true; } DocManager.Inst.ExecuteCmd(new RedrawNotesNotification()); }
-        public void DeselectAll() { SelectedNotes.Clear(); foreach (UNote note in Part.Notes) note.Selected = false; DocManager.Inst.ExecuteCmd(new RedrawNotesNotification()); }
+        public void SelectAll() { SelectedNotes.Clear(); foreach (UNote note in Part.Notes) { SelectedNotes.Add(note); note.Selected = true; } DocManager.Inst.ExecuteCmd(new RedrawNotesNotification()); OnPropertyChanged("Copiable"); }
+        public void DeselectAll() { SelectedNotes.Clear(); foreach (UNote note in Part.Notes) note.Selected = false; DocManager.Inst.ExecuteCmd(new RedrawNotesNotification()); OnPropertyChanged("Copiable"); }
 
-        public void SelectNote(UNote note) { if (!SelectedNotes.Contains(note)) { SelectedNotes.Add(note); note.Selected = true; DocManager.Inst.ExecuteCmd(new RedrawNotesNotification()); } }
-        public void DeselectNote(UNote note) { SelectedNotes.Remove(note); note.Selected = false; DocManager.Inst.ExecuteCmd(new RedrawNotesNotification()); }
+        public void SelectNote(UNote note) { if (!SelectedNotes.Contains(note)) { SelectedNotes.Add(note); note.Selected = true; DocManager.Inst.ExecuteCmd(new RedrawNotesNotification()); OnPropertyChanged("Copiable"); } }
+        public void DeselectNote(UNote note) { SelectedNotes.Remove(note); note.Selected = false; DocManager.Inst.ExecuteCmd(new RedrawNotesNotification()); OnPropertyChanged("Copiable"); }
+
+        public void CopyNotes()
+        {
+            ClippedNotes.Clear();
+            foreach (var selected in SelectedNotes)
+            {
+                ClippedNotes.Add(selected.Clone());
+            }
+            OnPropertyChanged("Pastable");
+        }
 
         public void SelectTempNote(UNote note) { TempSelectedNotes.Add(note); note.Selected = true; }
         public void TempSelectInBox(double quarter1, double quarter2, int noteNum1, int noteNum2)

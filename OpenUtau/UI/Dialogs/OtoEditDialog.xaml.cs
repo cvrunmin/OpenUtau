@@ -31,8 +31,8 @@ namespace OpenUtau.UI.Dialogs
         {
             SavedSinger = singer;
             this.EditingOto = oto;
-            this.DataContext = EditingOto;
-            Resources["oto"] = EditingOto;
+            this.DataContext = new System.Windows.Data.Binding("EditingOto") { Source = EditingOto, Mode = System.Windows.Data.BindingMode.TwoWay};
+            //Resources["oto"] = EditingOto;
             model = new OtoViewModel() { otoCanvas = waveformCanvas, owner = this };
             waveformCanvas.Children.Add(model.element);
             this.Subscribe(DocManager.Inst);

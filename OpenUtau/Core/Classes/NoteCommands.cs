@@ -12,6 +12,21 @@ namespace OpenUtau.Core
     {
         protected UNote[] Notes;
         public UVoicePart Part;
+        public override void Execute()
+        {
+            if (Util.Preferences.Default.RenderNoteAtInstant)
+            {
+                foreach (var note in Notes)
+                {
+                    Render.ResamplerInterface.RenderNote(DocManager.Inst.Project, Part, note);
+                }
+            }
+            DocManager.Inst.Project.Tracks[Part.TrackNo].Amended = true;
+        }
+        public override void Unexecute()
+        {
+            DocManager.Inst.Project.Tracks[Part.TrackNo].Amended = true;
+        }
     }
 
     public class AddNoteCommand : NoteCommand
@@ -19,8 +34,8 @@ namespace OpenUtau.Core
         public AddNoteCommand(UVoicePart part, UNote note) { this.Part = part; this.Notes = new UNote[] { note }; }
         public AddNoteCommand(UVoicePart part, List<UNote> notes) { this.Part = part; this.Notes = notes.ToArray(); }
         public override string ToString() { return "Add note"; }
-        public override void Execute() { lock (Part) { foreach (var note in Notes) Part.Notes.Add(note); } }
-        public override void Unexecute() { lock (Part) { foreach (var note in Notes) Part.Notes.Remove(note); } }
+        public override void Execute() { lock (Part) { foreach (var note in Notes) Part.Notes.Add(note); } base.Execute(); }
+        public override void Unexecute() { lock (Part) { foreach (var note in Notes) Part.Notes.Remove(note); } base.Unexecute(); }
     }
 
     public class RemoveNoteCommand : NoteCommand
@@ -41,6 +56,7 @@ namespace OpenUtau.Core
                     Part.Notes.ElementAt(i).NoteNo = i;
                 }
             }
+            base.Execute();
         }
         public override void Unexecute()
         {
@@ -55,6 +71,7 @@ namespace OpenUtau.Core
                     Part.Notes.ElementAt(i).NoteNo = i;
                 }
             }
+            base.Unexecute();
         }
     }
 
@@ -87,6 +104,7 @@ namespace OpenUtau.Core
                     Part.Notes.Add(note);
                 }
             }
+            base.Execute();
         }
         public override void Unexecute()
         {
@@ -100,6 +118,7 @@ namespace OpenUtau.Core
                     Part.Notes.Add(note);
                 }
             }
+            base.Unexecute();
         }
     }
 
@@ -109,31 +128,38 @@ namespace OpenUtau.Core
         public ResizeNoteCommand(UVoicePart part, List<UNote> notes, int deltaDur) { this.Part = part; this.Notes = notes.ToArray(); this.DeltaDur = deltaDur; }
         public ResizeNoteCommand(UVoicePart part, UNote note, int deltaDur) { this.Part = part; this.Notes = new UNote[] { note }; this.DeltaDur = deltaDur; }
         public override string ToString() { return string.Format("Change {0} notes duration", Notes.Count()); }
-        public override void Execute() { lock (Part) { foreach (var note in Notes) note.DurTick += DeltaDur; } }
-        public override void Unexecute() { lock (Part) { foreach (var note in Notes) note.DurTick -= DeltaDur; } }
+        public override void Execute() { lock (Part) { foreach (var note in Notes) note.DurTick += DeltaDur; }base.Execute(); }
+        public override void Unexecute() { lock (Part) { foreach (var note in Notes) note.DurTick -= DeltaDur; } base.Unexecute(); }
     }
 
     public class ChangeNoteLyricCommand : NoteCommand
     {
-        public UNote Note;
         string NewLyric, OldLyric;
-        public ChangeNoteLyricCommand(UVoicePart part, UNote note, string newLyric) { this.Part = part; this.Note = note; this.NewLyric = newLyric; this.OldLyric = note.Lyric; }
+        public ChangeNoteLyricCommand(UVoicePart part, UNote note, string newLyric) { this.Part = part; this.Notes = new []{ note }; this.NewLyric = newLyric; this.OldLyric = note.Lyric; }
         public override string ToString() { return "Change notes lyric"; }
         public override void Execute()
         {
             lock (Part)
             {
-                Note.Lyric = NewLyric;
-                Note.Phonemes[0].Phoneme = NewLyric;
+                foreach (var Note in Notes)
+                {
+                    Note.Lyric = NewLyric;
+                    Note.Phonemes[0].Phoneme = NewLyric;
+                }
             }
+            base.Execute();
         }
         public override void Unexecute()
         {
             lock (Part)
             {
-                Note.Lyric = OldLyric;
-                Note.Phonemes[0].Phoneme = OldLyric;
+                foreach (var Note in Notes)
+                {
+                    Note.Lyric = OldLyric;
+                    Note.Phonemes[0].Phoneme = OldLyric;
+                }
             }
+            base.Unexecute();
         }
     }
 }

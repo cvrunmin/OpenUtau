@@ -521,6 +521,18 @@ namespace OpenUtau.UI
             }
         }
 
+        private void MenuCut_Click(object sender, RoutedEventArgs e)
+        {
+            trackVM.CopyParts();
+            var pre = new List<UPart>(trackVM.SelectedParts);
+            DocManager.Inst.StartUndoGroup();
+            foreach (var item in pre)
+            {
+                DocManager.Inst.ExecuteCmd(new RemovePartCommand(trackVM.Project, item), true);
+            }
+            DocManager.Inst.EndUndoGroup();
+        }
+
         private void MenuCopy_Click(object sender, RoutedEventArgs e)
         {
             trackVM.CopyParts();
@@ -579,6 +591,7 @@ namespace OpenUtau.UI
             }
             else if (Keyboard.Modifiers == ModifierKeys.Alt && e.SystemKey == Key.F4) CmdExit();
             else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.O) CmdOpenFileDialog();
+            else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.S) CmdSaveFile();
             else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.Z)
             {
                 trackVM.DeselectAll();
@@ -588,6 +601,22 @@ namespace OpenUtau.UI
             {
                 trackVM.DeselectAll();
                 DocManager.Inst.Redo();
+            }
+            else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.A)
+            {
+                trackVM.SelectAll();
+            }
+            else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.X)
+            {
+                MenuCut_Click(this, new RoutedEventArgs());
+            }
+            else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.C)
+            {
+                MenuCopy_Click(this, new RoutedEventArgs());
+            }
+            else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.V)
+            {
+                MenuPaste_Click(this, new RoutedEventArgs());
             }
         }
 

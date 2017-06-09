@@ -101,6 +101,7 @@ namespace OpenUtau.UI.Controls
                 void OnEnterPressed(object sender)
                 {
                     if (lyricBox == null) return; //already updated
+                    DocManager.Inst.StartUndoGroup();
                     DocManager.Inst.ExecuteCmd(new ChangeNoteLyricCommand(Part, note, lyricBox.Text));
                     DocManager.Inst.EndUndoGroup();
                     midiVM.MidiCanvas.Children.Remove(lyricBox);
@@ -108,13 +109,13 @@ namespace OpenUtau.UI.Controls
                     midiVM.AnyNotesEditing = false;
                     midiVM.MarkUpdate();
                     lyricBox = null;
-                    if (Core.Util.Preferences.Default.RenderNoteAtInstant) OpenUtau.Core.Render.ResamplerInterface.RenderNote(midiVM.Project, midiVM.Part, note);
                 }
                 lyricBox.InputBindings.Add(new System.Windows.Input.KeyBinding() { Command = new DelegateCommand(OnEnterPressed), Key = System.Windows.Input.Key.Return });
                 lyricBox.InputBindings.Add(new System.Windows.Input.KeyBinding() { Command = new DelegateCommand(OnEnterPressed), Key = System.Windows.Input.Key.Enter });
                 lyricBox.LostFocus += (sender, e) =>
                 {
                     if (lyricBox == null) return; //already updated
+                    DocManager.Inst.StartUndoGroup();
                     DocManager.Inst.ExecuteCmd(new ChangeNoteLyricCommand(Part, note, lyricBox.Text));
                     DocManager.Inst.EndUndoGroup();
                     midiVM.MidiCanvas.Children.Remove(lyricBox);
@@ -122,12 +123,10 @@ namespace OpenUtau.UI.Controls
                     midiVM.AnyNotesEditing = false;
                     midiVM.MarkUpdate();
                     lyricBox = null;
-                    if (Core.Util.Preferences.Default.RenderNoteAtInstant) OpenUtau.Core.Render.ResamplerInterface.RenderNote(midiVM.Project, midiVM.Part, note);
                 };
                 lyricBox.Focus();
                 lyricBox.SelectAll();
                 midiVM.MidiCanvas.Children.Add(lyricBox);
-                DocManager.Inst.StartUndoGroup();
             }
             lyricBox.Width = width;
             lyricBox.Height = height;

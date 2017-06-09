@@ -74,25 +74,25 @@ namespace OpenUtau.Core.USTx
         /// <summary>
         /// SineInOut
         /// </summary>
-        io,
+        InOut = 3,
         /// <summary>
         /// Linear
         /// </summary>
-        l,
+        Linear = 0,
         /// <summary>
         /// SineIn
         /// </summary>
-        i,
+        In = 1,
         /// <summary>
         /// SineOut
         /// </summary>
-        o 
+        Out = 2
     };
 
     public class PitchPoint : ExpPoint
     {
         public PitchPointShape Shape;
-        public PitchPoint(double x, double y, PitchPointShape shape = PitchPointShape.io) : base(x, y) { Shape = shape; }
+        public PitchPoint(double x, double y, PitchPointShape shape = PitchPointShape.InOut) : base(x, y) { Shape = shape; }
         public new PitchPoint Clone() { return new PitchPoint(X, Y, Shape); }
     }
 

@@ -92,7 +92,14 @@ namespace OpenUtau.UI.Dialogs
                     }
                     else if (SelectedSinger.AliasMap.ContainsKey(dialog.aliasBak))
                     {
-                        FixConflictedOto(e1, result, dialog.aliasBak);
+                        if (!dialog.aliasBak.Equals(result.Alias)) {
+                            SelectedSinger.AliasMap.Remove(dialog.aliasBak);
+                            SelectedSinger.AliasMap.Add(result.Alias, result);
+                        }
+                        else
+                        {
+                            FixConflictedOto(e1, result, dialog.aliasBak);
+                        }
                     }
                     else
                     {
@@ -148,6 +155,11 @@ namespace OpenUtau.UI.Dialogs
             if (otoview.SelectedItem != null && otoview.SelectedItem is UOto oto)
             {
                 UOto newOto = new UOto() { Alias = oto.Alias, Consonant = oto.Consonant, Cutoff = oto.Cutoff, Duration = oto.Duration, File = oto.File, Offset = oto.Offset, Overlap = oto.Overlap, Preutter = oto.Preutter};
+                if (string.IsNullOrWhiteSpace(oto.Alias)) {
+
+                    var i1 = newOto.File.LastIndexOf('\\');
+                    newOto = newOto.SetAlias(newOto.File.Substring(i1 > -1 ? i1 : 0).Replace(".wav", ""));
+                }
                 int i = 1;
                 for (; SelectedSinger.AliasMap.ContainsKey(newOto.Alias + " (" + i + ")"); ++i) { }
                 newOto.Alias += " (" + i + ")";

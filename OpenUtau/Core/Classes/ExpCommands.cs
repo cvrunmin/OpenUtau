@@ -13,6 +13,14 @@ namespace OpenUtau.Core
         public UVoicePart Part;
         public UNote Note;
         public string Key;
+        public override void Execute()
+        {
+            DocManager.Inst.Project.Tracks[Part.TrackNo].Amended = true;
+        }
+        public override void Unexecute()
+        {
+            DocManager.Inst.Project.Tracks[Part.TrackNo].Amended = true;
+        }
     }
 
     public class SetIntExpCommand : ExpCommand
@@ -34,11 +42,13 @@ namespace OpenUtau.Core
         {
             Note.Expressions[Key].Data = NewValue;
             Note.VirtualExpressions[Key] = NewOffsetValue;
+            base.Execute();
         }
         public override void Unexecute()
         {
             Note.Expressions[Key].Data = OldValue;
             Note.VirtualExpressions[Key] = OldOffsetValue;
+            base.Unexecute();
         }
     }
 
@@ -71,6 +81,7 @@ namespace OpenUtau.Core
             {
                 note.Expressions[Key].Data = NewValue + note.VirtualExpressions[Key];
             }
+            base.Execute();
         }
         public override void Unexecute()
         {
@@ -81,6 +92,7 @@ namespace OpenUtau.Core
                 note.Expressions[Key].Data = OldValues.ElementAt(i);
                 i++;
             }
+            base.Unexecute();
         }
     }
 
@@ -98,8 +110,12 @@ namespace OpenUtau.Core
             this.Point = Note.PitchBend.Points[Index];
         }
         public override string ToString() { return "Delete pitch point"; }
-        public override void Execute() { Note.PitchBend.Points.RemoveAt(Index); }
-        public override void Unexecute() { Note.PitchBend.Points.Insert(Index, Point); }
+        public override void Execute() { Note.PitchBend.Points.RemoveAt(Index);
+            base.Execute();
+        }
+        public override void Unexecute() { Note.PitchBend.Points.Insert(Index, Point);
+            base.Unexecute();
+        }
     }
 
     public class ChangePitchPointShapeCommand : PitchExpCommand
@@ -114,8 +130,12 @@ namespace OpenUtau.Core
             this.OldShape = point.Shape;
         }
         public override string ToString() { return "Change pitch point shape"; }
-        public override void Execute() { Point.Shape = NewShape; }
-        public override void Unexecute() { Point.Shape = OldShape; }
+        public override void Execute() { Point.Shape = NewShape;
+            base.Execute();
+        }
+        public override void Unexecute() { Point.Shape = OldShape;
+            base.Unexecute();
+        }
     }
 
     public class SnapPitchPointCommand : PitchExpCommand
@@ -137,6 +157,7 @@ namespace OpenUtau.Core
                 Note.PitchBend.Points.First().X = this.X;
                 Note.PitchBend.Points.First().Y = this.Y;
             }
+            base.Execute();
         }
         public override void Unexecute()
         {
@@ -146,6 +167,7 @@ namespace OpenUtau.Core
                 Note.PitchBend.Points.First().X = this.X;
                 Note.PitchBend.Points.First().Y = this.Y;
             }
+            base.Unexecute();
         }
     }
 
@@ -160,8 +182,12 @@ namespace OpenUtau.Core
             this.Point = point;
         }
         public override string ToString() { return "Add pitch point"; }
-        public override void Execute() { Note.PitchBend.Points.Insert(Index, Point); }
-        public override void Unexecute() { Note.PitchBend.Points.RemoveAt(Index); }
+        public override void Execute() { Note.PitchBend.Points.Insert(Index, Point);
+            base.Execute();
+        }
+        public override void Unexecute() { Note.PitchBend.Points.RemoveAt(Index);
+            base.Unexecute();
+        }
     }
 
     public class MovePitchPointCommand : PitchExpCommand
@@ -175,7 +201,11 @@ namespace OpenUtau.Core
             this.DeltaY = deltaY;
         }
         public override string ToString() { return "Move pitch point"; }
-        public override void Execute() { Point.X += DeltaX; Point.Y += DeltaY; }
-        public override void Unexecute() { Point.X -= DeltaX; Point.Y -= DeltaY; }
+        public override void Execute() { Point.X += DeltaX; Point.Y += DeltaY;
+            base.Execute();
+        }
+        public override void Unexecute() { Point.X -= DeltaX; Point.Y -= DeltaY;
+            base.Unexecute();
+        }
     }
 }

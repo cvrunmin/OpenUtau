@@ -281,9 +281,9 @@ namespace OpenUtau.Core.Formats
                     string[] m = pbw.Split(new[] { ',' });
                     for (int i = 0; i < m.Count() - 1; i++)
                     {
-                        pts[i].Shape = m[i] == "r" ? PitchPointShape.o :
-                                       m[i] == "s" ? PitchPointShape.l :
-                                       m[i] == "j" ? PitchPointShape.i : PitchPointShape.io;
+                        pts[i].Shape = m[i] == "r" ? PitchPointShape.Out :
+                                       m[i] == "s" ? PitchPointShape.Linear :
+                                       m[i] == "j" ? PitchPointShape.In : PitchPointShape.InOut;
                     }
                 }
             }

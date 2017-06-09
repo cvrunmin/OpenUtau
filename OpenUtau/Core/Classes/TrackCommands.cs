@@ -12,6 +12,14 @@ namespace OpenUtau.Core
     {
         public UProject project;
         public UTrack track;
+        public override void Execute()
+        {
+            track.Amended = true;
+        }
+        public override void Unexecute()
+        {
+            track.Amended = true;
+        }
         public void UpdateTrackNo()
         {
             Dictionary<int, int> trackNoRemapTable = new Dictionary<int, int>();
@@ -36,8 +44,11 @@ namespace OpenUtau.Core
             if (track.TrackNo < project.Tracks.Count) project.Tracks.Insert(track.TrackNo, track);
             else project.Tracks.Add(track);
             UpdateTrackNo();
+            base.Execute();
         }
-        public override void Unexecute() { project.Tracks.Remove(track); UpdateTrackNo(); }
+        public override void Unexecute() { project.Tracks.Remove(track); UpdateTrackNo();
+            base.Unexecute();
+        }
     }
 
     public class RemoveTrackCommand : TrackCommand
@@ -60,6 +71,7 @@ namespace OpenUtau.Core
                 part.TrackNo = -1;
             }
             UpdateTrackNo();
+            base.Execute();
         }
         public override void Unexecute()
         {
@@ -68,6 +80,7 @@ namespace OpenUtau.Core
             foreach (var part in removedParts) project.Parts.Add(part);
             track.TrackNo = -1;
             UpdateTrackNo();
+            base.Unexecute();
         }
     }
 
@@ -80,7 +93,10 @@ namespace OpenUtau.Core
             track.Singer = newSinger;
             if (!project.Singers.Contains(newSinger))
                 project.Singers.Add(newSinger);
+            base.Execute();
         }
-        public override void Unexecute() { track.Singer = oldSinger; }
+        public override void Unexecute() { track.Singer = oldSinger;
+            base.Unexecute();
+        }
     }
 }

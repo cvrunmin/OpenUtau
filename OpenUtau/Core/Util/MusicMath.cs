@@ -102,9 +102,9 @@ namespace OpenUtau.Core
         {
             switch (shape)
             {
-                case USTx.PitchPointShape.io: return MusicMath.SinEasingInOut(x0, x1, y0, y1, x);
-                case USTx.PitchPointShape.i: return MusicMath.SinEasingIn(x0, x1, y0, y1, x);
-                case USTx.PitchPointShape.o: return MusicMath.SinEasingOut(x0, x1, y0, y1, x);
+                case USTx.PitchPointShape.InOut: return MusicMath.SinEasingInOut(x0, x1, y0, y1, x);
+                case USTx.PitchPointShape.In: return MusicMath.SinEasingIn(x0, x1, y0, y1, x);
+                case USTx.PitchPointShape.Out: return MusicMath.SinEasingOut(x0, x1, y0, y1, x);
                 default: return MusicMath.Linear(x0, x1, y0, y1, x);
             }
         }
@@ -113,9 +113,9 @@ namespace OpenUtau.Core
         {
             switch (shape)
             {
-                case USTx.PitchPointShape.io: return MusicMath.SinEasingInOutX(x0, x1, y0, y1, y);
-                case USTx.PitchPointShape.i: return MusicMath.SinEasingInX(x0, x1, y0, y1, y);
-                case USTx.PitchPointShape.o: return MusicMath.SinEasingOutX(x0, x1, y0, y1, y);
+                case USTx.PitchPointShape.InOut: return MusicMath.SinEasingInOutX(x0, x1, y0, y1, y);
+                case USTx.PitchPointShape.In: return MusicMath.SinEasingInX(x0, x1, y0, y1, y);
+                case USTx.PitchPointShape.Out: return MusicMath.SinEasingOutX(x0, x1, y0, y1, y);
                 default: return MusicMath.LinearX(x0, x1, y0, y1, y);
             }
         }

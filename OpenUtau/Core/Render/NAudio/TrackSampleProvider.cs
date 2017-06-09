@@ -48,6 +48,8 @@ namespace OpenUtau.Core.Render
 
         public int TrackNo { get; set; }
 
+        public uint TrackHash { get; set; }
+
         //public float Volume { set { volume.Volume = value; } get { return volume.Volume; } }
 
 

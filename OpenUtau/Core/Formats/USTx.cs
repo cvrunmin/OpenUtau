@@ -43,6 +43,26 @@ namespace OpenUtau.Core.Formats
                 result.PitchBend.SnapFirst = Convert.ToBoolean(dictionary["pitsnap"]);
                 var pit = dictionary["pit"] as ArrayList;
                 var pitshape = dictionary["pitshape"] as ArrayList;
+                for (int i = 0; i < pitshape.Count; i++)
+                {
+                    switch (pitshape[i])
+                    {
+                        case "io":
+                            pitshape[i] = "InOut";
+                            break;
+                        case "i":
+                            pitshape[i] = "In";
+                            break;
+                        case "o":
+                            pitshape[i] = "Out";
+                            break;
+                        case "l":
+                            pitshape[i] = "Linear";
+                            break;
+                        default:
+                            break;
+                    }
+                }
                 double x = 0, y = 0;
                 result.PitchBend.Points.Clear();
                 for (int i = 0; i < pit.Count; i ++ )

@@ -12,6 +12,14 @@ namespace OpenUtau.Core
     {
         public UProject project;
         public UPart part;
+        public override void Execute()
+        {
+            project.Tracks[part.TrackNo].Amended = true;
+        }
+        public override void Unexecute()
+        {
+            project.Tracks[part.TrackNo].Amended = true;
+        }
     }
 
     public class AddPartCommand : PartCommand
@@ -31,8 +39,11 @@ namespace OpenUtau.Core
                     item.PartNo = part.PartNo;
                 }
             }
+            base.Execute();
         }
-        public override void Unexecute() { project.Parts.Remove(part); }
+        public override void Unexecute() { project.Parts.Remove(part);
+            base.Unexecute();
+        }
     }
 
     public class RemovePartCommand : PartCommand
@@ -52,6 +63,7 @@ namespace OpenUtau.Core
                     }
                 }
             }
+            base.Execute();
         }
         public override void Unexecute() {
             project.Parts.Add(part);
@@ -66,6 +78,7 @@ namespace OpenUtau.Core
                     }
                 }
             }
+            base.Unexecute();
         }
     }
 
@@ -82,8 +95,12 @@ namespace OpenUtau.Core
             this.oldTrackNo = part.TrackNo;
         }
         public override string ToString() { return "Move parts"; }
-        public override void Execute() { part.PosTick = newPos; part.TrackNo = newTrackNo; }
-        public override void Unexecute() { part.PosTick = oldPos; part.TrackNo = oldTrackNo; }
+        public override void Execute() { part.PosTick = newPos; part.TrackNo = newTrackNo;
+            base.Execute();
+        }
+        public override void Unexecute() { part.PosTick = oldPos; part.TrackNo = oldTrackNo;
+            base.Unexecute();
+        }
     }
 
     public class ResizePartCommand : PartCommand
@@ -91,7 +108,11 @@ namespace OpenUtau.Core
         int newDur, oldDur;
         public ResizePartCommand(UProject project, UPart part, int newDur) { this.project = project; this.part = part; this.newDur = newDur; this.oldDur = part.DurTick; }
         public override string ToString() { return "Change parts duration"; }
-        public override void Execute() { part.DurTick = newDur; }
-        public override void Unexecute() { part.DurTick = oldDur; }
+        public override void Execute() { part.DurTick = newDur;
+            base.Execute();
+        }
+        public override void Unexecute() { part.DurTick = oldDur;
+            base.Unexecute();
+        }
     }
 }

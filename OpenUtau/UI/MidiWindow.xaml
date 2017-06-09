@@ -15,7 +15,7 @@
         <localvm:MidiViewModel x:Key="midiVM"/>
     </Window.Resources>
     <local:BorderlessWindow.MenuContent>
-        <Grid Width="60" Height="20">
+        <Grid Width="Auto" Height="20">
             <ToggleButton x:Name="showPitchToggle" Style="{StaticResource ShowPitchToggleButtonStyle}"
                           Width="20" Margin="0,0,0,0" HorizontalAlignment="Left" Focusable="False"
                           IsChecked="{Binding ShowPitch, Source={StaticResource midiVM}}" ToolTip="Toggle pitch (I)">
@@ -50,6 +50,17 @@
                     </Grid>
                 </ToggleButton.Content>
             </ToggleButton>
+            <Menu x:Name="mainMenu" IsMainMenu="True" VerticalAlignment="Top" HorizontalAlignment="Left" Background="White" Margin="60,0,0,0">
+                <MenuItem Header="{DynamicResource MenuEdit}">
+                    <MenuItem Header="{DynamicResource MenuUndo}" InputGestureText="Ctrl+Z" Click="MenuUndo_Click" />
+                    <MenuItem Header="{DynamicResource MenuRedo}" InputGestureText="Ctrl+Y" Click="MenuRedo_Click"/>
+                    <MenuItem Header="{DynamicResource MenuCut}" InputGestureText="Ctrl+X" IsEnabled="{Binding Copiable, Source={StaticResource midiVM}}" Click="MenuCut_Click"/>
+                    <MenuItem Header="{DynamicResource MenuCopy}" InputGestureText="Ctrl+C" IsEnabled="{Binding Copiable, Source={StaticResource midiVM}}" Click="MenuCopy_Click"/>
+                    <MenuItem Header="{DynamicResource MenuPaste}" InputGestureText="Ctrl+V" IsEnabled="{Binding Pastable, Source={StaticResource midiVM}}" Click="MenuPaste_Click"/>
+                    <MenuItem Header="{DynamicResource MenuDelete}" InputGestureText="Del"/>
+                    <MenuItem Header="{DynamicResource MenuSelectAll}" InputGestureText="Ctrl+A"/>
+                </MenuItem>
+            </Menu>
         </Grid>
     </local:BorderlessWindow.MenuContent>
     <Grid>

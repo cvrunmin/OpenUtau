@@ -115,9 +115,9 @@ namespace OpenUtau.UI
                 else
                 {
                     PitchPointShape shape =
-                        o == pitchCxtMenu.Items[0] ? PitchPointShape.io :
-                        o == pitchCxtMenu.Items[2] ? PitchPointShape.i :
-                        o == pitchCxtMenu.Items[3] ? PitchPointShape.o : PitchPointShape.l;
+                        o == pitchCxtMenu.Items[0] ? PitchPointShape.InOut :
+                        o == pitchCxtMenu.Items[2] ? PitchPointShape.In :
+                        o == pitchCxtMenu.Items[3] ? PitchPointShape.Out : PitchPointShape.Linear;
                     DocManager.Inst.StartUndoGroup();
                     DocManager.Inst.ExecuteCmd(new ChangePitchPointShapeCommand(pitHit.Note.PitchBend.Points[pitHit.Index], shape));
                     DocManager.Inst.EndUndoGroup();
@@ -231,7 +231,10 @@ namespace OpenUtau.UI
 
             var hit = VisualTreeHelper.HitTest(notesCanvas, mousePos).VisualHit;
             System.Diagnostics.Debug.WriteLine("Mouse hit " + hit.ToString());
-
+            if (midiVM.AnyNotesEditing)
+            {
+                midiVM.notesElement?.LyricBox?.RaiseEvent(new RoutedEventArgs() { RoutedEvent = LostFocusEvent });
+            }
             var pitHitResult = midiHT.HitTestPitchPoint(mousePos);
 
             if (pitHitResult != null)
@@ -290,9 +293,6 @@ namespace OpenUtau.UI
                         _noteHit = noteHit;
                         if (!midiVM.SelectedNotes.Contains(noteHit)) midiVM.DeselectAll();
                         if (!noteHit.IsLyricBoxActive && e.ClickCount >= 2) {
-                            if (midiVM.AnyNotesEditing) {
-                                midiVM.notesElement?.LyricBox?.RaiseEvent(new RoutedEventArgs() { RoutedEvent = ContentControl.LostFocusEvent });
-                            }
                             noteHit.IsLyricBoxActive = true;
                             midiVM.AnyNotesEditing = true;
                             midiVM.MarkUpdate();
@@ -366,7 +366,6 @@ namespace OpenUtau.UI
             if (_inMove || _inResize)
             {
                 DocManager.Inst.EndUndoGroup();
-                if(Core.Util.Preferences.Default.RenderNoteAtInstant) OpenUtau.Core.Render.ResamplerInterface.RenderNote(midiVM.Project, midiVM.Part, _noteHit);
             }
             _inMove = false;
             _inResize = false;
@@ -686,6 +685,18 @@ namespace OpenUtau.UI
                         midiVM.DeselectAll();
                         DocManager.Inst.Redo();
                     }
+                    else if (e.Key == Key.X)
+                    {
+                        MenuCut_Click(this, new RoutedEventArgs());
+                    }
+                    else if (e.Key == Key.C)
+                    {
+                        MenuCopy_Click(this, new RoutedEventArgs());
+                    }
+                    else if (e.Key == Key.V)
+                    {
+                        MenuPaste_Click(this, new RoutedEventArgs());
+                    }
                 }
                 else if (Keyboard.Modifiers == 0) // No midifiers
                 {
@@ -755,6 +766,7 @@ namespace OpenUtau.UI
             {
                 if (note != null)
                 {
+                    if (Keyboard.Modifiers == ModifierKeys.Alt) newValue = (int)(midiVM.Part.Expressions[_key] as IntExpression).Data;
                     DocManager.Inst.ExecuteCmd(new SetIntExpCommand(midiVM.Part, note, midiVM.visibleExpElement.Key, newValue));
                 }
                 else
@@ -773,6 +785,43 @@ namespace OpenUtau.UI
         {
             midiVM.MarkUpdate();
             midiVM.RedrawIfUpdated();
+        }
+
+        private void MenuUndo_Click(object sender, RoutedEventArgs e) { DocManager.Inst.Undo(); }
+        private void MenuRedo_Click(object sender, RoutedEventArgs e) { DocManager.Inst.Redo(); }
+        private void MenuCut_Click(object sender, RoutedEventArgs e)
+        {
+            midiVM.CopyNotes();
+            var pre = new List<UNote>(midiVM.SelectedNotes);
+            DocManager.Inst.StartUndoGroup();
+            foreach (var item in midiVM.SelectedNotes)
+            {
+                DocManager.Inst.ExecuteCmd(new RemoveNoteCommand(midiVM.Part, item), true);
+            }
+            DocManager.Inst.EndUndoGroup();
+            midiVM.DeselectAll();
+        }
+
+        private void MenuCopy_Click(object sender, RoutedEventArgs e)
+        {
+            midiVM.CopyNotes();
+        }
+
+        private void MenuPaste_Click(object sender, RoutedEventArgs e)
+        {
+            int basedelta = int.MaxValue;
+            foreach (var note in midiVM.ClippedNotes)
+            {
+                basedelta = Math.Min(basedelta, note.PosTick);
+            }
+            DocManager.Inst.StartUndoGroup();
+            foreach (var note in midiVM.ClippedNotes)
+            {
+                var copied = note.Clone();
+                copied.PosTick = DocManager.Inst.playPosTick - midiVM.Part.PosTick + note.PosTick - basedelta;
+                DocManager.Inst.ExecuteCmd(new AddNoteCommand(midiVM.Part, copied));
+            }
+            DocManager.Inst.EndUndoGroup();
         }
 
     }

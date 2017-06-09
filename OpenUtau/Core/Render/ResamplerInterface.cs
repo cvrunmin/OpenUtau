@@ -194,10 +194,13 @@ namespace OpenUtau.Core.Render
         {
             USinger singer = project.Tracks[part.TrackNo].Singer;
             bool err = false;
-            string rawfile = Lib.EncodingUtil.ConvertEncoding(singer.FileEncoding, singer.PathEncoding, phoneme.Oto.File);
-            if (string.IsNullOrWhiteSpace(rawfile)) err = true;
-            rawfile = Path.Combine(singer.Path, rawfile);
-
+            string rawfile = "";
+            if (singer == null) err = true;
+            else { 
+                rawfile = Lib.EncodingUtil.ConvertEncoding(singer.FileEncoding, singer.PathEncoding, phoneme.Oto.File);
+                if (string.IsNullOrWhiteSpace(rawfile)) err = true;
+                rawfile = Path.Combine(singer.Path, rawfile);
+            }
             double strechRatio = Math.Pow(2, 1.0 - (double)(int)phoneme.Parent.Expressions["velocity"].Data / 100);
             double length = phoneme.Oto.Preutter * strechRatio + phoneme.Envelope.Points[4].X;
             double requiredLength = Math.Ceiling(length / 50 + 1) * 50;

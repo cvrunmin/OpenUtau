@@ -68,7 +68,7 @@ namespace OpenUtau.UI.Models
                     {
                         if (note.Error) continue;
                         double lastX = 0, lastY = 0;
-                        PitchPointShape lastShape = PitchPointShape.l;
+                        PitchPointShape lastShape = PitchPointShape.Linear;
                         for (int i = 0; i < note.PitchBend.Points.Count; i++)
                         {
                             var pit = note.PitchBend.Points[i];

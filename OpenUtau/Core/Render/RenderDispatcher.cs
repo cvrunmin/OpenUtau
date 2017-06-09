@@ -42,18 +42,26 @@ namespace OpenUtau.Core.Render
         {
             return await GetMixingSampleProvider(project, new int[] { });
         }
+        private List<TrackWaveChannel> trackCache = new List<TrackWaveChannel>();
         public async Task<UWaveMixerStream32> GetMixingStream(UProject project)
         {
-            UWaveMixerStream32 masterMix;
-            List<TrackSampleProvider> trackSources;
-            trackSources = new List<TrackSampleProvider>();
+            if (trackCache.Count == 0) trackCache = Enumerable.Repeat((TrackWaveChannel)null, project.Tracks.Count).ToList();
+            if (trackCache.Capacity < project.Tracks.Count) trackCache.Capacity = project.Tracks.Count;
+            UWaveMixerStream32 masterMix = new UWaveMixerStream32();
+            List<TrackSampleProvider> trackSources = Enumerable.Repeat((TrackSampleProvider)null, project.Tracks.Count).ToList();
             foreach (UTrack track in project.Tracks)
             {
-                //if(!skippedTracks.Contains(track.TrackNo))
-                trackSources.Add(new TrackSampleProvider() { TrackNo = track.TrackNo, PlainVolume = DecibelToVolume(track.Volume), Muted = track.Mute, Pan = (float)track.Pan / 90f });
+                if (track.Amended || !trackCache.Any(track1 => track1?.TrackNo == track.TrackNo))
+                {
+                    trackSources[track.TrackNo] = (new TrackSampleProvider() { TrackNo = track.TrackNo, PlainVolume = DecibelToVolume(track.Volume), Muted = track.Mute, Pan = (float)track.Pan / 90f });
+                    track.Amended = false;
+                }
+                else
+                    masterMix.AddInputStream(trackCache[track.TrackNo]);
             }
             foreach (UPart part in project.Parts)
             {
+                if(trackSources[part.TrackNo] != null)
                 if (part is UWavePart)
                 {
                     lock (lockObject)
@@ -80,50 +88,62 @@ namespace OpenUtau.Core.Render
                 }
             }
             int i = 0;
-            masterMix = new UWaveMixerStream32();
             var schedule = new List<Task>();
             DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, $"Rendering Tracks 0/{trackSources.Count}"));
             int pending = 0;
             int total = trackSources.Count;
-            foreach (var source in trackSources)
+            var pre = new List<TrackSampleProvider>(trackSources);
+            foreach (var source in pre)
             {
-                var str = new System.IO.MemoryStream(source.WaveFormat.AverageBytesPerSecond * 60);
+                if (source != null)
+                {
+                    var str = new System.IO.MemoryStream(source.WaveFormat.AverageBytesPerSecond * 60);
 
-                schedule.Add(Task.Run(async () => {
-                    /*while (true)
+                    schedule.Add(Task.Run(async () =>
                     {
-                        if (pending < 2) break;
-                        await Task.Delay(1000);
-                    }*/
-                    ++pending;
-                    var wave = source.ToWaveProvider();
-                    var buffer = new byte[source.WaveFormat.AverageBytesPerSecond * 4];
-                    while (true)
-                    {
-                        var bytesRead = wave.Read(buffer, 0, buffer.Length);
-                        if (bytesRead == 0)
+                        /*while (true)
                         {
-                            // end of source provider
-                            str.Flush();
-                            break;
+                            if (pending < 2) break;
+                            await Task.Delay(1000);
+                        }*/
+                        ++pending;
+                        var wave = source.ToWaveProvider();
+                        var buffer = new byte[source.WaveFormat.AverageBytesPerSecond * 4];
+                        while (true)
+                        {
+                            var bytesRead = wave.Read(buffer, 0, buffer.Length);
+                            if (bytesRead == 0)
+                            {
+                                // end of source provider
+                                str.Flush();
+                                break;
+                            }
+                            await str.WriteAsync(buffer, 0, bytesRead);
                         }
-                        await str.WriteAsync(buffer, 0, bytesRead);
-                    }
-                    buffer = null;
-                    wave = null;
-                }).ContinueWith(task=> {
-                    //if (task.IsFaulted) throw task.Exception;
-                    trackSources.Remove(source);
+                        buffer = null;
+                        wave = null;
+                    }).ContinueWith(task =>
+                    {
+                        //if (task.IsFaulted) throw task.Exception;
+                        trackSources.Remove(source);
+                        ++i;
+                        --pending;
+                        var src1 = new RawSourceWaveStream(str, source.WaveFormat);
+                        var src2 = new TrackWaveChannel(src1) { TrackNo = source.TrackNo, PlainVolume = source.PlainVolume, Pan = source.Pan, Muted = source.Muted };
+                        masterMix.AddInputStream(src2);
+                        trackCache[src2.TrackNo] = src2;
+                        DocManager.Inst.ExecuteCmd(new ProgressBarNotification((int)((float)i / total * 100), $"Rendering Tracks {i}/{total}"));
+                    }));
+                }
+                else
+                {
                     ++i;
-                    --pending;
-                    var src1 = new RawSourceWaveStream(str, source.WaveFormat);
-                    var src2 = new TrackWaveChannel(src1) { TrackNo = source.TrackNo, PlainVolume = source.PlainVolume, Pan = source.Pan, Muted = source.Muted };
-                    masterMix.AddInputStream(src2);
                     DocManager.Inst.ExecuteCmd(new ProgressBarNotification((int)((float)i / total * 100), $"Rendering Tracks {i}/{total}"));
-                }));
+                }
             }
             await Task.WhenAll(schedule);
             trackSources.Clear();
+            DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, ""));
             return masterMix;
         }
         public async Task<MixingSampleProvider> GetMixingSampleProvider(UProject project, int[] skippedTracks)

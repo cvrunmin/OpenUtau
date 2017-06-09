@@ -193,6 +193,8 @@ namespace OpenUtau.Core.Render.NAudio
         
         public int TrackNo { get; set; }
 
+        public uint TrackHash { get; set; }
+
         private bool muted;
 
         public bool Muted
