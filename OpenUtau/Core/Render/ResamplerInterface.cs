@@ -197,12 +197,12 @@ namespace OpenUtau.Core.Render
             string rawfile = "";
             if (singer == null) err = true;
             else { 
-                rawfile = Lib.EncodingUtil.ConvertEncoding(singer.FileEncoding, singer.PathEncoding, phoneme.Oto.File);
+                rawfile = Lib.EncodingUtil.ConvertEncoding(singer.FileEncoding, singer.PathEncoding, phoneme.Oto?.File);
                 if (string.IsNullOrWhiteSpace(rawfile)) err = true;
                 rawfile = Path.Combine(singer.Path, rawfile);
             }
             double strechRatio = Math.Pow(2, 1.0 - (double)(int)phoneme.Parent.Expressions["velocity"].Data / 100);
-            double length = phoneme.Oto.Preutter * strechRatio + phoneme.Envelope.Points[4].X;
+            double length = (phoneme.Oto?.Preutter).GetValueOrDefault() * strechRatio + phoneme.Envelope.Points[4].X;
             double requiredLength = Math.Ceiling(length / 50 + 1) * 50;
             double lengthAdjustment = phoneme.TailIntrude == 0 ? phoneme.Preutter : phoneme.Preutter - phoneme.TailIntrude + phoneme.TailOverlap;
 
@@ -221,7 +221,7 @@ namespace OpenUtau.Core.Render
                 Tempo = project.BPM,
 
                 // For connector
-                SkipOver = phoneme.Oto.Preutter * strechRatio - phoneme.Preutter,
+                SkipOver = (phoneme.Oto?.Preutter).GetValueOrDefault() * strechRatio - phoneme.Preutter,
                 PosMs = project.TickToMillisecond(part.PosTick + phoneme.Parent.PosTick + phoneme.PosTick) - phoneme.Preutter,
                 DurMs = project.TickToMillisecond(phoneme.DurTick, part.PosTick + phoneme.Parent.PosTick + phoneme.PosTick) + lengthAdjustment,
                 Envelope = phoneme.Envelope.Points
@@ -282,7 +282,7 @@ namespace OpenUtau.Core.Render
                 }
             }
 
-            double startMs = DocManager.Inst.Project.TickToMillisecond(phoneme.PosTick, part.PosTick + phoneme.Parent.PosTick) - phoneme.Oto.Preutter;
+            double startMs = DocManager.Inst.Project.TickToMillisecond(phoneme.PosTick, part.PosTick + phoneme.Parent.PosTick) - (phoneme.Oto?.Preutter).GetValueOrDefault();
             double endMs = DocManager.Inst.Project.TickToMillisecond(phoneme.DurTick, part.PosTick + phoneme.Parent.PosTick) -
                 (nextNote != null && nextNote.Phonemes[0].Overlapped ? nextNote.Phonemes[0].Preutter - nextNote.Phonemes[0].Overlap : 0);
             if (pps.Count > 0)

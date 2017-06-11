@@ -1,4 +1,5 @@
-﻿using OpenUtau.Core;
+﻿using NAudio.Wave;
+using OpenUtau.Core;
 using OpenUtau.Core.Lib.WaveFormRenderer;
 using OpenUtau.Core.USTx;
 using OpenUtau.UI.Models;
@@ -33,6 +34,12 @@ namespace OpenUtau.UI.Dialogs
             this.EditingOto = oto;
             this.DataContext = new System.Windows.Data.Binding("EditingOto") { Source = EditingOto, Mode = System.Windows.Data.BindingMode.TwoWay};
             //Resources["oto"] = EditingOto;
+            if(oto.Duration == 1)
+            using (WaveFileReader reader = new WaveFileReader(System.IO.Path.Combine(singer.Path, oto.File)))
+            {
+                oto.Duration = reader.TotalTime.TotalMilliseconds;
+                EditingOto = EditingOto.SetDuration(reader.TotalTime.TotalMilliseconds);
+            }
             model = new OtoViewModel() { otoCanvas = waveformCanvas, owner = this };
             waveformCanvas.Children.Add(model.element);
             this.Subscribe(DocManager.Inst);

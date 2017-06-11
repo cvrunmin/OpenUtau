@@ -120,11 +120,15 @@ namespace OpenUtau.Core.Formats
                 {
                     string imagePath = line.Trim().Replace("image=", "");
                     singer.AvatarPath = imagePath;
-                    if (string.IsNullOrWhiteSpace(imagePath))
+                    if (!string.IsNullOrWhiteSpace(imagePath))
                     {
-                        Uri imagepath = new Uri(Path.Combine(singer.Path, EncodingUtil.ConvertEncoding(singer.FileEncoding, singer.PathEncoding, imagePath)));
-                        singer.Avatar = new System.Windows.Media.Imaging.BitmapImage(imagepath);
-                        singer.Avatar.Freeze();
+                        var absPath = Path.Combine(singer.Path, EncodingUtil.ConvertEncoding(singer.FileEncoding, singer.PathEncoding, imagePath));
+                        if (File.Exists(absPath))
+                        {
+                            Uri imagepath = new Uri(absPath);
+                            singer.Avatar = new System.Windows.Media.Imaging.BitmapImage(imagepath);
+                            singer.Avatar.Freeze();
+                        }
                     }
                 }
                 else if (line.StartsWith("author=")) singer.Author = line.Trim().Replace("author=", "");
@@ -216,24 +220,21 @@ namespace OpenUtau.Core.Formats
                     if (singer.AliasMap.ContainsKey(alias)) continue;
                     try
                     {
-                        using (WaveFileReader reader = new WaveFileReader(Path.Combine(dirpath, wavfile)))
+                        singer.AliasMap.Add(alias, new UOto()
                         {
-                            singer.AliasMap.Add(alias, new UOto()
-                            {
-                                File = Path.Combine(relativeDir, wavfile),
-                                Alias = args[0],
-                                Offset = double.Parse(string.IsNullOrWhiteSpace(args[1]) ? "0" : args[1]),
-                                Consonant = double.Parse(string.IsNullOrWhiteSpace(args[2]) ? "0" : args[2]),
-                                Cutoff = double.Parse(string.IsNullOrWhiteSpace(args[3]) ? "0" : args[3]),
-                                Preutter = double.Parse(string.IsNullOrWhiteSpace(args[4]) ? "0" : args[4]),
-                                Overlap = double.Parse(string.IsNullOrWhiteSpace(args[5]) ? "0" : args[5]),
-                                Duration = reader.TotalTime.TotalMilliseconds
-                            });
-                        }
+                            File = Path.Combine(relativeDir, wavfile),
+                            Alias = args[0],
+                            Offset = double.Parse(string.IsNullOrWhiteSpace(args[1]) ? "0" : args[1]),
+                            Consonant = double.Parse(string.IsNullOrWhiteSpace(args[2]) ? "0" : args[2]),
+                            Cutoff = double.Parse(string.IsNullOrWhiteSpace(args[3]) ? "0" : args[3]),
+                            Preutter = double.Parse(string.IsNullOrWhiteSpace(args[4]) ? "0" : args[4]),
+                            Overlap = double.Parse(string.IsNullOrWhiteSpace(args[5]) ? "0" : args[5]),
+                            Duration = 1
+                        });
                     }
-                    catch
+                    catch (Exception e)
                     {
-                        errorLines.Add(line);
+                        errorLines.Add(line + " with exception " + e.GetType().Name + ":" + e.Message);
                     }
                 }
             }

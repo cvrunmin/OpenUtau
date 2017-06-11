@@ -42,11 +42,16 @@ namespace OpenUtau.Core.Render
         {
             return await GetMixingSampleProvider(project, new int[] { });
         }
-        private List<TrackWaveChannel> trackCache = new List<TrackWaveChannel>();
+        public List<TrackWaveChannel> trackCache = new List<TrackWaveChannel>();
         public async Task<UWaveMixerStream32> GetMixingStream(UProject project)
         {
             if (trackCache.Count == 0) trackCache = Enumerable.Repeat((TrackWaveChannel)null, project.Tracks.Count).ToList();
-            if (trackCache.Capacity < project.Tracks.Count) trackCache.Capacity = project.Tracks.Count;
+            if (trackCache.Capacity < project.Tracks.Count || trackCache.Count < project.Tracks.Count)
+            {
+                trackCache.Capacity = project.Tracks.Count;
+                trackCache.AddRange(Enumerable.Repeat((TrackWaveChannel)null, trackCache.Capacity - trackCache.Count));
+            }
+
             UWaveMixerStream32 masterMix = new UWaveMixerStream32();
             List<TrackSampleProvider> trackSources = Enumerable.Repeat((TrackSampleProvider)null, project.Tracks.Count).ToList();
             foreach (UTrack track in project.Tracks)

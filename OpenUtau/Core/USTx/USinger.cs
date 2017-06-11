@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OpenUtau.Core.USTx
 {
-    public struct UOto
+    public class UOto
     {
         public string Alias { set; get; }
         public string File { set; get; }
@@ -50,6 +50,12 @@ namespace OpenUtau.Core.USTx
         public UOto SetOverlap(double overlap)
         {
             Overlap = overlap;
+            return this;
+        }
+
+        public UOto SetDuration(double duration)
+        {
+            Duration = duration;
             return this;
         }
     }

@@ -62,6 +62,9 @@ namespace OpenUtau.UI.Dialogs
             this.avatar.Source = singer.Avatar;
             this.info.Text = "Author: " + singer.Author + "\nWebsite: " + singer.Website + "\nPath: " + singer.Path;
             var observable = new ObservableCollection<UOto>(singer.AliasMap.Values);
+            observable.CollectionChanged += (sender, e) => {
+                CollectionViewSource.GetDefaultView(otoview.ItemsSource).Refresh();
+            };
             otoview.ItemsSource = observable;
         }
 
@@ -79,6 +82,7 @@ namespace OpenUtau.UI.Dialogs
 
         private void otoview_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            if (((FrameworkElement)e.OriginalSource).DataContext == null) return;
             var item = (UOto)((FrameworkElement)e.OriginalSource).DataContext;
             var dialog = new OtoEditDialog(SelectedSinger, item);
             dialog.Closing += (sender1, e1) =>
@@ -105,7 +109,6 @@ namespace OpenUtau.UI.Dialogs
                     {
                         SelectedSinger.AliasMap.Add(result.Alias, result);
                     }
-                    otoview.Items.Refresh();
                 }
             };
             dialog.ShowDialog();

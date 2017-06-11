@@ -389,7 +389,7 @@ namespace OpenUtau.UI.Models
         private void OnPlayPosSet(int playPosTick)
         {
             this.playPosTick = playPosTick;
-            double playPosPix = TickToCanvas(playPosTick - Part.PosTick);
+            double playPosPix = TickToCanvas(playPosTick - (Part?.PosTick).GetValueOrDefault());
             if (playPosPix > MidiCanvas.ActualWidth * UIConstants.PlayPosMarkerMargin)
                 OffsetX += playPosPix - MidiCanvas.ActualWidth * UIConstants.PlayPosMarkerMargin;
             MarkUpdate();
