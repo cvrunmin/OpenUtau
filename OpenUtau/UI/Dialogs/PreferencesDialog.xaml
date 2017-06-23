@@ -28,12 +28,14 @@
                 </Grid>
             </GroupBox>
         </Grid>
-        <Grid x:Name="themesGrid" Margin="170,2,10,10" Visibility="Hidden">
+        <Grid x:Name="themesGrid" Margin="170,2,10,10">
             <TextBlock Text="{DynamicResource Theme}" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             <ComboBox Width="256" Height="22" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,25,0,0">
                 <ComboBoxItem Content="Clean" IsSelected="True"/>
                 <ComboBoxItem Content="Dark"/>
             </ComboBox>
+            <Label Content="{DynamicResource LanguageLbl}" HorizontalAlignment="Left" Margin="10,52,0,0" VerticalAlignment="Top"/>
+            <ComboBox x:Name="comboBoxLang" HorizontalAlignment="Left" Margin="10,82,0,0" VerticalAlignment="Top" Width="256"/>
         </Grid>
         <Grid x:Name="playbackGrid" Margin="170,2,10,10" Visibility="Hidden">
             <TextBlock Text="{DynamicResource OutputDevice}" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>

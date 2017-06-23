@@ -96,7 +96,7 @@ namespace OpenUtau.Core.Render
                         RenderItem item = BuildRenderItem(phoneme, part, project);
                         if (!item.Error)
                         {
-                            RenderPhoneme(engine, cacheDir, item);
+                            RenderPhoneme(engine, cacheDir, item, Path.GetFileNameWithoutExtension(project.FilePath));
                             if(item.Sound != null) renderItems.Add(item);
                         }
                         DocManager.Inst.ExecuteCmd(new ProgressBarNotification(100 * ++i / count, string.Format("Resampling \"{0}\" {1}/{2}", phoneme.Phoneme, i, count)));
@@ -131,7 +131,7 @@ namespace OpenUtau.Core.Render
                         RenderItem item = BuildRenderItem(phoneme, part, project);
                         if (!item.Error)
                         {
-                            RenderPhoneme(engine, cacheDir, item);
+                            RenderPhoneme(engine, cacheDir, item, Path.GetFileNameWithoutExtension(project.FilePath));
                             renderItems.Add(item);
                         }
                         worker.ReportProgress(100 * ++i / count, string.Format("Resampling \"{0}\" {1}/{2}", phoneme.Phoneme, i, count));
@@ -154,17 +154,17 @@ namespace OpenUtau.Core.Render
                 RenderItem item = inst.BuildRenderItem(phoneme, part, project);
                     if (!item.Error)
                     {
-                        RenderPhoneme(engine, PathManager.Inst.GetCachePath(project.FilePath), item);
+                        RenderPhoneme(engine, PathManager.Inst.GetCachePath(project.FilePath), item, Path.GetFileNameWithoutExtension(project.FilePath));
                     }
                 }
         }
-        private static void RenderPhoneme(IResamplerDriver engine, string cacheDir, RenderItem item)
+        private static void RenderPhoneme(IResamplerDriver engine, string cacheDir, RenderItem item, string projectName)
         {
             var sound = RenderCache.Inst.Get(item.HashParameters());
 
             if (sound == null)
             {
-                string cachefile = Path.Combine(cacheDir, string.Format("{0:x}.wav", item.HashParameters()));
+                string cachefile = Path.Combine(cacheDir, string.Format("{1}-{0:x}.wav", item.HashParameters(), projectName));
                 if (!File.Exists(cachefile))
                 {
                     Debug.WriteLine("Sound {0:x} resampling {1}", item.HashParameters(), item.GetResamplerExeArgs());

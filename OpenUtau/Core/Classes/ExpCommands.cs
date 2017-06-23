@@ -123,8 +123,9 @@ namespace OpenUtau.Core
         public PitchPoint Point;
         public PitchPointShape NewShape;
         public PitchPointShape OldShape;
-        public ChangePitchPointShapeCommand(PitchPoint point, PitchPointShape shape)
+        public ChangePitchPointShapeCommand(UVoicePart part, PitchPoint point, PitchPointShape shape)
         {
+            this.Part = part;
             this.Point = point;
             this.NewShape = shape;
             this.OldShape = point.Shape;
@@ -145,6 +146,7 @@ namespace OpenUtau.Core
         public SnapPitchPointCommand(UNote note)
         {
             this.Note = note;
+            this.Part = DocManager.Inst.Project.Parts[note.PartNo] as UVoicePart;
             this.X = Note.PitchBend.Points.First().X;
             this.Y = Note.PitchBend.Points.First().Y;
         }
@@ -178,6 +180,7 @@ namespace OpenUtau.Core
         public AddPitchPointCommand(UNote note, PitchPoint point, int index)
         {
             this.Note = note;
+            Part = DocManager.Inst.Project.Parts[note.PartNo] as UVoicePart;
             this.Index = index;
             this.Point = point;
         }
@@ -194,8 +197,9 @@ namespace OpenUtau.Core
     {
         public PitchPoint Point;
         public double DeltaX, DeltaY;
-        public MovePitchPointCommand(PitchPoint point, double deltaX, double deltaY)
+        public MovePitchPointCommand(UVoicePart part, PitchPoint point, double deltaX, double deltaY)
         {
+            this.Part = part;
             this.Point = point;
             this.DeltaX = deltaX;
             this.DeltaY = deltaY;

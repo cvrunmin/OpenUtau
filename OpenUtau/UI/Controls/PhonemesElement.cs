@@ -68,6 +68,7 @@ namespace OpenUtau.UI.Controls
             for (int i = 0; i < note.Phonemes.Count; i++)
             {
                 var phoneme = note.Phonemes[i];
+                if (phoneme.PhonemeError) continue;
                 double x = Math.Round(note.PosTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar) + 0.5;
                 double x0 = (note.PosTick + DocManager.Inst.Project.MillisecondToTick(phoneme.Envelope.Points[0].X))
                     * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;

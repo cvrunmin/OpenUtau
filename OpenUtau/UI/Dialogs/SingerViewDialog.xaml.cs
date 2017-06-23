@@ -60,17 +60,36 @@ namespace OpenUtau.UI.Dialogs
             SelectedSinger = singer;
             this.name.Text = singer.Name;
             this.avatar.Source = singer.Avatar;
-            this.info.Text = "Author: " + singer.Author + "\nWebsite: " + singer.Website + "\nPath: " + singer.Path;
-            var observable = new ObservableCollection<UOto>(singer.AliasMap.Values);
-            observable.CollectionChanged += (sender, e) => {
-                CollectionViewSource.GetDefaultView(otoview.ItemsSource).Refresh();
-            };
-            otoview.ItemsSource = observable;
+            this.info.Text = "Author: " + singer.Author + "\nWebsite: " + singer.Website + "\nPath: " + singer.Path + "\n\n" + singer.Detail;
+            RefreshOtoView(true);
+            singerAmend = false;
+        }
+
+        private void RefreshOtoView(bool force = false) {
+            if (force) {
+                otoview.ItemsSource = null;
+                var observable = new ObservableCollection<UOto>(SelectedSinger.AliasMap.Values);
+                observable.CollectionChanged += (sender, e) => {
+                    CollectionViewSource.GetDefaultView(otoview.ItemsSource).Refresh();
+                };
+                otoview.ItemsSource = observable;
+            }
+            else
+            {
+                otoview.Items.Refresh();
+            }
         }
 
         private void name_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SaveSinger(SelectedSinger);
+            if(singerAmend)
+            foreach (var track in DocManager.Inst.Project.Tracks)
+            {
+                if (track.Singer.Equals(SelectedSinger)) {
+                    track.Amended = true;
+                }
+            }
             SetSinger(singerNames[this.name.SelectedIndex]);
         }
 
@@ -79,7 +98,7 @@ namespace OpenUtau.UI.Dialogs
             DocManager.Inst.SearchAllSingers();
             UpdateSingers();
         }
-
+        bool singerAmend = false;
         private void otoview_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (((FrameworkElement)e.OriginalSource).DataContext == null) return;
@@ -109,6 +128,7 @@ namespace OpenUtau.UI.Dialogs
                     {
                         SelectedSinger.AliasMap.Add(result.Alias, result);
                     }
+                    singerAmend = true;
                 }
             };
             dialog.ShowDialog();
@@ -151,6 +171,14 @@ namespace OpenUtau.UI.Dialogs
         private void window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             SaveSinger(SelectedSinger);
+            if (singerAmend)
+                foreach (var track in DocManager.Inst.Project.Tracks)
+                {
+                    if (track.Singer.Equals(SelectedSinger))
+                    {
+                        track.Amended = true;
+                    }
+                }
         }
 
         private void butDuplicate_Click(object sender, RoutedEventArgs e)
@@ -167,7 +195,8 @@ namespace OpenUtau.UI.Dialogs
                 for (; SelectedSinger.AliasMap.ContainsKey(newOto.Alias + " (" + i + ")"); ++i) { }
                 newOto.Alias += " (" + i + ")";
                 SelectedSinger.AliasMap.Add(newOto.Alias, newOto);
-                otoview.Items.Refresh();
+                RefreshOtoView(true);
+                singerAmend = true;
             }
         }
 
@@ -176,7 +205,8 @@ namespace OpenUtau.UI.Dialogs
             if (otoview.SelectedItem != null && otoview.SelectedItem is UOto oto)
             {
                 SelectedSinger.AliasMap.Remove(oto.Alias);
-                otoview.Items.Refresh();
+                RefreshOtoView(true);
+                singerAmend = true;
             }
         }
     }

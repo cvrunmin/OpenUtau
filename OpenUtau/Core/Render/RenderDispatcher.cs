@@ -112,6 +112,12 @@ namespace OpenUtau.Core.Render
                             await Task.Delay(1000);
                         }*/
                         ++pending;
+                        var pan = source.Pan;
+                        var vol = source.PlainVolume;
+                        var m = source.Muted;
+                        source.Pan = 0;
+                        source.PlainVolume = MusicMath.DecibelToVolume(0);
+                        source.Muted = false;
                         var wave = source.ToWaveProvider();
                         var buffer = new byte[source.WaveFormat.AverageBytesPerSecond * 4];
                         while (true)
@@ -127,6 +133,9 @@ namespace OpenUtau.Core.Render
                         }
                         buffer = null;
                         wave = null;
+                        source.Pan = pan;
+                        source.PlainVolume = vol;
+                        source.Muted = m;
                     }).ContinueWith(task =>
                     {
                         //if (task.IsFaulted) throw task.Exception;

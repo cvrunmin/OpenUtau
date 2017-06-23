@@ -46,9 +46,20 @@ namespace OpenUtau.UI.Dialogs
             UpdateSingerPaths();
             UpdateEngines();
             UpdateRenders();
+            comboBoxLang.ItemsSource = Lang.LanguageManager.ListLanuage();
+            comboBoxLang.SelectedItem = Lang.LanguageManager.GetLocalized("DisplayName");
+            comboBoxLang.SelectionChanged += ComboBoxLang_SelectionChanged;
         }
 
-        # region Paths
+        private void ComboBoxLang_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Lang.LanguageManager.LanguagesInDisplayName.TryGetValue(comboBoxLang.SelectedItem.ToString(), out string langTag);
+            if (string.IsNullOrWhiteSpace(langTag)) return;
+            Core.Util.Preferences.Default.Language = langTag;
+            Lang.LanguageManager.UseLanguage(langTag);
+        }
+
+        #region Paths
 
         private void UpdateSingerPaths()
         {

@@ -93,6 +93,10 @@ namespace OpenUtau.Core
             track.Singer = newSinger;
             if (!project.Singers.Contains(newSinger))
                 project.Singers.Add(newSinger);
+            foreach (var item in project.Parts.Where(pt=>pt.TrackNo == track.TrackNo).OfType<UVoicePart>())
+            {
+                PartManager.UpdatePart(item);
+            }
             base.Execute();
         }
         public override void Unexecute() { track.Singer = oldSinger;

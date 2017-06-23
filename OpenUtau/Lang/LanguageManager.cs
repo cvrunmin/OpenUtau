@@ -10,6 +10,7 @@ namespace OpenUtau.Lang
     static class LanguageManager
     {
         private static readonly Dictionary<string, ResourceDictionary> Languages = new Dictionary<string, ResourceDictionary>();
+        public static readonly Dictionary<string, string> LanguagesInDisplayName = new Dictionary<string, string>();
         static private readonly ResourceDictionary DefaultLanguage = LoadLangFromResource("pack://application:,,,/Lang/en-us.xaml");
 
         private static ResourceDictionary LoadLangFromResource(string uri)
@@ -19,13 +20,19 @@ namespace OpenUtau.Lang
 
         static public void Add(string languageName, string languageUrl)
         {
+            var dictionary = LoadLangFromResource(languageUrl);
             if (Languages.ContainsKey(languageName))
             {
-                Languages[languageName] = LoadLangFromResource(languageUrl);
+                Languages[languageName] = dictionary;
                 return;
             }
-            Languages.Add(languageName, LoadLangFromResource(languageUrl));
-
+            Languages.Add(languageName, dictionary);
+            try
+            {
+                if (!LanguagesInDisplayName.ContainsKey(dictionary["DisplayName"].ToString()))
+                    LanguagesInDisplayName.Add(dictionary["DisplayName"].ToString(), languageName);
+            }
+            catch { }
         }
         static public void Clear()
         {

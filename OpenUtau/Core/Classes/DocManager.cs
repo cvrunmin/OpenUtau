@@ -64,6 +64,7 @@ namespace OpenUtau.Core
                     redoQueue.Clear();
                     Render.RenderDispatcher.Inst.trackCache.Clear();
                     Render.RenderDispatcher.Inst.trackCache.Capacity = 0;
+                    Render.RenderCache.Inst.Clear();
                     undoGroup = null;
                     savedPoint = null;
                     this._project = ((LoadProjectNotification)cmd).project;

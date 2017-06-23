@@ -35,7 +35,7 @@ namespace OpenUtau.Core
             UpdatePart(partContainer.Part);
         }
 
-        public void UpdatePart(UVoicePart part)
+        public static void UpdatePart(UVoicePart part)
         {
             lock (part)
             {
@@ -50,7 +50,7 @@ namespace OpenUtau.Core
             }
         }
 
-        private void UpdatePitchBend(UVoicePart part)
+        private static void UpdatePitchBend(UVoicePart part)
         {
             UNote lastNote = null;
             foreach (UNote note in part.Notes)
@@ -66,7 +66,7 @@ namespace OpenUtau.Core
             }
         }
 
-        public void ResnapPitchBend(UVoicePart part)
+        public static void ResnapPitchBend(UVoicePart part)
         {
             UNote lastNote = null;
             foreach (UNote note in part.Notes)
@@ -81,7 +81,7 @@ namespace OpenUtau.Core
             }
         }
 
-        private void UpdateEnvelope(UVoicePart part)
+        private static void UpdateEnvelope(UVoicePart part)
         {
             foreach (UNote note in part.Notes)
             {
@@ -104,7 +104,7 @@ namespace OpenUtau.Core
             }
         }
 
-        private void UpdateOverlapAdjustment(UVoicePart part)
+        private static void UpdateOverlapAdjustment(UVoicePart part)
         {
             UPhoneme lastPhoneme = null;
             UNote lastNote = null;
@@ -153,7 +153,7 @@ namespace OpenUtau.Core
             }
         }
 
-        private void UpdatePhonemeOto(UVoicePart part)
+        private static void UpdatePhonemeOto(UVoicePart part)
         {
             if (part.TrackNo < 0 || part.TrackNo >= DocManager.Inst.Project.Tracks.Count) return;
             var singer = DocManager.Inst.Project.Tracks[part.TrackNo].Singer;
@@ -201,7 +201,7 @@ namespace OpenUtau.Core
             }
         }
 
-        private void UpdatePhonemeDurTick(UVoicePart part)
+        private static void UpdatePhonemeDurTick(UVoicePart part)
         {
             UNote lastNote = null;
             UPhoneme lastPhoneme = null;
@@ -219,7 +219,7 @@ namespace OpenUtau.Core
             }
         }
 
-        private void CheckOverlappedNotes(UVoicePart part)
+        private static void CheckOverlappedNotes(UVoicePart part)
         {
             UNote lastNote = null;
             foreach (UNote note in part.Notes)

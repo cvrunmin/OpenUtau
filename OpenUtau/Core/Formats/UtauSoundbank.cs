@@ -135,6 +135,13 @@ namespace OpenUtau.Core.Formats
                 else if (line.StartsWith("web=")) singer.Website = line.Trim().Replace("web=", "");
                 else finalstring += line + "\r\n";
             }
+            if (File.Exists(Path.Combine(singer.Path, "readme.txt")))
+            {
+                using (var reader = new StreamReader(File.OpenRead(Path.Combine(singer.Path, "readme.txt"))))
+                {
+                    finalstring += reader.ReadToEnd();
+                }
+            }
             singer.Detail = finalstring;
             LoadPrefixMap(singer);
             singer.Loaded = true;

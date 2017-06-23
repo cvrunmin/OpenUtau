@@ -119,7 +119,7 @@ namespace OpenUtau.UI
                         o == pitchCxtMenu.Items[2] ? PitchPointShape.In :
                         o == pitchCxtMenu.Items[3] ? PitchPointShape.Out : PitchPointShape.Linear;
                     DocManager.Inst.StartUndoGroup();
-                    DocManager.Inst.ExecuteCmd(new ChangePitchPointShapeCommand(pitHit.Note.PitchBend.Points[pitHit.Index], shape));
+                    DocManager.Inst.ExecuteCmd(new ChangePitchPointShapeCommand(midiVM.Part, pitHit.Note.PitchBend.Points[pitHit.Index], shape));
                     DocManager.Inst.EndUndoGroup();
                 }
             };
@@ -342,6 +342,10 @@ namespace OpenUtau.UI
                             _lastNoteLength);
                         newNote.PartNo = midiVM.Part.PartNo;
                         newNote.NoteNo = midiVM.Part.Notes.Count;
+                        foreach (var item in newNote.Expressions)
+                        {
+                            newNote.Expressions[item.Key].Data = midiVM.Part.Expressions[item.Key].Data;
+                        }
 
                         DocManager.Inst.StartUndoGroup();
                         DocManager.Inst.ExecuteCmd(new AddNoteCommand(midiVM.Part, newNote));
@@ -414,7 +418,7 @@ namespace OpenUtau.UI
                     (midiVM.CanvasToPitch(mousePos.Y) - _noteHit.NoteNum) * 10 - _pitHit.Y;
                 if (_noteHit.PitchBend.Points.First() == _pitHit && _noteHit.PitchBend.SnapFirst || _noteHit.PitchBend.Points.Last() == _pitHit) deltaY = 0;
                 if (deltaX != 0 || deltaY != 0)
-                    DocManager.Inst.ExecuteCmd(new MovePitchPointCommand(_pitHit, deltaX, deltaY));
+                    DocManager.Inst.ExecuteCmd(new MovePitchPointCommand(midiVM.Part, _pitHit, deltaX, deltaY));
             }
             else if (_inMove) // Move Note
             {
@@ -594,8 +598,11 @@ namespace OpenUtau.UI
 
         private void viewScalerX_ViewScaled(object sender, EventArgs e)
         {
-            if (e is ViewScaledEventArgs args) {
+            if (e is ViewScaledEventArgs args)
+            {
+                double zoomCenter = midiVM.OffsetX / midiVM.QuarterWidth;
                 midiVM.QuarterWidth = args.Value;
+                midiVM.OffsetX = Math.Max(0, Math.Min(midiVM.TotalWidth, zoomCenter * midiVM.QuarterWidth));
             }
         }
 
@@ -783,6 +790,9 @@ namespace OpenUtau.UI
 
         private void horizontalScroll_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            midiVM.HorizontalPropertiesChanged();
+            midiVM.shadowExpElement.MarkUpdate();
+            midiVM.visibleExpElement.MarkUpdate();
             midiVM.MarkUpdate();
             midiVM.RedrawIfUpdated();
         }

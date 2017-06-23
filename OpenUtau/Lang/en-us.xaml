@@ -44,6 +44,7 @@
     <s:String x:Key="Paths">Paths</s:String>
     <s:String x:Key="Appearance">Appearance</s:String>
     <s:String x:Key="Theme">Theme</s:String>
+    <s:String x:Key="LanguageLbl">Language</s:String>
     <s:String x:Key="Themes">Themes</s:String>
     <s:String x:Key="Media">Media</s:String>
     <s:String x:Key="Audio">Audio</s:String>
