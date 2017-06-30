@@ -9,6 +9,7 @@
     "SingerSearchPaths": [
         "Singers"
     ],
+	"EnterToEdit":false,
 	"RenderNoteAtInstant": false,
 	"RenderManager": "PreRender",
     "InternalEnginePreview": true,

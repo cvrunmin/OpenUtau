@@ -292,7 +292,9 @@ namespace OpenUtau.UI
                     {
                         _noteHit = noteHit;
                         if (!midiVM.SelectedNotes.Contains(noteHit)) midiVM.DeselectAll();
-                        if (!noteHit.IsLyricBoxActive && e.ClickCount >= 2) {
+                        midiVM.SelectNote(noteHit);
+                        if (!noteHit.IsLyricBoxActive && e.ClickCount >= 2)
+                        {
                             noteHit.IsLyricBoxActive = true;
                             midiVM.AnyNotesEditing = true;
                             midiVM.MarkUpdate();
@@ -306,7 +308,7 @@ namespace OpenUtau.UI
                             _tickMoveRelative = midiVM.CanvasToSnappedTick(mousePos.X) - noteHit.PosTick;
                             _tickMoveStart = noteHit.PosTick;
                             _lastNoteLength = noteHit.DurTick;
-                            if (midiVM.SelectedNotes.Count != 0)
+                            if (midiVM.SelectedNotes.Count > 1)
                             {
                                 _noteMoveNoteMax = _noteMoveNoteMin = noteHit;
                                 _noteMoveNoteLeft = _noteMoveNoteRight = noteHit;
@@ -334,7 +336,7 @@ namespace OpenUtau.UI
                             DocManager.Inst.StartUndoGroup();
                         }
                     }
-                    else // Add note
+                    else if (!midiVM.SelectedNotes.Any()) // Add note
                     {
                         UNote newNote = DocManager.Inst.Project.CreateNote(
                             midiVM.CanvasToNoteNum(mousePos.Y),
@@ -353,11 +355,16 @@ namespace OpenUtau.UI
                         midiVM.MarkUpdate();
                         // Enable drag
                         midiVM.DeselectAll();
+                        midiVM.SelectNote(newNote);
                         _inMove = true;
                         _noteHit = newNote;
                         _tickMoveRelative = 0;
                         _tickMoveStart = newNote.PosTick;
                         DocManager.Inst.StartUndoGroup();
+                    }
+                    else
+                    {
+                        midiVM.DeselectAll();
                     }
                 }
             }
@@ -422,7 +429,7 @@ namespace OpenUtau.UI
             }
             else if (_inMove) // Move Note
             {
-                if (midiVM.SelectedNotes.Count == 0)
+                if (midiVM.SelectedNotes.Count <= 1)
                 {
                     int newNoteNum = Math.Max(0, Math.Min(UIConstants.MaxNoteNum - 1, midiVM.CanvasToNoteNum(mousePos.Y)));
                     int newPosTick = Math.Max(0, Math.Min((int)(midiVM.QuarterCount * midiVM.Project.Resolution / midiVM.BeatPerBar) - _noteHit.DurTick,
@@ -727,6 +734,15 @@ namespace OpenUtau.UI
                     else if (e.Key == Key.P)
                     {
                         midiVM.Snap = !midiVM.Snap;
+                    }
+                    else if (e.Key == Key.Enter) {
+                        if (Core.Util.Preferences.Default.EnterToEdit && midiVM.SelectedNotes.Any()) {
+                            midiVM.SelectedNotes.First().IsLyricBoxActive = true;
+                            midiVM.AnyNotesEditing = true;
+                            midiVM.MarkUpdate();
+                            midiVM.notesElement?.MarkUpdate();
+                            midiVM.RedrawIfUpdated();
+                        }
                     }
                 }
             }

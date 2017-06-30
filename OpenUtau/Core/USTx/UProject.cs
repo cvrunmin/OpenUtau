@@ -60,7 +60,13 @@ namespace OpenUtau.Core.USTx
 
         public UProject() { }
 
-        public int MillisecondToTick(double ms)
+        public int MillisecondToTick(double ms, double offsetMs = 0) {
+            var tick1 = MillisecondToTickImpl(ms + offsetMs);
+            var tick2 = MillisecondToTickImpl(offsetMs);
+            return tick1 - tick2;
+        }
+
+        private int MillisecondToTickImpl(double ms)
         {
             int tick = MusicMath.MillisecondToTick(ms, BPM, BeatUnit, Resolution);
             int processed = tick;

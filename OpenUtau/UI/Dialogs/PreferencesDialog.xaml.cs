@@ -49,6 +49,7 @@ namespace OpenUtau.UI.Dialogs
             comboBoxLang.ItemsSource = Lang.LanguageManager.ListLanuage();
             comboBoxLang.SelectedItem = Lang.LanguageManager.GetLocalized("DisplayName");
             comboBoxLang.SelectionChanged += ComboBoxLang_SelectionChanged;
+            chkboxEditOnEnter.IsChecked = Core.Util.Preferences.Default.EnterToEdit;
         }
 
         private void ComboBoxLang_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -59,6 +60,15 @@ namespace OpenUtau.UI.Dialogs
             Lang.LanguageManager.UseLanguage(langTag);
         }
 
+        private void treeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (treeView.SelectedItem == pathsItem) SelectedGrid = pathsGrid;
+            else if (treeView.SelectedItem == themesItem) SelectedGrid = themesGrid;
+            else if (treeView.SelectedItem == playbackItem) SelectedGrid = playbackGrid;
+            else if (treeView.SelectedItem == renderingItem) SelectedGrid = renderingGrid;
+            else if (treeView.SelectedItem == generalItem) SelectedGrid = generalGrid;
+            else SelectedGrid = null;
+        }
         #region Paths
 
         private void UpdateSingerPaths()
@@ -87,14 +97,6 @@ namespace OpenUtau.UI.Dialogs
             DocManager.Inst.SearchAllSingers();
         }
 
-        private void treeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-            if (treeView.SelectedItem == pathsItem) SelectedGrid = pathsGrid;
-            else if (treeView.SelectedItem == themesItem) SelectedGrid = themesGrid;
-            else if (treeView.SelectedItem == playbackItem) SelectedGrid = playbackGrid;
-            else if (treeView.SelectedItem == renderingItem) SelectedGrid = renderingGrid;
-            else SelectedGrid = null;
-        }
 
         private void singerPathsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -176,7 +178,17 @@ namespace OpenUtau.UI.Dialogs
 
         private void UpdateRenders() {
             comboRenderMana.SelectedItem = Core.Util.Preferences.Default.RenderManager;
+            if(comboRenderMana.SelectedItem == null)
+            {
+                int index = RenderManager.ToList().IndexOf(Core.Util.Preferences.Default.RenderManager);
+                if (index != -1) comboRenderMana.SelectedIndex = index;
+            }
             chkboxInstantRender.IsChecked = Core.Util.Preferences.Default.RenderNoteAtInstant;
+        }
+
+        private void chkboxEditOnEnter_Click(object sender, RoutedEventArgs e)
+        {
+            Core.Util.Preferences.Default.EnterToEdit = chkboxEditOnEnter.IsChecked.Value;
         }
     }
 }

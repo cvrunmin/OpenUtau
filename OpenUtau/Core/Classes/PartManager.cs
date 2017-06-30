@@ -89,17 +89,19 @@ namespace OpenUtau.Core
                 {
                     phoneme.Envelope.Points[0].X = -phoneme.Preutter;
                     phoneme.Envelope.Points[1].X = phoneme.Envelope.Points[0].X + (phoneme.Overlapped ? phoneme.Overlap : 5);
-                    phoneme.Envelope.Points[2].X = Math.Max(0, phoneme.Envelope.Points[1].X);
                     phoneme.Envelope.Points[3].X = DocManager.Inst.Project.TickToMillisecond(phoneme.DurTick, part.PosTick + note.PosTick + phoneme.PosTick) - phoneme.TailIntrude;
+                    phoneme.Envelope.Points[2].X = Math.Min(Math.Max(0, phoneme.Envelope.Points[1].X), phoneme.Envelope.Points[3].X);
                     phoneme.Envelope.Points[4].X = phoneme.Envelope.Points[3].X + phoneme.TailOverlap;
 
                     phoneme.Envelope.Points[1].Y = (int)phoneme.Parent.Expressions["volume"].Data;
                     phoneme.Envelope.Points[1].X = phoneme.Envelope.Points[0].X + (phoneme.Overlapped ? phoneme.Overlap : 5) * (int)phoneme.Parent.Expressions["accent"].Data / 100.0;
                     phoneme.Envelope.Points[1].Y = (int)phoneme.Parent.Expressions["accent"].Data * (int)phoneme.Parent.Expressions["volume"].Data / 100;
+                    phoneme.Envelope.Points[2].X = Math.Min(Math.Max(0, phoneme.Envelope.Points[1].X), phoneme.Envelope.Points[3].X);
                     phoneme.Envelope.Points[2].Y = (int)phoneme.Parent.Expressions["volume"].Data;
                     phoneme.Envelope.Points[3].Y = (int)phoneme.Parent.Expressions["volume"].Data;
-                    phoneme.Envelope.Points[3].X -= (phoneme.Envelope.Points[3].X - phoneme.Envelope.Points[2].X) * (int)phoneme.Parent.Expressions["decay"].Data / 500;
-                    phoneme.Envelope.Points[3].Y *= 1.0 - (int)phoneme.Parent.Expressions["decay"].Data / 100.0;
+                    phoneme.Envelope.Points[3].X -= (phoneme.Envelope.Points[3].X - phoneme.Envelope.Points[2].X) * (int)phoneme.Parent.Expressions["release"].Data / 500;
+                    phoneme.Envelope.Points[3].Y *= 1.0 - (int)phoneme.Parent.Expressions["release"].Data / 100.0;
+                    phoneme.Envelope.Points[2].X += (phoneme.Envelope.Points[3].X - phoneme.Envelope.Points[2].X) * ((int)phoneme.Parent.Expressions["decay"].Data / 100.0);
                 }
             }
         }

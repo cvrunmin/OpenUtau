@@ -5,7 +5,7 @@
     <Grid>
         <TreeView x:Name="treeView" HorizontalAlignment="Left" Margin="10" VerticalAlignment="Stretch" Width="150"
                   SelectedItemChanged="treeView_SelectedItemChanged">
-            <TreeViewItem Header="{DynamicResource General}" IsExpanded="True">
+            <TreeViewItem x:Name="generalItem" Header="{DynamicResource General}" IsExpanded="True">
                 <TreeViewItem x:Name="pathsItem" Header="{DynamicResource Paths}" Margin="-12,0,0,0"/>
             </TreeViewItem>
             <TreeViewItem Header="{DynamicResource Appearance}" IsExpanded="True">
@@ -17,6 +17,10 @@
                 <TreeViewItem x:Name="renderingItem" Header="{DynamicResource Rendering}" Margin="-12,0,0,0"/>
             </TreeViewItem>
         </TreeView>
+        <Grid x:Name="generalGrid" Margin="170,2,10,10">
+            <CheckBox x:Name="chkboxEditOnEnter" Content="Edit note when enter is pressed" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Click="chkboxEditOnEnter_Click"/>
+
+        </Grid>
         <Grid x:Name="pathsGrid" Margin="170,2,10,10" Visibility="Hidden">
             <GroupBox Header="{DynamicResource SingerPath}" Height="200" VerticalAlignment="Top">
                 <Grid>
@@ -28,7 +32,7 @@
                 </Grid>
             </GroupBox>
         </Grid>
-        <Grid x:Name="themesGrid" Margin="170,2,10,10">
+        <Grid x:Name="themesGrid" Margin="170,2,10,10" Visibility="Collapsed">
             <TextBlock Text="{DynamicResource Theme}" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             <ComboBox Width="256" Height="22" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,25,0,0">
                 <ComboBoxItem Content="Clean" IsSelected="True"/>

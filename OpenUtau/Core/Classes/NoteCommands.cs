@@ -34,8 +34,32 @@ namespace OpenUtau.Core
         public AddNoteCommand(UVoicePart part, UNote note) { this.Part = part; this.Notes = new UNote[] { note }; }
         public AddNoteCommand(UVoicePart part, List<UNote> notes) { this.Part = part; this.Notes = notes.ToArray(); }
         public override string ToString() { return "Add note"; }
-        public override void Execute() { lock (Part) { foreach (var note in Notes) Part.Notes.Add(note); } base.Execute(); }
-        public override void Unexecute() { lock (Part) { foreach (var note in Notes) Part.Notes.Remove(note); } base.Unexecute(); }
+        public override void Execute()
+        {
+            lock (Part)
+            {
+                foreach (var note in Notes) Part.Notes.Add(note);
+            }
+            var ordered = Part.Notes.OrderBy(note => note.PosTick);
+            for (int i = 0; i < Part.Notes.Count; i++)
+            {
+                 ordered.ElementAt(i).NoteNo = i;
+            }
+            base.Execute();
+        }
+        public override void Unexecute()
+        {
+            lock (Part)
+            {
+                foreach (var note in Notes) Part.Notes.Remove(note);
+            }
+            var ordered = Part.Notes.OrderBy(note => note.PosTick);
+            for (int i = 0; i < Part.Notes.Count; i++)
+            {
+                ordered.ElementAt(i).NoteNo = i;
+            }
+            base.Unexecute();
+        }
     }
 
     public class RemoveNoteCommand : NoteCommand
@@ -51,9 +75,11 @@ namespace OpenUtau.Core
                 {
                     Part.Notes.Remove(note);
                 }
+
+                var ordered = Part.Notes.OrderBy(note => note.PosTick);
                 for (int i = 0; i < Part.Notes.Count; i++)
                 {
-                    Part.Notes.ElementAt(i).NoteNo = i;
+                    ordered.ElementAt(i).NoteNo = i;
                 }
             }
             base.Execute();
@@ -66,9 +92,10 @@ namespace OpenUtau.Core
                 {
                     Part.Notes.Add(note);
                 }
+                var ordered = Part.Notes.OrderBy(note => note.PosTick);
                 for (int i = 0; i < Part.Notes.Count; i++)
                 {
-                    Part.Notes.ElementAt(i).NoteNo = i;
+                    ordered.ElementAt(i).NoteNo = i;
                 }
             }
             base.Unexecute();
@@ -103,6 +130,11 @@ namespace OpenUtau.Core
                     note.NoteNum += DeltaNoteNum;
                     Part.Notes.Add(note);
                 }
+                var ordered = Part.Notes.OrderBy(note => note.PosTick);
+                for (int i = 0; i < Part.Notes.Count; i++)
+                {
+                    ordered.ElementAt(i).NoteNo = i;
+                }
             }
             base.Execute();
         }
@@ -116,6 +148,11 @@ namespace OpenUtau.Core
                     note.PosTick -= DeltaPos;
                     note.NoteNum -= DeltaNoteNum;
                     Part.Notes.Add(note);
+                }
+                var ordered = Part.Notes.OrderBy(note => note.PosTick);
+                for (int i = 0; i < Part.Notes.Count; i++)
+                {
+                    ordered.ElementAt(i).NoteNo = i;
                 }
             }
             base.Unexecute();

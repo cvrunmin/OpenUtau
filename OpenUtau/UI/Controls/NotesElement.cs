@@ -84,8 +84,8 @@ namespace OpenUtau.UI.Controls
             {
                 if (ShowPitch) DrawPitchBend(note, cxt);
                 if (ShowPitch) DrawVibrato(note, cxt);
-                if (note.IsLyricBoxActive) DrawLyricBox(note);
             }
+            if (note.IsLyricBoxActive) DrawLyricBox(note);
         }
         private TextBox lyricBox = null;
         public TextBox LyricBox { get { return lyricBox; } }
@@ -109,6 +109,12 @@ namespace OpenUtau.UI.Controls
                     midiVM.AnyNotesEditing = false;
                     midiVM.MarkUpdate();
                     lyricBox = null;
+                    midiVM.DeselectNote(note);
+                    var a = Part.Notes.ToDictionary(unote => unote.NoteNo);
+                    if(note.NoteNo < a.Count - 1)
+                    {
+                        midiVM.SelectNote(a[note.NoteNo + 1]);
+                    }
                 }
                 lyricBox.InputBindings.Add(new System.Windows.Input.KeyBinding() { Command = new DelegateCommand(OnEnterPressed), Key = System.Windows.Input.Key.Return });
                 lyricBox.InputBindings.Add(new System.Windows.Input.KeyBinding() { Command = new DelegateCommand(OnEnterPressed), Key = System.Windows.Input.Key.Enter });
@@ -123,6 +129,12 @@ namespace OpenUtau.UI.Controls
                     midiVM.AnyNotesEditing = false;
                     midiVM.MarkUpdate();
                     lyricBox = null;
+                    midiVM.DeselectNote(note);
+                    var a = Part.Notes.ToDictionary(unote => unote.NoteNo);
+                    if (note.NoteNo < a.Count - 1)
+                    {
+                        midiVM.SelectNote(a[note.NoteNo + 1]);
+                    }
                 };
                 lyricBox.Focus();
                 lyricBox.SelectAll();
@@ -205,7 +217,7 @@ namespace OpenUtau.UI.Controls
                     gcxt.LineTo(new Point(startX + inPix, startY - depthPix), false, false);
                     gcxt.Close();
                 }
-                cxt.DrawGeometry(Brushes.White, null, g);
+                cxt.DrawGeometry(null, null, g);
             }
 
             double _x0 = 0, _y0 = 0, _x1 = 0, _y1 = 0;

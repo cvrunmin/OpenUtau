@@ -58,6 +58,7 @@ namespace OpenUtau.Core.Formats
             uproject.RegisterExpression(new IntExpression(null, "opening", "OPE") { Data = 127, Min = 0, Max = 127 });
             uproject.RegisterExpression(new IntExpression(null, "accent", "ACC") { Data = 50, Min = 0, Max = 100 });
             uproject.RegisterExpression(new IntExpression(null, "decay", "DEC") { Data = 50, Min = 0, Max = 100 });
+            uproject.RegisterExpression(new IntExpression(null, "release", "REL") { Data = 50, Min = 0, Max = 100 });
 
             string bpmPath = string.Format("{0}masterTrack/{0}tempo/{0}{1}", nsPrefix, nsPrefix == "v3:" ? "bpm" : "v");
             string beatperbarPath = string.Format("{0}masterTrack/{0}timeSig/{0}{1}", nsPrefix, nsPrefix == "v3:" ? "nume" : "nu");
