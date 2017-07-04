@@ -54,7 +54,6 @@ namespace OpenUtau.Core.USTx
         public UVoicePart CreateVoicePart(int TrackNo, int PosTick) {
             UVoicePart part = new UVoicePart() { TrackNo = TrackNo, PosTick = PosTick, PartNo = Parts.Count };
             foreach (var pair in ExpressionTable) { part.Expressions.Add(pair.Key, pair.Value); }
-            Parts.Add(part);
             return part;
         }
 

@@ -209,7 +209,7 @@ namespace OpenUtau.Core.Formats
                 UPart result = null;
                 if (dictionary.ContainsKey("notes"))
                 {
-                    result = new UVoicePart();
+                    result = Project.CreateVoicePart(0,0);
                     var _result = result as UVoicePart;
 
                     var notes = dictionary["notes"] as ArrayList;
@@ -228,14 +228,19 @@ namespace OpenUtau.Core.Formats
                             Max = exp.Max,
                             Data = exp.Data
                         };
-                        _result.Expressions.Add(pair.Key, _exp);
+                        if (!_result.Expressions.ContainsKey(pair.Key))
+                            _result.Expressions.Add(pair.Key, _exp);
+                        else _result.Expressions[pair.Key] = _exp;
                     }
                 }
                 else if (dictionary.ContainsKey("path"))
                 {
                     result = Wave.CreatePart(dictionary["path"] as string);
-                    ((UWavePart)result).HeadTrimTick = Convert.ToInt32(dictionary["headtrimtick"]);
-                    ((UWavePart)result).TailTrimTick = Convert.ToInt32(dictionary["tailtrimtick"]);
+                    if (dictionary.ContainsKey("headtrimtick"))
+                    {
+                        ((UWavePart)result).HeadTrimTick = Convert.ToInt32(dictionary["headtrimtick"]);
+                        ((UWavePart)result).TailTrimTick = Convert.ToInt32(dictionary["tailtrimtick"]);
+                    }
                 }
 
                 if (result != null)
@@ -289,7 +294,7 @@ namespace OpenUtau.Core.Formats
         {
             public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
             {
-                UProject result = new UProject();
+                UProject result = Create();
                 string ustxVersion = dictionary["ustxversion"] as string;
                 USTx.Project = result;
                 result.Name = dictionary["name"] as string;
@@ -301,6 +306,7 @@ namespace OpenUtau.Core.Formats
                 result.BeatUnit = Convert.ToInt32(dictionary["bunit"]);
                 result.Resolution = Convert.ToInt32(dictionary["res"]);
 
+                if(dictionary.ContainsKey("subbpm"))
                 foreach (var pair in (Dictionary<string, object>)dictionary["subbpm"])
                 {
                     result.SubBPM.Add(Convert.ToInt32(pair.Key), Convert.ToDouble(pair.Value));
@@ -315,7 +321,9 @@ namespace OpenUtau.Core.Formats
                         Max = exp.Max,
                         Data = exp.Data
                     };
-                    result.ExpressionTable.Add(pair.Key, _exp);
+                    if (!result.ExpressionTable.ContainsKey(pair.Key))
+                        result.ExpressionTable.Add(pair.Key, _exp);
+                    else result.ExpressionTable[pair.Key] = _exp;
                 }
 
                 var singers = dictionary["singers"] as ArrayList;

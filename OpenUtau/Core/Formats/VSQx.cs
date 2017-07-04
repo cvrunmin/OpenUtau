@@ -143,6 +143,7 @@ namespace OpenUtau.Core.Formats
                         unote.PitchBend.Points[1].X = -unote.PitchBend.Points[0].X;
                         upart.Notes.Add(unote);
                     }
+                    uproject.Parts.Add(upart);
                 }
             }
 

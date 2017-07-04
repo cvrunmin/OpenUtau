@@ -71,14 +71,14 @@ namespace OpenUtau.Core.Formats
         }
         public static void SaveSinger(USinger singer) {
             SaveOtos(singer);
-            using (var writer = new StreamWriter(Path.Combine(singer.Path, "character.txt"), false, Encoding.UTF8))
+            /*using (var writer = new StreamWriter(Path.Combine(singer.Path, "character.txt"), false, Encoding.UTF8))
             {
                 if (!string.IsNullOrWhiteSpace(singer.Name)) writer.WriteLine("name=" + singer.Name);
                 if (!string.IsNullOrWhiteSpace(singer.AvatarPath)) writer.WriteLine("image=" + singer.AvatarPath);
                 if (!string.IsNullOrWhiteSpace(singer.Author)) writer.WriteLine("author=" + singer.Author);
                 if (!string.IsNullOrWhiteSpace(singer.Website)) writer.WriteLine("web=" + singer.Website);
                 if (!string.IsNullOrWhiteSpace(singer.Detail)) writer.WriteLine(singer.Detail);
-            }
+            }*/
         }
         static USinger LoadSinger(string path)
         {

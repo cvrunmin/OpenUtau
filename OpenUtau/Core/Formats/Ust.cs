@@ -209,6 +209,7 @@ namespace OpenUtau.Core.Formats
             if (currentBlock != UstBlock.Trackend)
                 DocManager.Inst.ExecuteCmd(new UserMessageNotification("Unexpected ust file end"));
             part.DurTick = currentTick;
+            project.Parts.Add(part);
             return project;
         }
 
