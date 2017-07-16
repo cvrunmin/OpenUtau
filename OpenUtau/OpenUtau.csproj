@@ -213,6 +213,9 @@
     <Compile Include="UI\Dialogs\BpmDialog.xaml.cs">
       <DependentUpon>BpmDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Dialogs\ExportUstDialog.xaml.cs">
+      <DependentUpon>ExportUstDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Dialogs\OtoEditDialog.xaml.cs">
       <DependentUpon>OtoEditDialog.xaml</DependentUpon>
     </Compile>
@@ -263,6 +266,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UI\Dialogs\BpmDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\Dialogs\ExportUstDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

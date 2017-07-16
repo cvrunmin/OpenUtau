@@ -47,7 +47,7 @@ namespace OpenUtau.Core.USTx
                 TailIntrude = TailIntrude,
                 TailOverlap = TailOverlap,
                 Oto = Oto,
-
+                Envelope = (EnvelopeExpression)Envelope.Clone(newParent)
             };
             return p;
         }

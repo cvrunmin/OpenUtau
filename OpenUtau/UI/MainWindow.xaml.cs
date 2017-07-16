@@ -508,6 +508,10 @@ namespace OpenUtau.UI
             w.ShowDialog();
         }
 
+        private void MenuExportUst_Click(object sender, RoutedEventArgs e) {
+            Core.Formats.Ust.Save(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(DocManager.Inst.Project.FilePath),DocManager.Inst.Project.Name), DocManager.Inst.Project);
+        }
+
         private void MenuRenderAll_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new RenderDialog();

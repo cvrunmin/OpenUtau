@@ -90,6 +90,7 @@ namespace OpenUtau.Core.Formats
             project.RegisterExpression(new IntExpression(null, "highpass", "HPF") { Data = 0, Min = 0, Max = 100 });
             project.RegisterExpression(new IntExpression(null, "accent", "ACC") { Data = 100, Min = 0, Max = 200 });
             project.RegisterExpression(new IntExpression(null, "decay", "DEC") { Data = 0, Min = 0, Max = 100 });
+            project.RegisterExpression(new IntExpression(null, "release", "REL") { Data = 0, Min = 0, Max = 100 });
 
             var _track = new UTrack();
             project.Tracks.Add(_track);
@@ -213,6 +214,55 @@ namespace OpenUtau.Core.Formats
             return project;
         }
 
+        static public void Save(string pathFormat, UProject project, Encoding encoding = null) {
+            //var validPath = pathFormat.SkipWhile(c => Path.GetInvalidFileNameChars().Contains(c));
+            foreach (var part in project.Parts.OfType<UVoicePart>())
+            {
+                using (var file = File.CreateText(pathFormat + $"_Track-{part.TrackNo}_Part-{part.PartNo}.ust"))
+                {
+                    file.WriteLine(versionTag);
+                    file.WriteLine("UST Version1.2");
+                    file.WriteLine(settingTag);
+                    file.WriteLine("Tempo=" + project.BPM);
+                    file.WriteLine("Tracks=1");
+                    file.WriteLine("ProjectName=" + project.Name + "-" + part.Name);
+                    file.WriteLine("VoiceDir=" + project.Tracks[part.TrackNo].Singer.Path);
+                    //file.WriteLine("OutFile="+project.OutputDir);
+                    file.WriteLine("CacheDir=" + project.CacheDir);
+                    List<UNote> writeNotes = new List<UNote>();
+                    if (part.PosTick > 0)
+                    {
+                        var note = project.CreateNote(60, 0, part.PosTick);
+                        note.Lyric = "R";
+                        note.Phonemes[0].Phoneme = "R";
+                        writeNotes.Add(note);
+                    }
+                    int endtick = 0;
+                    int pos = 0;
+                    foreach (var note in part.Notes)
+                    {
+                        if (note.PosTick > endtick) {
+                            var note1 = project.CreateNote(60, 0, note.PosTick - endtick);
+                            note1.Lyric = "R";
+                            note1.Phonemes[0].Phoneme = "R";
+                            writeNotes.Add(note1);
+                        }
+                        writeNotes.Add(note.Clone());
+                        endtick = note.EndTick;
+                    }
+                    foreach (var note in writeNotes)
+                    {
+                        file.WriteLine($"[#{pos,4}]");
+                        note.DurTick *= project.BeatPerBar;
+                        note.Phonemes[0].DurTick *= project.BeatPerBar;
+                        NoteToUst(note, UstVersion.V1_2).ForEach(item1 => file.WriteLine(item1));
+                        ++pos;
+                    }
+                    file.WriteLine(endTag);
+                }
+            }
+        }
+
         static UNote NoteFromUst(UNote note, List<string> lines, UstVersion version)
         {
             string pbs = "", pbw = "", pby = "", pbm = "";
@@ -241,7 +291,7 @@ namespace OpenUtau.Core.Formats
                 if (line.StartsWith("Envelope="))
                 {
                     var pts = line.Trim().Replace("Envelope=", "").Split(new[] { ',' });
-                    if (pts.Count() > 5) note.Expressions["decay"].Data = 100 - (int)double.Parse(pts[5]);
+                    if (pts.Count() > 5) note.Expressions["release"].Data = 100 - (int)double.Parse(pts[5]);
                 }
                 if (line.StartsWith("VBR=")) VibratoFromUst(note.Vibrato, line.Trim().Replace("VBR=", ""));
                 if (line.StartsWith("PBS=")) pbs = line.Trim().Replace("PBS=", "");
@@ -268,9 +318,9 @@ namespace OpenUtau.Core.Formats
                 double x = pts.First().X;
                 if (pbw != "")
                 {
-                    string[] w = pbw.Split(new[] { ',' });
+                    string[] w = pbw.Split(',');
                     string[] y = null;
-                    if (w.Count() > 1) y = pby.Split(new[] { ',' });
+                    if (w.Count() > 1) y = pby.Split(',');
                     for (int i = 0; i < w.Count() - 1; i++)
                     {
                         x += w[i] == "" ? 0 : float.Parse(w[i]);
@@ -290,6 +340,56 @@ namespace OpenUtau.Core.Formats
                 }
             }
             return note;
+        }
+
+        static List<string> NoteToUst(UNote note, UstVersion version) {
+            var list = new List<string>();
+            list.Add("Lyric=" + (note.Phonemes[0].AutoRemapped ? "" : "?") + note.Phonemes[0].Phoneme);
+            list.Add("Length=" + note.DurTick);
+            list.Add("NoteNum=" + note.NoteNum);
+            list.Add("PreUtterance=" + (note.Phonemes[0].AutoEnvelope ? "" : note.Phonemes[0].Preutter.ToString()));
+            if (note.Lyric == "R") return list;
+            list.Add("Velocity=" + note.Expressions["velocity"].Data);
+            list.Add("Intensity=" + note.Expressions["volume"].Data);
+            list.Add("VoiceOverlap=" + note.Phonemes[0].Overlap);
+            if (!note.Phonemes[0].AutoEnvelope || (int)note.Expressions["release"].Data > 0)
+            {
+                list.Add("Envelope=" + Math.Abs(note.Phonemes[0].Envelope.Points[1].X + note.Phonemes[0].Preutter) + "," + (note.Phonemes[0].Envelope.Points[2].X + note.Phonemes[0].Preutter + note.Phonemes[0].Overlap) + "," + Math.Abs(note.Phonemes[0].DurTick + note.Phonemes[0].TailOverlap - note.Phonemes[0].Envelope.Points[3].X) + "," + note.Phonemes[0].Envelope.Points[1].Y + "," + note.Phonemes[0].Envelope.Points[2].Y + "," + note.Phonemes[0].Envelope.Points[3].Y + "," + note.Phonemes[0].Envelope.Points[4].Y);
+            }
+            list.Add("VBR=" + VibratoToUst(note.Vibrato));
+            if (note.PitchBend.Points.Any()) {
+                list.Add("PBS=" + (note.PitchBend.SnapFirst ? note.PitchBend.Points[0].X.ToString() : note.PitchBend.Points[0].X + ";" + note.PitchBend.Points[0].Y));
+                if (note.PitchBend.Points.Count > 1)
+                {
+                    var str1 = "";
+                    var str2 = "";
+                    for (int i = 1; i < note.PitchBend.Points.Count; i++)
+                    {
+                        if (i == note.PitchBend.Points.Count - 1)
+                        {
+                            str1 += note.PitchBend.Points[i].X;
+                            str2 = string.IsNullOrEmpty(str2) ? str2 : str2.Remove(str2.Length - 1, 1);
+                        }
+                        else
+                        {
+                            str1 += note.PitchBend.Points[i].X + ",";
+                            str2 += note.PitchBend.Points[i].Y + ",";
+                        }
+                    }
+                    list.Add("PBW=" + str1);
+                    if (!string.IsNullOrEmpty(str2)) list.Add("PBY=" + str2);
+                }
+                var str3 = "";
+                for (int i = 0; i < note.PitchBend.Points.Count - 1; i++)
+                {
+                    var shape = note.PitchBend.Points[i].Shape;
+                    str3 += (shape == PitchPointShape.Out ? "r" : shape == PitchPointShape.Linear ? "s" : shape == PitchPointShape.In ? "j" : "") + ",";
+                }
+                str3 = str3.Remove(str3.Length - 1, 1);
+                list.Add("PBM=" + str3);
+            }
+            list.Add("Flags=" + note.GetResamplerFlags());
+            return list;
         }
 
         static void VibratoFromUst(VibratoExpression vibrato, string ust)

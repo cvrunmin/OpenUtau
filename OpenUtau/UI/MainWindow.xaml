@@ -35,7 +35,10 @@
                     <MenuItem Header="{DynamicResource MenuImportAudio}" Click="MenuImportAudio_Click"/>
                     <MenuItem Header="{DynamicResource MenuImportMidi}" Click="MenuImportMidi_Click"/>
                 </MenuItem>
-                <MenuItem Header="{DynamicResource MenuRenderAll}" Click="MenuRenderAll_Click"/>
+                <MenuItem Header="{DynamicResource MenuExport}">
+                    <MenuItem Header="Ust" Click="MenuExportUst_Click"/>
+                    <MenuItem Header="{DynamicResource MenuRenderAll}" Click="MenuRenderAll_Click"/>
+                </MenuItem>
                 <MenuItem Header="{DynamicResource MenuRecentFile}" IsEnabled="False">
                     <MenuItem Header="1.vsqx"/>
                     <MenuItem Header="2.vsqx"/>

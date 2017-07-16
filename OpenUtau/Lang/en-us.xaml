@@ -11,9 +11,10 @@
     <s:String x:Key="MenuSave">_Save...</s:String>
     <s:String x:Key="MenuSaveAs">Save _As...</s:String>
     <s:String x:Key="MenuImport">_Import...</s:String>
-    <s:String x:Key="MenuImportAudio">_Import Audio...</s:String>
-    <s:String x:Key="MenuImportMidi">_Import Midi...</s:String>
-    <s:String x:Key="MenuRenderAll">Render All...</s:String>
+    <s:String x:Key="MenuExport">Export...</s:String>
+    <s:String x:Key="MenuImportAudio">Import Audio...</s:String>
+    <s:String x:Key="MenuImportMidi">Import Midi...</s:String>
+    <s:String x:Key="MenuRenderAll">Rendered Wave</s:String>
     <s:String x:Key="MenuRecentFile">Recent _Files</s:String>
     <s:String x:Key="MenuExit">_Exit</s:String>
     <s:String x:Key="MenuEdit">_Edit</s:String>
