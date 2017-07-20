@@ -86,6 +86,7 @@ namespace OpenUtau.UI.Controls
             changeSingerMenu.Items.Clear();
             foreach (var pair in DocManager.Inst.Singers)
             {
+                if (pair.Value == null) continue;
                 var menuItem = new MenuItem() { Header = pair.Value.Name };
                 menuItem.Click += (_o, _e) =>
                 {

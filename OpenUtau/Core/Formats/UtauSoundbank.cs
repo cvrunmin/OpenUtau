@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using OpenUtau.Core.USTx;
 using OpenUtau.Core.Lib;
 using NAudio.Wave;
+using System.Web.Script.Serialization;
+using static OpenUtau.Core.Formats.USTx;
 
 namespace OpenUtau.Core.Formats
 {
@@ -44,6 +46,7 @@ namespace OpenUtau.Core.Formats
             if (absPath == "") return null;
             else if (loadedSingers.ContainsKey(absPath))
             {
+                if (loadedSingers[absPath] == null) return null;
                 if(loadedSingers[absPath].Loaded)
                 {
                     return loadedSingers[absPath];
@@ -79,6 +82,8 @@ namespace OpenUtau.Core.Formats
                 if (!string.IsNullOrWhiteSpace(singer.Website)) writer.WriteLine("web=" + singer.Website);
                 if (!string.IsNullOrWhiteSpace(singer.Detail)) writer.WriteLine(singer.Detail);
             }*/
+            SavePrefixMap(singer);
+            SaveLyricPreset(singer);
         }
         static USinger LoadSinger(string path)
         {
@@ -144,6 +149,7 @@ namespace OpenUtau.Core.Formats
             }
             singer.Detail = finalstring;
             LoadPrefixMap(singer);
+            LoadLyricPreset(singer);
             singer.Loaded = true;
 
             return singer;
@@ -276,6 +282,98 @@ namespace OpenUtau.Core.Formats
                     }
                 }
             }
+        }
+
+        static void SavePrefixMap(USinger singer)
+        {
+            string path = singer.Path;
+                /*using (var map = File.CreateText(Path.Combine(path, "prefix.map")))
+                {
+
+                }*/
+        }
+
+        static void SaveLyricPreset(USinger singer)
+        {
+            string path = singer.Path;
+            using (var preset = File.CreateText(Path.Combine(path, "lyrics-dictionary.json")))
+            {
+                JavaScriptSerializer jss = new JavaScriptSerializer();
+                jss.RegisterConverters(
+                    new List<JavaScriptConverter>()
+                        {
+                        new PresetNoteConverter(),
+                        new UNoteConvertor(),
+                        new UPhonemeConverter()
+                        });
+                StringBuilder str = new StringBuilder();
+                try
+                {
+                    jss.Serialize(singer.PresetLyricsMap, str);
+                    preset.Write(str.ToString());
+                }
+                catch (Exception e)
+                {
+                    System.Diagnostics.Debug.WriteLine(e.ToString());
+                }
+            }
+        }
+        static void LoadLyricPreset(USinger singer)
+        {
+            string path = Path.Combine(singer.Path, "lyrics-dictionary.json");
+            if (File.Exists(path))
+                using (var preset = File.OpenText(path))
+                {
+                    JavaScriptSerializer jss = new JavaScriptSerializer();
+                    jss.RegisterConverters(
+                        new List<JavaScriptConverter>()
+                            {
+                        new PresetNoteConverter(),
+                        new UNoteConvertor(),
+                        new UPhonemeConverter()
+                            });
+                    StringBuilder str = new StringBuilder();
+                    try
+                    {
+                        var a = jss.Deserialize<Dictionary<string, UDictionaryNote>>(preset.ReadToEnd());
+                        singer.PresetLyricsMap = a;
+                    }
+                    catch (Exception e)
+                    {
+                        System.Diagnostics.Debug.WriteLine(e.ToString());
+                    }
+                }
+        }
+    }
+
+    public class PresetNoteConverter : JavaScriptConverter
+    {
+        public override IEnumerable<Type> SupportedTypes => new List<Type>() { typeof(UDictionaryNote) };
+
+        public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
+        {
+            var prenote = new UDictionaryNote();
+            var notes = dictionary["notes"] as System.Collections.ArrayList;
+            foreach (var note in notes)
+            {
+                UNote uNote = serializer.ConvertToType<UNote>(note);
+                uNote.NoteNo = prenote.Notes.Count;
+                prenote.Notes.Add(uNote.NoteNo,uNote);
+            }
+            foreach (var item in (Dictionary<string, object>)(dictionary["expression-processing"]))
+            {
+                prenote.NotesProcessing.Add(Convert.ToInt32(item.Key), (UDictionaryNote.ExpressionProcessing)item.Value);
+            }
+            return prenote;
+        }
+
+        public override IDictionary<string, object> Serialize(object obj, JavaScriptSerializer serializer)
+        {
+            var realobj = obj as UDictionaryNote;
+            Dictionary<string, object> dict = new Dictionary<string, object>();
+            dict.Add("notes", realobj.Notes.Values);
+            dict.Add("expression-processing", realobj.NotesProcessing);
+            return dict;
         }
     }
 }

@@ -29,7 +29,8 @@ namespace OpenUtau.Core
 
     public class LoadPartNotification : UNotification
     {
-        public LoadPartNotification(UPart part, UProject project) { this.part = part; this.project = project; }
+        public bool Lite { get; private set; }
+        public LoadPartNotification(UPart part, UProject project, bool lite = false) { this.part = part; this.project = project; this.Lite = lite; }
         public override string ToString() { return "Load part"; }
     }
 

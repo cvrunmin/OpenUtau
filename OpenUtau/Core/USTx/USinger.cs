@@ -80,5 +80,6 @@ namespace OpenUtau.Core.USTx
 
         public Dictionary<string, string> PitchMap = new Dictionary<string, string>();
         public Dictionary<string, UOto> AliasMap = new Dictionary<string, UOto>();
+        public Dictionary<string, UDictionaryNote> PresetLyricsMap = new Dictionary<string, UDictionaryNote>();
     }
 }

@@ -137,6 +137,14 @@ namespace OpenUtau.Core.Util
                 }
             }
         }
+
+        public static (bool flag, string match) StartsWithAny(this string str, IEnumerable<string> values) {
+            foreach (var value in values)
+            {
+                if (str.StartsWith(value)) return (true, value);
+            }
+            return (false, "");
+        }
     }
 
     public static class ColorsConverter

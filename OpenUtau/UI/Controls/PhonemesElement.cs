@@ -64,31 +64,36 @@ namespace OpenUtau.UI.Controls
         {
             const double y = 23.5;
             const double height = 24;
-            if (note.Error) return;
             for (int i = 0; i < note.Phonemes.Count; i++)
             {
                 var phoneme = note.Phonemes[i];
-                if (phoneme.PhonemeError) continue;
-                double x = Math.Round(note.PosTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar) + 0.5;
-                double x0 = (note.PosTick + DocManager.Inst.Project.MillisecondToTick(phoneme.Envelope.Points[0].X, DocManager.Inst.Project.TickToMillisecond(DocManager.Inst.Project.Parts[note.PartNo].PosTick + note.PosTick + phoneme.PosTick)))
+                //if (phoneme.PhonemeError) continue;
+                double x = Math.Round((note.PosTick + phoneme.PosTick) * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar) + 0.5;
+                double x0 = (note.PosTick + phoneme.PosTick + DocManager.Inst.Project.MillisecondToTick(phoneme.Envelope.Points[0].X, DocManager.Inst.Project.TickToMillisecond(DocManager.Inst.Project.Parts[note.PartNo].PosTick + note.PosTick + phoneme.PosTick)))
                     * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
                 double y0 = (1 - phoneme.Envelope.Points[0].Y / 100) * height;
-                double x1 = (note.PosTick + DocManager.Inst.Project.MillisecondToTick(phoneme.Envelope.Points[1].X, DocManager.Inst.Project.TickToMillisecond(DocManager.Inst.Project.Parts[note.PartNo].PosTick + note.PosTick + phoneme.PosTick)))
+                double x1 = (note.PosTick + phoneme.PosTick + DocManager.Inst.Project.MillisecondToTick(phoneme.Envelope.Points[1].X, DocManager.Inst.Project.TickToMillisecond(DocManager.Inst.Project.Parts[note.PartNo].PosTick + note.PosTick + phoneme.PosTick)))
                     * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
                 double y1 = (1 - phoneme.Envelope.Points[1].Y / 100) * height;
-                double x2 = (note.PosTick + DocManager.Inst.Project.MillisecondToTick(phoneme.Envelope.Points[2].X, DocManager.Inst.Project.TickToMillisecond(DocManager.Inst.Project.Parts[note.PartNo].PosTick + note.PosTick + phoneme.PosTick)))
+                double x2 = (note.PosTick + phoneme.PosTick + DocManager.Inst.Project.MillisecondToTick(phoneme.Envelope.Points[2].X, DocManager.Inst.Project.TickToMillisecond(DocManager.Inst.Project.Parts[note.PartNo].PosTick + note.PosTick + phoneme.PosTick)))
                     * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
                 double y2 = (1 - phoneme.Envelope.Points[2].Y / 100) * height;
-                double x3 = (note.PosTick + DocManager.Inst.Project.MillisecondToTick(phoneme.Envelope.Points[3].X, DocManager.Inst.Project.TickToMillisecond(DocManager.Inst.Project.Parts[note.PartNo].PosTick + note.PosTick + phoneme.PosTick)))
+                double x3 = (note.PosTick + phoneme.PosTick + DocManager.Inst.Project.MillisecondToTick(phoneme.Envelope.Points[3].X, DocManager.Inst.Project.TickToMillisecond(DocManager.Inst.Project.Parts[note.PartNo].PosTick + note.PosTick + phoneme.PosTick)))
                     * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
                 double y3 = (1 - phoneme.Envelope.Points[3].Y / 100) * height;
-                double x4 = (note.PosTick + DocManager.Inst.Project.MillisecondToTick(phoneme.Envelope.Points[4].X, DocManager.Inst.Project.TickToMillisecond(DocManager.Inst.Project.Parts[note.PartNo].PosTick + note.PosTick + phoneme.PosTick)))
+                double x4 = (note.PosTick + phoneme.PosTick + DocManager.Inst.Project.MillisecondToTick(phoneme.Envelope.Points[4].X, DocManager.Inst.Project.TickToMillisecond(DocManager.Inst.Project.Parts[note.PartNo].PosTick + note.PosTick + phoneme.PosTick)))
                     * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
                 double y4 = (1 - phoneme.Envelope.Points[4].Y / 100) * height;
 
                 Pen pen = note.Selected ? penEnvSel : penEnv;
                 Brush brush = note.Selected ? ThemeManager.NoteFillSelectedErrorBrush : ThemeManager.NoteFillErrorBrushes[0];
-                
+                if (note.Error || phoneme.PhonemeError) {
+                    var penb = new SolidColorBrush((pen.Brush as SolidColorBrush).Color);
+                    penb.Opacity = 0.25;
+                    pen = new Pen(penb, pen.Thickness);
+                    brush = new SolidColorBrush((brush as SolidColorBrush).Color);
+                    brush.Opacity = 0.25;
+                }
                 StreamGeometry g = new StreamGeometry();
                 List<Point> poly = new List<Point>() {
                     new Point(x1, y + y1),

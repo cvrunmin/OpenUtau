@@ -1,0 +1,36 @@
+﻿<Window x:Class="OpenUtau.UI.Dialogs.CheatCLPDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OpenUtau.UI.Dialogs"
+        mc:Ignorable="d"
+        Title="Cheat (Create Lyrics Preset) Dialog" Height="300" Width="300">
+    <Grid Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Label Content="Consonant (Seperated by , )" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <TextBox x:Name="txtConsonant" Height="23" Margin="0,30,0,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+            <Label Content="Connection" HorizontalAlignment="Left" Margin="0,116,0,0" VerticalAlignment="Top"/>
+            <TextBox x:Name="txtConnect" HorizontalAlignment="Left" Height="23" Margin="0,146,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+            <TextBox x:Name="txtPercent" HorizontalAlignment="Left" Height="23" Margin="0,204,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+            <Label Content="Proportion (Seperated by , )" HorizontalAlignment="Left" Margin="0,174,0,0" VerticalAlignment="Top"/>
+            <Label Content="Vowels (Seperated by , )" HorizontalAlignment="Left" Margin="0,58,0,0" VerticalAlignment="Top"/>
+            <TextBox x:Name="txtVowel" HorizontalAlignment="Left" Height="23" Margin="0,88,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="282"/>
+
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="5px"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="butOk" Content="Ok" HorizontalAlignment="Right" Width="75" Grid.Column="1" Click="butOk_Click"/>
+            <Button x:Name="butCancel" Content="{DynamicResource Cancel}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Grid.Column="3" Click="butCancel_Click"/>
+        </Grid>
+    </Grid>
+</Window>

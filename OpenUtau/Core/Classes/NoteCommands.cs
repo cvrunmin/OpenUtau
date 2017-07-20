@@ -21,11 +21,13 @@ namespace OpenUtau.Core
                     Render.ResamplerInterface.RenderNote(DocManager.Inst.Project, Part, note);
                 }
             }
-            DocManager.Inst.Project.Tracks[Part.TrackNo].Amended = true;
+            if(Part != null && Part.TrackNo >= 0 && Part.TrackNo < DocManager.Inst.Project.Tracks.Count)
+                DocManager.Inst.Project.Tracks[Part.TrackNo].Amended = true;
         }
         public override void Unexecute()
         {
-            DocManager.Inst.Project.Tracks[Part.TrackNo].Amended = true;
+            if (Part != null && Part.TrackNo >= 0 && Part.TrackNo < DocManager.Inst.Project.Tracks.Count)
+                DocManager.Inst.Project.Tracks[Part.TrackNo].Amended = true;
         }
     }
 
@@ -176,12 +178,32 @@ namespace OpenUtau.Core
         public override string ToString() { return "Change notes lyric"; }
         public override void Execute()
         {
+            if(Part != null)
             lock (Part)
             {
                 foreach (var Note in Notes)
                 {
                     Note.Lyric = NewLyric;
-                    Note.Phonemes[0].Phoneme = NewLyric;
+                    Dictionary<string, UDictionaryNote> presetLyricsMap = DocManager.Inst.Project.Tracks[Part.TrackNo].Singer?.PresetLyricsMap;
+                    if (presetLyricsMap != null && presetLyricsMap.ContainsKey(Note.Lyric))
+                    {
+                        UDictionaryNote.ApplyPreset(Note, presetLyricsMap[Note.Lyric]);
+                    }
+                    else if (!Note.ApplyingPreset)
+                    {
+                            if (Note.Phonemes.Count > 1) {
+
+                                Note.Phonemes.Clear();
+                                Note.Phonemes.Add(new UPhoneme() { Parent = Note, PosTick = 0, Phoneme = Note.Lyric });
+                            }
+                        Note.Phonemes[0].Phoneme = Note.Lyric;
+                    }
+                    else
+                    {
+                        Note.Phonemes.Clear();
+                        Note.Phonemes.Add(new UPhoneme() { Parent = Note, PosTick = 0, Phoneme = Note.Lyric });
+                        Note.ApplyingPreset = false;
+                    }
                 }
             }
             base.Execute();
@@ -194,6 +216,21 @@ namespace OpenUtau.Core
                 {
                     Note.Lyric = OldLyric;
                     Note.Phonemes[0].Phoneme = OldLyric;
+                    Dictionary<string, UDictionaryNote> presetLyricsMap = DocManager.Inst.Project.Tracks[Part.TrackNo].Singer.PresetLyricsMap;
+                    if (presetLyricsMap.ContainsKey(Note.Lyric))
+                    {
+                        UDictionaryNote.ApplyPreset(Note, presetLyricsMap[Note.Lyric]);
+                    }
+                    else if (!Note.ApplyingPreset)
+                    {
+                        Note.Phonemes[0].Phoneme = Note.Lyric;
+                    }
+                    else
+                    {
+                        Note.Phonemes.Clear();
+                        Note.Phonemes.Add(new UPhoneme() { Parent = Note, PosTick = 0, Phoneme = Note.Lyric });
+                        Note.ApplyingPreset = false;
+                    }
                 }
             }
             base.Unexecute();

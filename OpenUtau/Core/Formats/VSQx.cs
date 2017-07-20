@@ -51,6 +51,12 @@ namespace OpenUtau.Core.Formats
                     return null;
                 }
             }
+            bool directUseLyricsAsPho = false;
+            var result = System.Windows.MessageBox.Show("Directly use lyrics as phonemes?", caption: "",button: System.Windows.MessageBoxButton.YesNo);
+            if (result == System.Windows.MessageBoxResult.OK || result == System.Windows.MessageBoxResult.Yes)
+            {
+                directUseLyricsAsPho = true;
+            }
 
             UProject uproject = new UProject();
             uproject.RegisterExpression(new IntExpression(null, "velocity", "VEL") { Data = 64, Min = 0, Max = 127 });
@@ -115,18 +121,22 @@ namespace OpenUtau.Core.Formats
                     upart.Name = part.SelectSingleNode(partnamePath, nsmanager).InnerText;
                     upart.Comment = part.SelectSingleNode(partcommentPath, nsmanager).InnerText;
                     upart.PosTick = int.Parse(part.SelectSingleNode(postickPath, nsmanager).InnerText) + partPosTickShift;
+                    upart.PosTick /= uproject.BeatPerBar;
                     upart.DurTick = int.Parse(part.SelectSingleNode(playtimePath, nsmanager).InnerText);
+                    upart.DurTick /= uproject.BeatPerBar;
                     upart.TrackNo = utrack.TrackNo;
 
+                    int i = 0;
                     foreach (XmlNode note in part.SelectNodes(notePath, nsmanager))
                     {
                         UNote unote = uproject.CreateNote();
 
-                        unote.PosTick = int.Parse(note.SelectSingleNode(postickPath, nsmanager).InnerText);
-                        unote.DurTick = int.Parse(note.SelectSingleNode(durtickPath, nsmanager).InnerText);
+                        unote.NoteNo = i;
+                        unote.PosTick = int.Parse(note.SelectSingleNode(postickPath, nsmanager).InnerText) / uproject.BeatPerBar;
+                        unote.DurTick = int.Parse(note.SelectSingleNode(durtickPath, nsmanager).InnerText) / uproject.BeatPerBar;
                         unote.NoteNum = int.Parse(note.SelectSingleNode(notenumPath, nsmanager).InnerText);
                         unote.Lyric = note.SelectSingleNode(lyricPath, nsmanager).InnerText;
-                        unote.Phonemes[0].Phoneme = note.SelectSingleNode(phonemePath, nsmanager).InnerText;
+                        unote.Phonemes[0].Phoneme = note.SelectSingleNode(directUseLyricsAsPho ? lyricPath : phonemePath, nsmanager).InnerText;
 
                         unote.Expressions["velocity"].Data = int.Parse(note.SelectSingleNode(velocityPath, nsmanager).InnerText);
 
@@ -137,11 +147,12 @@ namespace OpenUtau.Core.Formats
                             else if (notestyle.Attributes["id"].Value == "accent")
                                 unote.Expressions["accent"].Data = int.Parse(notestyle.InnerText);
                             else if (notestyle.Attributes["id"].Value == "decay")
-                                unote.Expressions["decay"].Data = int.Parse(notestyle.InnerText);
+                                unote.Expressions["release"].Data = int.Parse(notestyle.InnerText);
                         }
                         unote.PitchBend.Points[0].X = -uproject.TickToMillisecond(Math.Min(15, unote.DurTick / 3));
                         unote.PitchBend.Points[1].X = -unote.PitchBend.Points[0].X;
                         upart.Notes.Add(unote);
+                        i++;
                     }
                     uproject.Parts.Add(upart);
                 }

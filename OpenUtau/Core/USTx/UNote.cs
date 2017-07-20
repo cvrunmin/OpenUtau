@@ -17,6 +17,7 @@ namespace OpenUtau.Core.USTx
         public int NoteNo;
         public int PartNo;
         public string Lyric = "a";
+        public bool ApplyingPreset { get; set; }
         public List<UPhoneme> Phonemes = new List<UPhoneme>();
         public Dictionary<string, UExpression> Expressions = new Dictionary<string, UExpression>();
         public Dictionary<string, int> VirtualExpressions = new Dictionary<string, int>();
@@ -105,6 +106,51 @@ namespace OpenUtau.Core.USTx
         {
             return string.Format("\"{0}\" Pos:{1} Dur:{2} Note:{3}", Lyric, PosTick, DurTick, NoteNum)
                 + (Error ? " Error" : "") + (Selected ? " Selected" : "");
+        }
+    }
+
+    public class UDictionaryNote {
+        public SortedList<int, UNote> Notes { get; private set; }
+        public Dictionary<int, ExpressionProcessing> NotesProcessing { get; private set; }
+        public UDictionaryNote() {
+            Notes = new SortedList<int, UNote>();
+            NotesProcessing = new Dictionary<int, ExpressionProcessing>();
+        }
+
+        public UDictionaryNote Clone() {
+            var a = new UDictionaryNote();
+            foreach (var note in Notes)
+            {
+                a.Notes.Add(note.Key, note.Value.Clone());
+            }
+            foreach (var item in NotesProcessing)
+            {
+                a.NotesProcessing.Add(item.Key, item.Value);
+            }
+            return a;
+        }
+
+        public static void ApplyPreset(UNote applyee, UDictionaryNote preset) {
+            int totallen = preset.Notes.Sum(pair => pair.Value.DurTick);
+            int pos = 0;
+            applyee.Phonemes.Clear();
+            foreach (var note in preset.Notes.Values)
+            {
+                foreach (var pho in note.Phonemes)
+                {
+                    var cpho = pho.Clone(applyee);
+                    cpho.PosTick += pos;
+                    cpho.DurTick = (int)Math.Round((float)cpho.DurTick / totallen * applyee.DurTick);
+                    applyee.Phonemes.Add(cpho);
+                    pos += cpho.DurTick;
+                }
+            }
+            applyee.ApplyingPreset = true;
+        }
+
+        public enum ExpressionProcessing
+        {
+            Overwrite, Difference, Multiplying
         }
     }
 }

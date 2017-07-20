@@ -28,14 +28,44 @@ namespace OpenUtau.UI
     /// </summary>
     public partial class MidiWindow : BorderlessWindow
     {
-        MidiViewModel midiVM;
+        internal MidiViewModel midiVM { get; private set; }
         MidiViewHitTest midiHT;
         ContextMenu pitchCxtMenu;
         
         RoutedEventHandler pitchShapeDelegate;
         class PitchPointHitTestResultContainer { public PitchPointHitTestResult Result;}
         PitchPointHitTestResultContainer pitHitContainer;
-        
+
+        private bool _tiny;
+        public bool LyricsPresetDedicate { get { return _tiny; } set {
+                _tiny = value;
+                midiVM.LyricsPresetDedicate = value;
+                if (value)
+                {
+                    keyboardBackground.Visibility = Visibility.Collapsed;
+                    //expCanvas.Visibility = Visibility.Collapsed;
+                    midiVM.TrackHeight = 32;
+                    showPitchToggle.Visibility = Visibility.Collapsed;
+                    //CCGrid.Visibility = Visibility.Collapsed;
+                    //expVerticalScroll.Visibility = Visibility.Collapsed;
+                    //expTickBackground.Visibility = Visibility.Collapsed;
+                    mainButton.Visibility = Visibility.Collapsed;
+                    midiVM.ViewHeight = 22;
+                }
+                else
+                {
+                    keyboardBackground.Visibility = Visibility.Visible;
+                    //expCanvas.Visibility = Visibility.Visible;
+                    midiVM.TrackHeight = 32;
+                    showPitchToggle.Visibility = Visibility.Visible;
+                    //CCGrid.Visibility = Visibility.Visible;
+                    //expVerticalScroll.Visibility = Visibility.Visible;
+                    //expTickBackground.Visibility = Visibility.Visible;
+                    mainButton.Visibility = Visibility.Visible;
+                }
+            }
+        }
+
         public MidiWindow()
         {
             InitializeComponent();
@@ -61,7 +91,7 @@ namespace OpenUtau.UI
 
             midiHT = new MidiViewHitTest(midiVM);
 
-            List<ExpComboBoxViewModel> comboVMs = new List<ExpComboBoxViewModel>()
+            comboVMs = new List<ExpComboBoxViewModel>()
             {
                 new ExpComboBoxViewModel() { Index=0 },
                 new ExpComboBoxViewModel() { Index=1 },
@@ -75,6 +105,18 @@ namespace OpenUtau.UI
             comboVMs[3].CreateBindings(expCombo3);
 
             InitPitchPointContextMenu();
+        }
+        List<ExpComboBoxViewModel> comboVMs;
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            DocManager.Inst.UnSubscribe(midiVM);
+            midiVM = null;
+            foreach (var item in comboVMs)
+            {
+                DocManager.Inst.UnSubscribe(item);
+            }
         }
 
         void InitPitchPointContextMenu()
@@ -143,7 +185,7 @@ namespace OpenUtau.UI
 
         void RenderLoop(object sender, EventArgs e)
         {
-            if (midiVM.Part == null || midiVM.Project == null) return;
+            if (midiVM == null || midiVM.Part == null || midiVM.Project == null) return;
 
             TimeSpan nextFrame = ((RenderingEventArgs)e).RenderingTime;
             double deltaTime = (nextFrame - lastFrame).TotalMilliseconds;
@@ -320,7 +362,7 @@ namespace OpenUtau.UI
                                     if (note.NoteNum > _noteMoveNoteMax.NoteNum) _noteMoveNoteMax = note;
                                 }
                             }
-                            DocManager.Inst.StartUndoGroup();
+                            if(!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                         }
                         else if (!noteHit.IsLyricBoxActive) //FIXME
                         {
@@ -333,7 +375,7 @@ namespace OpenUtau.UI
                                 foreach (UNote note in midiVM.SelectedNotes)
                                     if (note.DurTick < _noteResizeShortest.DurTick) _noteResizeShortest = note;
                             }
-                            DocManager.Inst.StartUndoGroup();
+                            if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                         }
                     }
                     else if (!midiVM.SelectedNotes.Any()) // Add note
@@ -349,9 +391,9 @@ namespace OpenUtau.UI
                             newNote.Expressions[item.Key].Data = midiVM.Part.Expressions[item.Key].Data;
                         }
 
-                        DocManager.Inst.StartUndoGroup();
+                        if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                         DocManager.Inst.ExecuteCmd(new AddNoteCommand(midiVM.Part, newNote));
-                        DocManager.Inst.EndUndoGroup();
+                        if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
                         midiVM.MarkUpdate();
                         // Enable drag
                         midiVM.DeselectAll();
@@ -360,7 +402,7 @@ namespace OpenUtau.UI
                         _noteHit = newNote;
                         _tickMoveRelative = 0;
                         _tickMoveStart = newNote.PosTick;
-                        DocManager.Inst.StartUndoGroup();
+                        if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                     }
                     else
                     {
@@ -376,7 +418,7 @@ namespace OpenUtau.UI
             if (midiVM.Part == null) return;
             if (_inMove || _inResize)
             {
-                DocManager.Inst.EndUndoGroup();
+                if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
             }
             _inMove = false;
             _inResize = false;
@@ -538,7 +580,7 @@ namespace OpenUtau.UI
             else
             {
                 UNote noteHit = midiHT.HitTestNote(mousePos);
-                DocManager.Inst.StartUndoGroup();
+                if(!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                 if (noteHit != null && midiVM.SelectedNotes.Contains(noteHit))
                     DocManager.Inst.ExecuteCmd(new RemoveNoteCommand(midiVM.Part, noteHit));
                 else midiVM.DeselectAll();
@@ -554,7 +596,7 @@ namespace OpenUtau.UI
             if (midiVM.Part == null) return;
             Mouse.OverrideCursor = null;
             ((UIElement)sender).ReleaseMouseCapture();
-            DocManager.Inst.EndUndoGroup();
+            if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
         }
 
         private void notesCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -671,7 +713,7 @@ namespace OpenUtau.UI
         protected override void OnKeyDown(KeyEventArgs e)
         {
             Window_KeyDown(this, e);
-            if(!midiVM.AnyNotesEditing)
+            if(!midiVM.AnyNotesEditing && !LyricsPresetDedicate)
                 e.Handled = true;
         }
 
@@ -689,27 +731,30 @@ namespace OpenUtau.UI
                     {
                         midiVM.SelectAll();
                     }
-                    else if (e.Key == Key.Z)
+                    else if (!LyricsPresetDedicate)
                     {
-                        midiVM.DeselectAll();
-                        DocManager.Inst.Undo();
-                    }
-                    else if (e.Key == Key.Y)
-                    {
-                        midiVM.DeselectAll();
-                        DocManager.Inst.Redo();
-                    }
-                    else if (e.Key == Key.X)
-                    {
-                        MenuCut_Click(this, new RoutedEventArgs());
-                    }
-                    else if (e.Key == Key.C)
-                    {
-                        MenuCopy_Click(this, new RoutedEventArgs());
-                    }
-                    else if (e.Key == Key.V)
-                    {
-                        MenuPaste_Click(this, new RoutedEventArgs());
+                        if (e.Key == Key.Z)
+                        {
+                            midiVM.DeselectAll();
+                            DocManager.Inst.Undo();
+                        }
+                        else if (e.Key == Key.Y)
+                        {
+                            midiVM.DeselectAll();
+                            DocManager.Inst.Redo();
+                        }
+                        else if (e.Key == Key.X)
+                        {
+                            MenuCut_Click(this, new RoutedEventArgs());
+                        }
+                        else if (e.Key == Key.C)
+                        {
+                            MenuCopy_Click(this, new RoutedEventArgs());
+                        }
+                        else if (e.Key == Key.V)
+                        {
+                            MenuPaste_Click(this, new RoutedEventArgs());
+                        }
                     }
                 }
                 else if (Keyboard.Modifiers == 0) // No midifiers
@@ -718,22 +763,22 @@ namespace OpenUtau.UI
                     {
                         if (midiVM.SelectedNotes.Count > 0)
                         {
-                            DocManager.Inst.StartUndoGroup();
+                            if(!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                             DocManager.Inst.ExecuteCmd(new RemoveNoteCommand(midiVM.Part, midiVM.SelectedNotes));
-                            DocManager.Inst.EndUndoGroup();
+                            if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
                         }
                     }
                     else if (e.Key == Key.I)
                     {
-                        midiVM.ShowPitch = !midiVM.ShowPitch;
+                        if (!LyricsPresetDedicate) midiVM.ShowPitch = !midiVM.ShowPitch;
                     }
                     else if (e.Key == Key.O)
                     {
-                        midiVM.ShowPhoneme = !midiVM.ShowPhoneme;
+                        if (!LyricsPresetDedicate) midiVM.ShowPhoneme = !midiVM.ShowPhoneme;
                     }
                     else if (e.Key == Key.P)
                     {
-                        midiVM.Snap = !midiVM.Snap;
+                        if (!LyricsPresetDedicate) midiVM.Snap = !midiVM.Snap;
                     }
                     else if (e.Key == Key.Enter) {
                         if (Core.Util.Preferences.Default.EnterToEdit && midiVM.SelectedNotes.Any()) {
@@ -807,8 +852,8 @@ namespace OpenUtau.UI
         private void horizontalScroll_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             midiVM.HorizontalPropertiesChanged();
-            midiVM.shadowExpElement.MarkUpdate();
-            midiVM.visibleExpElement.MarkUpdate();
+            midiVM.shadowExpElement?.MarkUpdate();
+            midiVM.visibleExpElement?.MarkUpdate();
             midiVM.MarkUpdate();
             midiVM.RedrawIfUpdated();
         }
@@ -819,12 +864,12 @@ namespace OpenUtau.UI
         {
             midiVM.CopyNotes();
             var pre = new List<UNote>(midiVM.SelectedNotes);
-            DocManager.Inst.StartUndoGroup();
+            if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
             foreach (var item in midiVM.SelectedNotes)
             {
                 DocManager.Inst.ExecuteCmd(new RemoveNoteCommand(midiVM.Part, item), true);
             }
-            DocManager.Inst.EndUndoGroup();
+            if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
             midiVM.DeselectAll();
         }
 
@@ -840,14 +885,14 @@ namespace OpenUtau.UI
             {
                 basedelta = Math.Min(basedelta, note.PosTick);
             }
-            DocManager.Inst.StartUndoGroup();
+            if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
             foreach (var note in midiVM.ClippedNotes)
             {
                 var copied = note.Clone();
                 copied.PosTick = DocManager.Inst.playPosTick - midiVM.Part.PosTick + note.PosTick - basedelta;
                 DocManager.Inst.ExecuteCmd(new AddNoteCommand(midiVM.Part, copied));
             }
-            DocManager.Inst.EndUndoGroup();
+            if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
         }
 
     }

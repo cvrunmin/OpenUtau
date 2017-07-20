@@ -104,7 +104,7 @@ namespace OpenUtau.Core.Render
                 {
                     var str = new System.IO.MemoryStream(source.WaveFormat.AverageBytesPerSecond * 60);
 
-                    schedule.Add(Task.Run(async () =>
+                    schedule.Add(Task.Run(() =>
                     {
                         /*while (true)
                         {
@@ -129,7 +129,7 @@ namespace OpenUtau.Core.Render
                                 str.Flush();
                                 break;
                             }
-                            await str.WriteAsync(buffer, 0, bytesRead);
+                            str.Write(buffer, 0, bytesRead);
                         }
                         buffer = null;
                         wave = null;

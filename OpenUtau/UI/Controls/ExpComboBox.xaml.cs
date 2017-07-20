@@ -49,6 +49,7 @@ namespace OpenUtau.UI.Controls
 
         private void dropList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (SelectedIndex < 0 || SelectedIndex >= ItemsSource.Count) return;
             string name = ItemsSource[SelectedIndex];
             string abbr = OpenUtau.Core.DocManager.Inst.Project.ExpressionTable[name].Abbr;
             Text = abbr.Substring(0, Math.Min(3, abbr.Length));

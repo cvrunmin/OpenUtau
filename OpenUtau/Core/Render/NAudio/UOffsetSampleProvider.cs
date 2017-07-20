@@ -259,7 +259,7 @@ namespace OpenUtau.Core.Render.NAudio
             if (phase == 3) // take
             {
                 int samplesRequired = count - samplesRead;
-                if (takeSamples != 0)
+                if (takeSamples > 0)
                     samplesRequired = Math.Min(samplesRequired, takeSamples - phasePos);
                 int read = sourceProvider.Read(buffer, offset + samplesRead, samplesRequired);
                 phasePos += read;

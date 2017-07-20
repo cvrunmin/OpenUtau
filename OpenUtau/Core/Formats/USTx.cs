@@ -20,10 +20,11 @@ namespace OpenUtau.Core.Formats
         static UProject Project;
         private const string thisUstxVersion = "0.1";
 
-        class UNoteConvertor : JavaScriptConverter
+        internal class UNoteConvertor : JavaScriptConverter
         {
             public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
             {
+                if (Project == null) Project = Create();
                 UNote result = Project.CreateNote();
                 result.Lyric = dictionary["y"] as string;
                 result.NoteNum = Convert.ToInt32(dictionary["n"]);
@@ -90,7 +91,7 @@ namespace OpenUtau.Core.Formats
                 }
 
                 var exp = dictionary["exp"] as Dictionary<string, object>;
-                foreach (var pair in exp)
+                foreach (var pair in exp.Where(pair=>result.Expressions.ContainsKey(pair.Key)))
                     result.Expressions[pair.Key].Data = pair.Value;
 
                 return result;
@@ -149,13 +150,15 @@ namespace OpenUtau.Core.Formats
             }
         }
 
-        class UPhonemeConverter : JavaScriptConverter
+        internal class UPhonemeConverter : JavaScriptConverter
         {
             public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
             {
+                dictionary.TryGetValue("dur", out object dur);
                 UPhoneme result = new UPhoneme()
                 {
                     PosTick = Convert.ToInt32(dictionary["pos"]),
+                    DurTick = Convert.ToInt32(dur ?? 0),
                     Phoneme = dictionary["pho"] as string,
                     AutoEnvelope = Convert.ToBoolean(dictionary["autoenv"]),
                     AutoRemapped = Convert.ToBoolean(dictionary["remap"])
@@ -182,6 +185,7 @@ namespace OpenUtau.Core.Formats
                 if (_obj == null) return result;
 
                 result.Add("pos", _obj.PosTick);
+                result.Add("dur", _obj.DurTick);
                 result.Add("pho", _obj.Phoneme);
                 result.Add("autoenv", _obj.AutoEnvelope);
                 result.Add("remap", _obj.AutoRemapped);
@@ -202,7 +206,7 @@ namespace OpenUtau.Core.Formats
             }
         }
 
-        class UPartConvertor : JavaScriptConverter
+        internal class UPartConvertor : JavaScriptConverter
         {
             public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
             {
@@ -290,7 +294,7 @@ namespace OpenUtau.Core.Formats
             }
         }
 
-        class UProjectConvertor : JavaScriptConverter
+        internal class UProjectConvertor : JavaScriptConverter
         {
             public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
             {
@@ -390,7 +394,7 @@ namespace OpenUtau.Core.Formats
             }
         }
 
-        class MiscConvertor : JavaScriptConverter
+        internal class MiscConvertor : JavaScriptConverter
         {
             public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
             {

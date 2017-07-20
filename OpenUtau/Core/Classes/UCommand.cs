@@ -67,6 +67,7 @@ namespace OpenUtau.Core
     public interface ICmdPublisher
     {
         void Subscribe(ICmdSubscriber subscriber);
+        void UnSubscribe(ICmdSubscriber subscriber);
         void Publish(UCommand cmd, bool isUndo);
     }
 

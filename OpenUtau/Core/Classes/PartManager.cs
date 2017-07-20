@@ -37,16 +37,23 @@ namespace OpenUtau.Core
 
         public static void UpdatePart(UVoicePart part)
         {
+            if (part == null || part.TrackNo < 0 || part.TrackNo >= DocManager.Inst.Project.Tracks.Count) return;
+            var singer = DocManager.Inst.Project.Tracks[part.TrackNo].Singer;
+            UpdatePart(part, singer);
+        }
+
+        public static void UpdatePart(UVoicePart part, USinger singer, bool shouldRedraw = true)
+        {
             lock (part)
             {
                 if (part == null) return;
                 CheckOverlappedNotes(part);
-                UpdatePhonemeDurTick(part);
-                UpdatePhonemeOto(part);
+                UpdatePhonemeDurTick(part, singer);
+                UpdatePhonemeOto(part, singer);
                 UpdateOverlapAdjustment(part);
                 UpdateEnvelope(part);
                 UpdatePitchBend(part);
-                DocManager.Inst.ExecuteCmd(new RedrawNotesNotification(), true);
+                if(shouldRedraw) DocManager.Inst.ExecuteCmd(new RedrawNotesNotification(), true);
             }
         }
 
@@ -155,10 +162,8 @@ namespace OpenUtau.Core
             }
         }
 
-        private static void UpdatePhonemeOto(UVoicePart part)
+        private static void UpdatePhonemeOto(UVoicePart part, USinger singer)
         {
-            if (part.TrackNo < 0 || part.TrackNo >= DocManager.Inst.Project.Tracks.Count) return;
-            var singer = DocManager.Inst.Project.Tracks[part.TrackNo].Singer;
             if (singer == null || !singer.Loaded) return;
             foreach (UNote note in part.Notes)
             {
@@ -203,19 +208,39 @@ namespace OpenUtau.Core
             }
         }
 
-        private static void UpdatePhonemeDurTick(UVoicePart part)
+        private static void UpdatePhonemeDurTick(UVoicePart part, USinger singer)
         {
+            if (part == null || singer == null) return;
             UNote lastNote = null;
             UPhoneme lastPhoneme = null;
             foreach (UNote note in part.Notes)
             {
-                foreach(UPhoneme phoneme in note.Phonemes)
+                if (note.ApplyingPreset && singer.PresetLyricsMap.ContainsKey(note.Lyric))
                 {
-                    phoneme.DurTick = phoneme.Parent.DurTick - phoneme.PosTick;
-                    if (lastPhoneme != null)
-                        if (lastPhoneme.Parent == phoneme.Parent)
-                            lastPhoneme.DurTick = phoneme.PosTick - lastPhoneme.PosTick;
-                    lastPhoneme = phoneme;
+                    var preset = singer.PresetLyricsMap[note.Lyric];
+                    int totallen = preset.Notes.Sum(pair => pair.Value.DurTick);
+                    if (note.Phonemes.Count != preset.Notes.Values.Sum(unote => unote.Phonemes.Count))
+                        UDictionaryNote.ApplyPreset(note, preset);
+                    else
+                    {
+                        var presetpho = preset.Notes.Values.SelectMany(unote => unote.Phonemes).ToList();
+                        for (int i = 0; i < note.Phonemes.Count && i < presetpho.Count; i++)
+                        {
+                            note.Phonemes[i].DurTick = (int)Math.Round((float)presetpho[i].DurTick / totallen * note.DurTick);
+                        }
+                        
+                    }
+                }
+                else
+                {
+                    foreach (UPhoneme phoneme in note.Phonemes)
+                    {
+                        phoneme.DurTick = phoneme.Parent.DurTick - phoneme.PosTick;
+                        if (lastPhoneme != null)
+                            if (lastPhoneme.Parent == phoneme.Parent)
+                                lastPhoneme.DurTick = phoneme.PosTick - lastPhoneme.PosTick;
+                        lastPhoneme = phoneme;
+                    }
                 }
                 lastNote = note;
             }

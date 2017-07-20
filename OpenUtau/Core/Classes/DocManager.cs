@@ -174,6 +174,7 @@ namespace OpenUtau.Core
 
         private List<ICmdSubscriber> subscribers = new List<ICmdSubscriber>();
         public void Subscribe(ICmdSubscriber sub) { if (!subscribers.Contains(sub)) subscribers.Add(sub); }
+        public void UnSubscribe(ICmdSubscriber sub) { subscribers.Remove(sub); }
         public void Publish(UCommand cmd, bool isUndo = false) { foreach (var sub in subscribers) sub.OnNext(cmd, isUndo); }
 
         # endregion

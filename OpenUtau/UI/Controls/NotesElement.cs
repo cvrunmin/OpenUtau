@@ -97,23 +97,40 @@ namespace OpenUtau.UI.Controls
             double height = Math.Max(2, midiVM.TrackHeight - 2);
             if (lyricBox == null)
             {
-                lyricBox = new TextBox() { Width = width, Height = height, Visibility = Visibility.Visible, MaxLength = 32767, Text = note.Lyric };
+                lyricBox = new TextBox() { Width = width, Height = height, Visibility = Visibility.Visible, MaxLength = 32767, Text = note.Lyric, VerticalContentAlignment = VerticalAlignment.Center };
                 void OnEnterPressed(object sender)
                 {
                     if (lyricBox == null) return; //already updated
-                    DocManager.Inst.StartUndoGroup();
+                    if(!(((midiVM.MidiCanvas.Parent as Grid).Parent as Grid).Parent as MidiWindow).LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                     DocManager.Inst.ExecuteCmd(new ChangeNoteLyricCommand(Part, note, lyricBox.Text));
-                    DocManager.Inst.EndUndoGroup();
+                    if (!(((midiVM.MidiCanvas.Parent as Grid).Parent as Grid).Parent as MidiWindow).LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
                     midiVM.MidiCanvas.Children.Remove(lyricBox);
                     note.IsLyricBoxActive = false;
                     midiVM.AnyNotesEditing = false;
                     midiVM.MarkUpdate();
                     lyricBox = null;
                     midiVM.DeselectNote(note);
-                    var a = Part.Notes.ToDictionary(unote => unote.NoteNo);
-                    if(note.NoteNo < a.Count - 1)
+                    try
                     {
-                        midiVM.SelectNote(a[note.NoteNo + 1]);
+                        var a = Part.Notes.ToDictionary(unote => unote.NoteNo);
+                        if (note.NoteNo < a.Count - 1)
+                        {
+                            midiVM.SelectNote(a[note.NoteNo + 1]);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        int i = 0;
+                        foreach (var item in Part.Notes)
+                        {
+                            item.NoteNo = i;
+                            i++;
+                        }
+                        var a = Part.Notes.ToDictionary(unote => unote.NoteNo);
+                        if (note.NoteNo < a.Count - 1)
+                        {
+                            midiVM.SelectNote(a[note.NoteNo + 1]);
+                        }
                     }
                 }
                 lyricBox.InputBindings.Add(new System.Windows.Input.KeyBinding() { Command = new DelegateCommand(OnEnterPressed), Key = System.Windows.Input.Key.Return });
@@ -121,9 +138,9 @@ namespace OpenUtau.UI.Controls
                 lyricBox.LostFocus += (sender, e) =>
                 {
                     if (lyricBox == null) return; //already updated
-                    DocManager.Inst.StartUndoGroup();
+                    if (!(((midiVM.MidiCanvas.Parent as Grid).Parent as Grid).Parent as MidiWindow).LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                     DocManager.Inst.ExecuteCmd(new ChangeNoteLyricCommand(Part, note, lyricBox.Text));
-                    DocManager.Inst.EndUndoGroup();
+                    if (!(((midiVM.MidiCanvas.Parent as Grid).Parent as Grid).Parent as MidiWindow).LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
                     midiVM.MidiCanvas.Children.Remove(lyricBox);
                     note.IsLyricBoxActive = false;
                     midiVM.AnyNotesEditing = false;

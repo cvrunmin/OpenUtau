@@ -15,7 +15,7 @@ using OpenUtau.UI.Controls;
 
 namespace OpenUtau.UI.Models
 {
-    class MidiViewModel : INotifyPropertyChanged, ICmdSubscriber
+    internal class MidiViewModel : INotifyPropertyChanged, ICmdSubscriber
     {
         # region Properties
 
@@ -28,6 +28,8 @@ namespace OpenUtau.UI.Models
 
         public UProject Project { get { return DocManager.Inst.Project; } }
         
+        public bool LyricsPresetDedicate { get; set; }
+
         UVoicePart _part;
         public UVoicePart Part { get { return _part; } }
 
@@ -93,7 +95,7 @@ namespace OpenUtau.UI.Models
         public double MinTickWidth { set { _minTickWidth = value; HorizontalPropertiesChanged(); } get { return _minTickWidth; } }
         public int BeatPerBar { set { _beatPerBar = value; HorizontalPropertiesChanged(); } get { return _beatPerBar; } }
         public int BeatUnit { set { _beatUnit = value; HorizontalPropertiesChanged(); } get { return _beatUnit; } }
-        public bool ShowPitch { set { _showPitch = value; notesElement.ShowPitch = value; OnPropertyChanged("ShowPitch"); } get { return _showPitch; } }
+        public bool ShowPitch { set { _showPitch = value; if(notesElement != null)notesElement.ShowPitch = value; OnPropertyChanged("ShowPitch"); } get { return _showPitch; } }
         public bool ShowPhoneme { set { _showPhoneme = value; OnPropertyChanged("PhonemeVisibility"); OnPropertyChanged("ShowPhoneme"); } get { return _showPhoneme; } }
         public Visibility PhonemeVisibility { get { return _showPhoneme ? Visibility.Visible : Visibility.Collapsed; } }
         public bool Snap { set { _snap = value; OnPropertyChanged("Snap"); } get { return _snap; } }
@@ -134,6 +136,7 @@ namespace OpenUtau.UI.Models
 
         public void RedrawIfUpdated()
         {
+            if (LyricsPresetDedicate) ShowPitch = false;
             if (_updated)
             {
                 if (visibleExpElement != null)
@@ -293,7 +296,7 @@ namespace OpenUtau.UI.Models
         public double NoteNumToCanvas(int noteNum) { return TrackHeight * (UIConstants.MaxNoteNum - 1 - noteNum) - OffsetY; }
         public double NoteNumToCanvas(double noteNum) { return TrackHeight * (UIConstants.MaxNoteNum - 1 - noteNum) - OffsetY; }
 
-        public bool NoteIsInView(UNote note) // FIXME : improve performance
+        public virtual bool NoteIsInView(UNote note) // FIXME : improve performance
         {
             double leftTick = OffsetX / QuarterWidth * Project.Resolution / Project.BeatPerBar - 512;
             double rightTick = leftTick + ViewWidth / QuarterWidth * Project.Resolution / Project.BeatPerBar + 512;
@@ -411,8 +414,8 @@ namespace OpenUtau.UI.Models
         {
             if (cmd is NoteCommand)
             {
-                notesElement.MarkUpdate();
-                phonemesElement.MarkUpdate();
+                notesElement?.MarkUpdate();
+                phonemesElement?.MarkUpdate();
             }
             else if (cmd is PartCommand)
             {
@@ -431,12 +434,19 @@ namespace OpenUtau.UI.Models
             else if (cmd is UNotification)
             {
                 var _cmd = cmd as UNotification;
-                if (_cmd is LoadPartNotification) LoadPart(_cmd.part, _cmd.project);
+                if (_cmd is LoadPartNotification)
+                {
+                    if (!((_cmd as LoadPartNotification).Lite ^ LyricsPresetDedicate))
+                    {
+                        LoadPart(_cmd.part, _cmd.project);
+                    }
+                }
                 else if (_cmd is LoadProjectNotification) UnloadPart();
                 else if (_cmd is SelectExpressionNotification) OnSelectExpression(_cmd);
                 else if (_cmd is ShowPitchExpNotification) { }
                 else if (_cmd is HidePitchExpNotification) { }
-                else if (_cmd is RedrawNotesNotification) {
+                else if (_cmd is RedrawNotesNotification)
+                {
                     if (notesElement != null) notesElement.MarkUpdate();
                     if (phonemesElement != null) phonemesElement.MarkUpdate();
                 }
