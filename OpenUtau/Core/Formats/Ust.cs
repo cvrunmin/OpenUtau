@@ -247,7 +247,15 @@ namespace OpenUtau.Core.Formats
                             note1.Phonemes[0].Phoneme = "R";
                             writeNotes.Add(note1);
                         }
-                        writeNotes.Add(note.Clone());
+                        foreach (var pho in note.Phonemes)
+                        {
+                            var nnote = note.Clone();
+                            nnote.DurTick = pho.DurTick;
+                            nnote.PosTick = note.PosTick + pho.PosTick;
+                            nnote.Phonemes.Clear();
+                            nnote.Phonemes.Add(pho.Clone(nnote));
+                            writeNotes.Add(nnote);
+                        }
                         endtick = note.EndTick;
                     }
                     foreach (var note in writeNotes)

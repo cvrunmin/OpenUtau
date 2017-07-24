@@ -96,7 +96,7 @@ namespace OpenUtau.Core.Render
                         RenderItem item = BuildRenderItem(phoneme, part, project);
                         if (!item.Error)
                         {
-                            RenderPhoneme(engine, cacheDir, item, Path.GetFileNameWithoutExtension(project.FilePath));
+                            RenderPhoneme(engine, cacheDir, item, Path.GetFileNameWithoutExtension(project.FilePath), part.TrackNo);
                             if(item.Sound != null) renderItems.Add(item);
                         }
                         DocManager.Inst.ExecuteCmd(new ProgressBarNotification(100 * ++i / count, string.Format("Resampling \"{0}\" {1}/{2}", phoneme.Phoneme, i, count)));
@@ -131,7 +131,7 @@ namespace OpenUtau.Core.Render
                         RenderItem item = BuildRenderItem(phoneme, part, project);
                         if (!item.Error)
                         {
-                            RenderPhoneme(engine, cacheDir, item, Path.GetFileNameWithoutExtension(project.FilePath));
+                            RenderPhoneme(engine, cacheDir, item, Path.GetFileNameWithoutExtension(project.FilePath),part.TrackNo);
                             renderItems.Add(item);
                         }
                         worker.ReportProgress(100 * ++i / count, string.Format("Resampling \"{0}\" {1}/{2}", phoneme.Phoneme, i, count));
@@ -154,29 +154,32 @@ namespace OpenUtau.Core.Render
                 RenderItem item = inst.BuildRenderItem(phoneme, part, project);
                     if (!item.Error)
                     {
-                        RenderPhoneme(engine, PathManager.Inst.GetCachePath(project.FilePath), item, Path.GetFileNameWithoutExtension(project.FilePath));
+                        RenderPhoneme(engine, PathManager.Inst.GetCachePath(project.FilePath), item, Path.GetFileNameWithoutExtension(project.FilePath),part.TrackNo);
                     }
                 }
         }
-        private static void RenderPhoneme(IResamplerDriver engine, string cacheDir, RenderItem item, string projectName)
+        private static void RenderPhoneme(IResamplerDriver engine, string cacheDir, RenderItem item, string projectName, int track)
         {
-            var sound = RenderCache.Inst.Get(item.HashParameters());
+            var sound = RenderCache.Inst.Get(item.HashParameters(), engine.GetInfo().ToString());
 
             if (sound == null)
             {
-                string cachefile = Path.Combine(cacheDir, string.Format("{1}-{0:x}.wav", item.HashParameters(), projectName));
-                if (!File.Exists(cachefile))
+                string cachefile = Path.Combine(cacheDir, $"{projectName}-Track_{track}-{item.HashParameters():x}.wav");
+                if (!File.Exists(cachefile) || new FileInfo(cachefile).Length == 0)
                 {
                     Debug.WriteLine("Sound {0:x} resampling {1}", item.HashParameters(), item.GetResamplerExeArgs());
                     DriverModels.EngineInput engineArgs = DriverModels.CreateInputModel(item, 0);
                     Stream output = engine.DoResampler(engineArgs);
-                    using (var deststr = File.Create(cachefile))
+                    if (output.Length > 0)
                     {
-                        output.Seek(0, SeekOrigin.Begin);
-                        output.CopyTo(deststr);
-                        output.Seek(0, SeekOrigin.Begin);
+                        using (var deststr = File.Create(cachefile))
+                        {
+                            output.Seek(0, SeekOrigin.Begin);
+                            output.CopyTo(deststr);
+                            output.Seek(0, SeekOrigin.Begin);
+                        }
+                        sound = new CachedSound(output);
                     }
-                    sound = new CachedSound(output);
                 }
                 else
                 {

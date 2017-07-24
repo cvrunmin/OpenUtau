@@ -1,0 +1,50 @@
+﻿<Window x:Class="OpenUtau.UI.Dialogs.TrackPreferencesDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Preferences" Height="400" Width="600" ResizeMode="NoResize">
+    <Grid>
+        <TreeView x:Name="treeView" HorizontalAlignment="Left" Margin="10" VerticalAlignment="Stretch" Width="150"
+                  SelectedItemChanged="treeView_SelectedItemChanged">
+            <TreeViewItem x:Name="generalItem" Header="{DynamicResource General}"/>
+
+            <TreeViewItem Header="{DynamicResource Audio}" IsExpanded="True">
+                <TreeViewItem x:Name="playbackItem" Header="{DynamicResource Playback}" Margin="-12,0,0,0"/>
+                <TreeViewItem x:Name="renderingItem" Header="{DynamicResource Rendering}" Margin="-12,0,0,0"/>
+            </TreeViewItem>
+        </TreeView>
+        <Grid x:Name="generalGrid" Margin="170,2,10,10" Visibility="Collapsed">
+
+        </Grid>
+        <Grid x:Name="playbackGrid" Margin="170,2,10,10" Visibility="Hidden">
+            <TextBlock Text="{DynamicResource OutputDevice}" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <ComboBox Width="256" Height="22" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,25,0,0">
+                <ComboBoxItem Content="WASAPI" IsSelected="True"/>
+                <ComboBoxItem Content="DirectSound"/>
+                <ComboBoxItem Content="WaveOut"/>
+                <ComboBoxItem Content="ASIO"/>
+            </ComboBox>
+        </Grid>
+        <Grid x:Name="renderingGrid" Margin="170,2,10,10">
+            <ScrollViewer>
+                <Grid>
+
+                    <GroupBox Header="{DynamicResource ResamplingPreviewTitle}" Height="80" VerticalAlignment="Top" Margin="0,0,0,0">
+                        <Grid>
+                            <RadioButton x:Name="previewRatioInternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,10,0,0" GroupName="preview" Checked="previewEngine_Checked" Content="General configured engine"/>
+                            <Grid Margin="8,34,8,0" Height="21" VerticalAlignment="Top">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="5px"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <RadioButton x:Name="previewRatioExternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,2,0,0" GroupName="preview" Checked="previewEngine_Checked" Content="Track-specific engine"/>
+                                <ComboBox x:Name="previewEngineCombo" Margin="4,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="224" SelectionChanged="previewEngineCombo_SelectionChanged" Grid.Column="2"/>
+                            </Grid>
+                        </Grid>
+                    </GroupBox>
+                    <TextBlock TextWrapping="Wrap" Text="{DynamicResource ResamplingNotes}" Margin="9,85,0,0"/>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Window>

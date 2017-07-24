@@ -417,6 +417,8 @@ namespace OpenUtau.Core.Formats
                         TrackNo = Convert.ToInt32(dictionary["trackno"]),
                         Singer = new USinger() { Name = dictionary["singer"] as string }
                     };
+                    if (dictionary.ContainsKey("override-engine"))
+                        result.OverrideRenderEngine = dictionary["override-engine"] as string;
                     return result;
                 }
                 else if (type == typeof(USinger))
@@ -443,6 +445,8 @@ namespace OpenUtau.Core.Formats
                         result.Add("name", _obj.Name);
                         result.Add("comment", _obj.Comment);
                         result.Add("singer", _obj.Singer == null ? "" : _obj.Singer.Name);
+                        if (!string.IsNullOrWhiteSpace(_obj.OverrideRenderEngine))
+                            result.Add("override-engine", _obj.OverrideRenderEngine);
                     }
                 }
                 else if (obj is USinger)

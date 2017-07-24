@@ -446,6 +446,10 @@ namespace OpenUtau.UI
         {
             CmdSaveFile(true);
         }
+        private void MenuClearCache_Click(object sender, RoutedEventArgs e)
+        {
+            RenderCache.Inst.Clear();
+        }
         private void MenuExit_Click(object sender, RoutedEventArgs e) { CmdExit(); }
         private void MenuUndo_Click(object sender, RoutedEventArgs e) { DocManager.Inst.Undo(); }
         private void MenuRedo_Click(object sender, RoutedEventArgs e) { DocManager.Inst.Redo(); }
@@ -549,12 +553,14 @@ namespace OpenUtau.UI
             {
                 basedelta = Math.Min(basedelta, part.PosTick);
             }
+            trackVM.DeselectAll();
             DocManager.Inst.StartUndoGroup();
             foreach (var part in trackVM.ClippedParts)
             {
                 var copied = part.UClone();
                 copied.PosTick = DocManager.Inst.playPosTick + part.PosTick - basedelta;
                 DocManager.Inst.ExecuteCmd(new AddPartCommand(DocManager.Inst.Project, copied));
+                trackVM.SelectPart(copied);
             }
             DocManager.Inst.EndUndoGroup();
         }
@@ -574,6 +580,54 @@ namespace OpenUtau.UI
         {
             var w = new Dialogs.PreferencesDialog() { Owner = this };
             w.ShowDialog();
+        }
+
+        private void MenuSplitSParts_Click(object sender, RoutedEventArgs e)
+        {
+            List<UPart> removal = new List<UPart>();
+            List<UPart> additional = new List<UPart>();
+            foreach (var part in trackVM.SelectedParts.Where(part => part.PosTick < trackVM.playPosTick && part.EndTick > trackVM.playPosTick))
+            {
+                removal.Add(part);
+                additional = additional.Concat(Core.Util.Utils.SplitPart(part, trackVM.playPosTick)).ToList();
+            }
+            trackVM.DeselectAll();
+            DocManager.Inst.StartUndoGroup();
+            foreach (var item in removal)
+            {
+                DocManager.Inst.ExecuteCmd(new RemovePartCommand(trackVM.Project, item));
+            }
+            foreach (var item in additional)
+            {
+                DocManager.Inst.ExecuteCmd(new AddPartCommand(trackVM.Project, item));
+                trackVM.SelectPart(item);
+            }
+            DocManager.Inst.EndUndoGroup();
+            trackVM.RedrawIfUpdated();
+        }
+
+        private void MenuMergeSParts_Click(object sender, RoutedEventArgs e)
+        {
+            List<UPart> removal = new List<UPart>();
+            List<UPart> additional = new List<UPart>();
+            foreach (var group in trackVM.SelectedParts.GroupBy(upart=>upart.TrackNo))
+            {
+                removal = removal.Concat(group.AsEnumerable()).ToList();
+                additional.Add(Core.Util.Utils.MergeParts(group.Key, group.ToArray()));
+            }
+            trackVM.DeselectAll();
+            DocManager.Inst.StartUndoGroup();
+            foreach (var item in removal)
+            {
+                DocManager.Inst.ExecuteCmd(new RemovePartCommand(trackVM.Project, item));
+            }
+            foreach (var item in additional)
+            {
+                DocManager.Inst.ExecuteCmd(new AddPartCommand(trackVM.Project, item));
+                trackVM.SelectPart(item);
+            }
+            DocManager.Inst.EndUndoGroup();
+            trackVM.RedrawIfUpdated();
         }
 
         # endregion

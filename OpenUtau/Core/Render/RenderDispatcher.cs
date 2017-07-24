@@ -82,10 +82,11 @@ namespace OpenUtau.Core.Render
                 }
                 else
                 {
-                    var singer = project.Tracks[part.TrackNo].Singer;
+                        UTrack track = project.Tracks[part.TrackNo];
+                        var singer = track.Singer;
                     if (singer != null && singer.Loaded)
                     {
-                        System.IO.FileInfo ResamplerFile = new System.IO.FileInfo(PathManager.Inst.GetPreviewEnginePath());
+                        System.IO.FileInfo ResamplerFile = new System.IO.FileInfo(string.IsNullOrWhiteSpace(track.OverrideRenderEngine) ? PathManager.Inst.GetPreviewEnginePath() : System.IO.Path.Combine(PathManager.Inst.GetEngineSearchPath(), track.OverrideRenderEngine));
                         IResamplerDriver engine = ResamplerDriver.ResamplerDriver.LoadEngine(ResamplerFile.FullName);
                         trackSources[part.TrackNo].AddSource(await BuildVoicePartAudio(part as UVoicePart, project, engine) ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(),
                             TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick) - project.TickToMillisecond(480, part.PosTick) * part.PosTick / project.Resolution));
@@ -102,9 +103,19 @@ namespace OpenUtau.Core.Render
             {
                 if (source != null)
                 {
-                    var str = new System.IO.MemoryStream(source.WaveFormat.AverageBytesPerSecond * 60);
+                    double elisimatedMs;
+                    try
+                    {
+                        elisimatedMs = project.TickToMillisecond(project.Parts.Where(part => part.TrackNo == source.TrackNo).OrderByDescending(part => part.EndTick).First().EndTick);
+                    }
+                    catch (Exception)
+                    {
+                        elisimatedMs = 60000;
+                    }
+                    int limit = source.WaveFormat.AverageBytesPerSecond * (int)Math.Ceiling(elisimatedMs / 1000);
+                    var str = new System.IO.MemoryStream(limit);
 
-                    schedule.Add(Task.Run(() =>
+                    schedule.Add(Task.Run(async() =>
                     {
                         /*while (true)
                         {
@@ -120,8 +131,21 @@ namespace OpenUtau.Core.Render
                         source.Muted = false;
                         var wave = source.ToWaveProvider();
                         var buffer = new byte[source.WaveFormat.AverageBytesPerSecond * 4];
-                        while (true)
+                        while (str.Position < limit)
                         {
+                            if (2147483591 - str.Position < buffer.Length)
+                            {
+                                buffer = new byte[2147483591 - str.Position - 1];
+                                var bytesRead1 = wave.Read(buffer, 0, buffer.Length);
+                                if (bytesRead1 == 0)
+                                {
+                                    // end of source provider
+                                    str.Flush();
+                                    break;
+                                }
+                                await str.WriteAsync(buffer, 0, bytesRead1);
+                                break;
+                            }
                             var bytesRead = wave.Read(buffer, 0, buffer.Length);
                             if (bytesRead == 0)
                             {
@@ -129,7 +153,7 @@ namespace OpenUtau.Core.Render
                                 str.Flush();
                                 break;
                             }
-                            str.Write(buffer, 0, bytesRead);
+                            await str.WriteAsync(buffer, 0, bytesRead);
                         }
                         buffer = null;
                         wave = null;
@@ -190,10 +214,11 @@ namespace OpenUtau.Core.Render
                 }
                 else
                 {
-                    var singer = project.Tracks[part.TrackNo].Singer;
+                    UTrack track = project.Tracks[part.TrackNo];
+                    var singer = track.Singer;
                     if (singer != null && singer.Loaded)
                     {
-                        System.IO.FileInfo ResamplerFile = new System.IO.FileInfo(PathManager.Inst.GetPreviewEnginePath());
+                        System.IO.FileInfo ResamplerFile = new System.IO.FileInfo(string.IsNullOrWhiteSpace(track.OverrideRenderEngine) ? PathManager.Inst.GetPreviewEnginePath() : System.IO.Path.Combine(PathManager.Inst.GetEngineSearchPath(), track.OverrideRenderEngine));
                         IResamplerDriver engine = ResamplerDriver.ResamplerDriver.LoadEngine(ResamplerFile.FullName);
                             trackSources[part.TrackNo].AddSource(await BuildVoicePartAudio(part as UVoicePart, project, engine, cancel) ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(),
                                 TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick) - project.TickToMillisecond(480, part.PosTick) * part.PosTick / project.Resolution));

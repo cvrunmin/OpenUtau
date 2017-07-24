@@ -138,21 +138,21 @@ namespace OpenUtau.UI
                 var pitHit = pitHitContainer.Result;
                 if (o == pitchCxtMenu.Items[4])
                 {
-                    DocManager.Inst.StartUndoGroup();
+                    if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                     DocManager.Inst.ExecuteCmd(new SnapPitchPointCommand(pitHit.Note));
-                    DocManager.Inst.EndUndoGroup();
+                    if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
                 }
                 else if (o == pitchCxtMenu.Items[5])
                 {
-                    DocManager.Inst.StartUndoGroup();
+                    if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                     DocManager.Inst.ExecuteCmd(new DeletePitchPointCommand(midiVM.Part, pitHit.Note, pitHit.Index));
-                    DocManager.Inst.EndUndoGroup();
+                    if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
                 }
                 else if (o == pitchCxtMenu.Items[6])
                 {
-                    DocManager.Inst.StartUndoGroup();
+                    if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                     DocManager.Inst.ExecuteCmd(new AddPitchPointCommand(pitHit.Note, new PitchPoint(pitHit.X, pitHit.Y), pitHit.Index + 1));
-                    DocManager.Inst.EndUndoGroup();
+                    if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
                 }
                 else
                 {
@@ -160,9 +160,9 @@ namespace OpenUtau.UI
                         o == pitchCxtMenu.Items[0] ? PitchPointShape.InOut :
                         o == pitchCxtMenu.Items[2] ? PitchPointShape.In :
                         o == pitchCxtMenu.Items[3] ? PitchPointShape.Out : PitchPointShape.Linear;
-                    DocManager.Inst.StartUndoGroup();
+                    if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                     DocManager.Inst.ExecuteCmd(new ChangePitchPointShapeCommand(midiVM.Part, pitHit.Note.PitchBend.Points[pitHit.Index], shape));
-                    DocManager.Inst.EndUndoGroup();
+                    if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
                 }
             };
 
@@ -287,7 +287,7 @@ namespace OpenUtau.UI
                     _pitHit = pitHitResult.Note.PitchBend.Points[pitHitResult.Index];
                     _pitHitIndex = pitHitResult.Index;
                     _noteHit = pitHitResult.Note;
-                    DocManager.Inst.StartUndoGroup();
+                    if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                 }
             }
             else
@@ -339,6 +339,7 @@ namespace OpenUtau.UI
                         {
                             noteHit.IsLyricBoxActive = true;
                             midiVM.AnyNotesEditing = true;
+                            midiVM.UpdateViewRegion(noteHit.EndTick + midiVM.Part.PosTick);
                             midiVM.MarkUpdate();
                             midiVM.notesElement?.MarkUpdate();
                             midiVM.RedrawIfUpdated();
@@ -784,6 +785,7 @@ namespace OpenUtau.UI
                         if (Core.Util.Preferences.Default.EnterToEdit && midiVM.SelectedNotes.Any()) {
                             midiVM.SelectedNotes.First().IsLyricBoxActive = true;
                             midiVM.AnyNotesEditing = true;
+                            midiVM.UpdateViewRegion(midiVM.SelectedNotes.First().EndTick + midiVM.Part.PosTick);
                             midiVM.MarkUpdate();
                             midiVM.notesElement?.MarkUpdate();
                             midiVM.RedrawIfUpdated();
@@ -801,14 +803,14 @@ namespace OpenUtau.UI
         private void expCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             ((Canvas)sender).CaptureMouse();
-            DocManager.Inst.StartUndoGroup();
+            if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
             Point mousePos = e.GetPosition((UIElement)sender);
             expCanvas_SetExpHelper(mousePos);
         }
 
         private void expCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            DocManager.Inst.EndUndoGroup();
+            if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
             ((Canvas)sender).ReleaseMouseCapture();
         }
 

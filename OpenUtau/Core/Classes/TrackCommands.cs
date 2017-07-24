@@ -24,14 +24,30 @@ namespace OpenUtau.Core
         {
             Dictionary<int, int> trackNoRemapTable = new Dictionary<int, int>();
             for (int i = 0; i < project.Tracks.Count; i++)
+            {
                 if (project.Tracks[i].TrackNo != i)
                 {
                     trackNoRemapTable.Add(project.Tracks[i].TrackNo, i);
                     project.Tracks[i].TrackNo = i;
                 }
+            }
+            int j = 0;
             foreach (var part in project.Parts)
+            {
                 if (trackNoRemapTable.Keys.Contains(part.TrackNo))
+                {
                     part.TrackNo = trackNoRemapTable[part.TrackNo];
+                }
+                part.PartNo = j;
+                if (part is UVoicePart voice)
+                {
+                    foreach (var note in voice.Notes)
+                    {
+                        note.PartNo = j;
+                    }
+                }
+                j++;
+            }
         }
     }
 

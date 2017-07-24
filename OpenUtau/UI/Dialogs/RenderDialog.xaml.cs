@@ -70,7 +70,38 @@ namespace OpenUtau.UI.Dialogs
                     foreach (var track in tracks)
                     {
                         if(!skipped.Contains(i))
-                            WaveFileWriter.CreateWaveFile(System.IO.Path.Combine(path, System.IO.Path.GetFileNameWithoutExtension(DocManager.Inst.Project.FilePath) + "_Track-" + i + ".wav"), track.ToWaveProvider());
+                        {
+                            double elisimatedMs;
+                            try
+                            {
+                                var project = DocManager.Inst.Project;
+                                elisimatedMs = project.TickToMillisecond(project.Parts.Where(part => part.TrackNo == track.TrackNo).OrderByDescending(part => part.EndTick).First().EndTick);
+                            }
+                            catch (Exception)
+                            {
+                                elisimatedMs = 60000;
+                            }
+                            track.Pan = 0;
+                            track.PlainVolume = MusicMath.DecibelToVolume(0);
+                            track.Muted = false;
+                            int limit = track.WaveFormat.AverageBytesPerSecond * (int)Math.Ceiling(elisimatedMs / 1000);
+                            using (var str = new WaveFileWriter(System.IO.Path.Combine(path, System.IO.Path.GetFileNameWithoutExtension(DocManager.Inst.Project.FilePath) + "_Track-" + i + ".wav"), track.WaveFormat))
+                            {
+                                var wave = track.ToWaveProvider();
+                                var buffer = new byte[track.WaveFormat.AverageBytesPerSecond * 4];
+                                while (str.Position < limit)
+                                {
+                                    var bytesRead = wave.Read(buffer, 0, buffer.Length);
+                                    if (bytesRead == 0)
+                                    {
+                                        // end of source provider
+                                        break;
+                                    }
+                                    await str.WriteAsync(buffer, 0, bytesRead);
+                                }
+                            }
+                        }
+
                         ++i;
                         Dispatcher.Invoke(()=>
                         {
@@ -164,7 +195,8 @@ namespace OpenUtau.UI.Dialogs
         {
             if (cmd is ProgressBarNotification pbn && taskprogress != null) {
                 double progress = 1f / (RequiredRenderItem + 10) * 1000 + decimals;
-                if(taskprogress.Value < taskprogress.Maximum)taskprogress.Value += (int)progress;
+                int pi = (int)progress;
+                if(taskprogress.Value + pi <= taskprogress.Maximum)taskprogress.Value += pi;
                 decimals = progress - (int)progress;
                 taskdialog.Text = GenTextInfo("Rendering Tracks", pbn.Info);
             }

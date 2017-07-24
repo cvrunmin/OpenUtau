@@ -203,6 +203,7 @@ namespace OpenUtau.UI.Models
 
         public void updatePlayPosMarker()
         {
+            if (Part == null) return;
             double quarter = (double)(playPosTick - Part.PosTick) / DocManager.Inst.Project.Resolution * BeatPerBar;
             int playPosMarkerOffset = (int)Math.Round(QuarterToCanvas(quarter) + 0.5);
             Canvas.SetLeft(playPosMarker, playPosMarkerOffset - 6);
@@ -392,10 +393,15 @@ namespace OpenUtau.UI.Models
         private void OnPlayPosSet(int playPosTick)
         {
             this.playPosTick = playPosTick;
-            double playPosPix = TickToCanvas(playPosTick - (Part?.PosTick).GetValueOrDefault());
-            if (playPosPix > MidiCanvas.ActualWidth * UIConstants.PlayPosMarkerMargin)
-                OffsetX += playPosPix - MidiCanvas.ActualWidth * UIConstants.PlayPosMarkerMargin;
+            UpdateViewRegion(playPosTick);
             MarkUpdate();
+        }
+
+        public void UpdateViewRegion(int tick)
+        {
+            double tickPix = TickToCanvas(tick - (Part?.PosTick).GetValueOrDefault());
+            if (tickPix > MidiCanvas.ActualWidth * UIConstants.PlayPosMarkerMargin)
+                OffsetX += tickPix - MidiCanvas.ActualWidth * UIConstants.PlayPosMarkerMargin;
         }
 
         private void OnPitchModified()

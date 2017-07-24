@@ -34,6 +34,7 @@ namespace OpenUtau.UI.Dialogs
             this.EditingOto = oto;
             this.DataContext = new System.Windows.Data.Binding("EditingOto") { Source = EditingOto, Mode = System.Windows.Data.BindingMode.TwoWay};
             //Resources["oto"] = EditingOto;
+            ForceUpdateTextBox();
             if(oto.Duration == 1)
             using (WaveFileReader reader = new WaveFileReader(System.IO.Path.Combine(singer.Path, oto.File)))
             {
@@ -171,31 +172,31 @@ namespace OpenUtau.UI.Dialogs
             {
                 txtblkStatus.Text = Lang.LanguageManager.GetLocalized("Pretturance")+": " + EditingOto.Preutter + "ms";
                 Mouse.OverrideCursor = Cursors.Cross;
-                if(pressed) Status = EditStatus.Pretturance;
+                if(pressed && Status == EditStatus.NotCaptured) Status = EditStatus.Pretturance;
             }
             else if (Math.Abs(ActualOverlapPosX - pt.X) < 5 && waveformCanvas.ActualHeight * .2 <= pt.Y && pt.Y <= waveformCanvas.ActualHeight * .8)
             {
                 txtblkStatus.Text = Lang.LanguageManager.GetLocalized("Overlap") + ": " + EditingOto.Overlap + "ms";
                 Mouse.OverrideCursor = Cursors.Cross;
-                if (pressed) Status = EditStatus.Overlap;
+                if (pressed && Status == EditStatus.NotCaptured) Status = EditStatus.Overlap;
             }
             else if (Math.Abs(ActualConsonantPosX - pt.X) < 5)
             {
                 txtblkStatus.Text = Lang.LanguageManager.GetLocalized("Consonant") + ": " + EditingOto.Consonant + "ms";
                 Mouse.OverrideCursor = Cursors.Cross;
-                if (pressed) Status = EditStatus.Consonant;
+                if (pressed && Status == EditStatus.NotCaptured) Status = EditStatus.Consonant;
             }
             else if (Math.Abs(ActualOffsetPosX - pt.X) < 5)
             {
                txtblkStatus.Text = Lang.LanguageManager.GetLocalized("Offset2") + ": " + EditingOto.Offset + "ms";
                 Mouse.OverrideCursor = Cursors.Cross;
-                if (pressed) Status = EditStatus.Offset;
+                if (pressed && Status == EditStatus.NotCaptured) Status = EditStatus.Offset;
             }
             else if (Math.Abs(ActualCutoffPosX - pt.X) < 5)
             {
                 txtblkStatus.Text = Lang.LanguageManager.GetLocalized("Cutoff2") + ": " + EditingOto.Cutoff + "ms";
                 Mouse.OverrideCursor = Cursors.Cross;
-                if (pressed) Status = EditStatus.Cutoff;
+                if (pressed && Status == EditStatus.NotCaptured) Status = EditStatus.Cutoff;
             }
             else
             {

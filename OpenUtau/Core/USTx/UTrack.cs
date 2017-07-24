@@ -20,6 +20,7 @@ namespace OpenUtau.Core.USTx
         public double Volume { set; get; }
         public double Pan { set; get; }
         public bool Amended { get; set; }
+        public string OverrideRenderEngine { get; set; }
 
         public UTrack() { }
     }

@@ -44,7 +44,7 @@ namespace OpenUtau.Core.Util
                 wave.HeadTrimTick = ((UWavePart)src).HeadTrimTick;
                 wave.TailTrimTick = wave.FileDurTick - wave.HeadTrimTick - wave.DurTick;
             } else if (dest1 is UVoicePart voice) {
-                voice.Notes.RemoveWhere(note => note.PosTick > voice.DurTick);
+                voice.Notes.RemoveWhere(note => note.PosTick >= voice.DurTick);
             }
             var dest2 = src.UClone();
             dest2.DurTick = dest2.EndTick - splitTick;
@@ -62,36 +62,49 @@ namespace OpenUtau.Core.Util
             }
             return new List<UPart>() { dest1, dest2 };
         }
-
-        public static UVoicePart MergePart(int preferedPartNo, params UVoicePart[] parts) {
+        public static UPart MergeParts(int preferedPartNo, params UPart[] parts) {
+            var wp = parts.OfType<UWavePart>();
+            var vp = parts.OfType<UVoicePart>();
+            if (wp.Count() > 0 && vp.Count() > 0) throw new ArgumentException("pure uparts arrays should be provided", nameof(parts));
+            if (wp.Count() == 0)
+            {
+                return MergeParts(preferedPartNo, vp.ToArray());
+            }
+            if (vp.Count() == 0)
+            {
+                return MergeParts(preferedPartNo, wp.ToArray());
+            }
+            return null;
+        }
+        public static UVoicePart MergeParts(int preferedPartNo, params UVoicePart[] parts) {
             if (!ValidateMergingParts(parts))
             {
                 throw new ArgumentException("Not all parts are in the same track", nameof(parts));
             }
-            var dest = new UVoicePart() { PosTick = parts[0].PosTick, DurTick = parts[0].DurTick, PartNo = preferedPartNo, TrackNo = parts[0].TrackNo };
+            parts = parts.OrderBy(part => part.PosTick).ToArray();
+            UVoicePart dest = parts[0].UClone() as UVoicePart;
+            dest.PartNo = preferedPartNo;
+            dest.TrackNo = parts[0].TrackNo;
             int noteNo = 0;
-            foreach (var note in parts[0].Notes)
-            {
-                var cloned = note.Clone();
-                cloned.NoteNo = noteNo;
-                cloned.PartNo = preferedPartNo;
-                dest.Notes.Add(cloned);
-                ++noteNo;
-            }
             var relativePosTick = dest.DurTick;
             for (int i = 1; i < parts.Length; i++)
             {
-                dest.DurTick += parts[i].DurTick + (parts[i].PosTick - parts[i - 1].EndTick);
+                int posCorr = (parts[i].PosTick - parts[i - 1].EndTick);
+                dest.DurTick += parts[i].DurTick + posCorr;
                 foreach (var note in parts[i].Notes)
                 {
                     var cloned = note.Clone();
                     cloned.NoteNo = noteNo;
                     cloned.PartNo = preferedPartNo;
-                    cloned.PosTick += relativePosTick;
+                    cloned.PosTick += relativePosTick + posCorr;
+                    foreach (var item in cloned.Expressions)
+                    {
+                        cloned.VirtualExpressions[item.Key] = ((int)dest.Expressions[item.Key].Data) - (int)cloned.Expressions[item.Key].Data;
+                    }
                     dest.Notes.Add(cloned);
                     ++noteNo;
                 }
-                relativePosTick += parts[i].DurTick + (parts[i].PosTick - parts[i - 1].EndTick);
+                relativePosTick = dest.DurTick;
             }
             return dest;
         }

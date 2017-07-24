@@ -16,6 +16,7 @@ using System.Windows.Shapes;
 using OpenUtau.Core;
 using OpenUtau.Core.USTx;
 using System.Windows.Controls.Primitives;
+using OpenUtau.UI.Dialogs;
 
 namespace OpenUtau.UI.Controls
 {
@@ -140,6 +141,12 @@ namespace OpenUtau.UI.Controls
                         DocManager.Inst.EndUndoGroup();
                     };
                     headerMenu.Items.Add(item);
+                    var item1 = new MenuItem() { Header = "Preferences" };
+                    item1.Click += (_o, _c) => {
+                        var dialog = new TrackPreferencesDialog(Track);
+                        dialog.ShowDialog();
+                    };
+                    headerMenu.Items.Add(item1);
                 }
                 headerMenu.IsOpen = true;
             }
