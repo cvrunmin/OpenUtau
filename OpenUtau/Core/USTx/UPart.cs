@@ -71,13 +71,16 @@ namespace OpenUtau.Core.USTx
             set { _filePath = value; Name = System.IO.Path.GetFileName(value); }
             get { return _filePath; }
         }
+
+        public bool UseRelativePath { get; set; }
+
         public float[] Peaks;
 
         public int Channels;
         public int FileDurTick;
         public double FileDurMillisecond;
-        public int HeadTrimTick = 0;
-        public int TailTrimTick = 0;
+        public int HeadTrimTick { get; set; } = 0;
+        public int TailTrimTick { get; set; } = 0;
         public override int DurTick
         {
             get { return FileDurTick - HeadTrimTick - TailTrimTick; }

@@ -53,6 +53,7 @@
     <s:String x:Key="Rendering">Rendering</s:String>
     <s:String x:Key="SingerPath">Singer paths</s:String>
     <s:String x:Key="Add">Add</s:String>
+    <s:String x:Key="New">New</s:String>
     <s:String x:Key="Remove">Remove</s:String>
     <s:String x:Key="OutputDevice">Output device</s:String>
     <s:String x:Key="ResamplingPreviewTitle">Resampling engine for preview</s:String>
@@ -66,4 +67,13 @@
     <s:String x:Key="Cancel">Cancel</s:String>
     <s:String x:Key="Replace">Replace</s:String>
     <s:String x:Key="Duplicate">Duplicate</s:String>
+    <s:String x:Key="LyricsPreset">Lyrics Preset</s:String>
+    <s:String x:Key="TogglePho">Toggle Phonemes (I)</s:String>
+    <s:String x:Key="TogglePitch">Toggle Pitch (O)</s:String>
+    <s:String x:Key="Snap">Snap (P)</s:String>
+    <s:String x:Key="InstantRender">Render at instant</s:String>
+    <s:String x:Key="RenderManager">Rendering Manager</s:String>
+    <s:String x:Key="EnterKeyEditNote">Edit note when enter is pressed</s:String>
+    <s:String x:Key="SplitSelectedParts">Split selected parts</s:String>
+    <s:String x:Key="MergeSelectedParts">Merge selected parts</s:String>
 </ResourceDictionary>

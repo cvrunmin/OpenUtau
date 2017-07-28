@@ -23,6 +23,7 @@ using OpenUtau.Core.USTx;
 using System.Windows.Forms;
 using OpenUtau.Core.Render;
 using OpenUtau.UI.Dialogs;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace OpenUtau.UI
 {
@@ -101,7 +102,8 @@ namespace OpenUtau.UI
         {
             Point mousePos = e.GetPosition((UIElement)sender);
             int tick = (int)(trackVM.CanvasToSnappedQuarter(mousePos.X) * trackVM.Project.Resolution / trackVM.BeatPerBar);
-            if (e.ClickCount >= 2) {
+            if (e.ClickCount >= 2)
+            {
                 new BpmDialog() { Bpm = trackVM.Project.SubBPM.ContainsKey(tick) ? trackVM.Project.SubBPM[tick] : trackVM.BPM, TickLoc = tick, SubBpm = true }.ShowDialog();
             }
             else
@@ -162,7 +164,7 @@ namespace OpenUtau.UI
                 selectionStart = new Point(trackVM.CanvasToQuarter(mousePos.X), trackVM.CanvasToTrack(mousePos.Y));
 
                 if (Keyboard.IsKeyUp(Key.LeftShift) && Keyboard.IsKeyUp(Key.RightShift)) trackVM.DeselectAll();
-                
+
                 if (selectionBox == null)
                 {
                     selectionBox = new Rectangle()
@@ -191,110 +193,116 @@ namespace OpenUtau.UI
                 Mouse.OverrideCursor = System.Windows.Input.Cursors.Cross;
             }
             else if (hit != null)
-            if (hit is DrawingVisual visual)
-            {
-                PartElement partEl = visual.Parent as PartElement;
-                _hitPartElement = partEl;
-
-                if (!trackVM.SelectedParts.Contains(_hitPartElement.Part)) trackVM.DeselectAll();
-
-                if (e.ClickCount == 2)
+                if (hit is DrawingVisual visual)
                 {
-                    if (partEl is VoicePartElement) // load part into midi window
+                    PartElement partEl = visual.Parent as PartElement;
+                    _hitPartElement = partEl;
+
+                    if (!trackVM.SelectedParts.Contains(_hitPartElement.Part)) trackVM.DeselectAll();
+
+                    if (e.ClickCount == 2)
                     {
-                        if (midiWindow == null)
+                        if (partEl is VoicePartElement) // load part into midi window
+                        {
+                            if (midiWindow == null)
                             {
                                 midiWindow = new MidiWindow();
                                 midiWindow.Closed += (sender1, e1) => midiWindow = null;
                             }
 
                             DocManager.Inst.ExecuteCmd(new LoadPartNotification(partEl.Part, trackVM.Project));
-                        midiWindow.Show();
-                        midiWindow.Focus();
-                    }
-                    else if(partEl is WavePartElement partWEl) //TODO
-                    {
-                        var dialog = new OpenFileDialog()
+                            midiWindow.Show();
+                            midiWindow.Focus();
+                        }
+                        else if (partEl is WavePartElement partWE) //TODO
                         {
-                            Filter = "Audio Files|*.*",
-                            Multiselect = false,
-                            CheckFileExists = true
-                        };
-                        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                        {
-                            int trackNo = partWEl.Part.TrackNo;
-                            DocManager.Inst.StartUndoGroup();
-                            DocManager.Inst.ExecuteCmd(new RemovePartCommand(DocManager.Inst.Project, partEl.Part), true);
-                            UWavePart part = Core.Formats.Wave.CreatePart(dialog.FileName);
-                            if (part != null)
+                            CommonOpenFileDialog dialog = new CommonOpenFileDialog()
                             {
-                                part.TrackNo = trackNo;
-                                    part.PosTick = partWEl.Part.PosTick;
-                                    part.PartNo = partWEl.Part.PartNo;
-                                //part.HeadTrimTick = ((UWavePart)partWEl.Part).HeadTrimTick;
-                                //part.TailTrimTick = ((UWavePart)partWEl.Part).TailTrimTick;
-                                DocManager.Inst.ExecuteCmd(new AddPartCommand(trackVM.Project, part), true);
+                                EnsureFileExists = true,
+                                Multiselect = false
+                            };
+                            dialog.Filters.Add(new CommonFileDialogFilter("Audio Files", "*.wav; *.mp3; *.aiff; *.wma"));
+                            dialog.Filters.Add(new CommonFileDialogFilter("Wave", "*.wav"));
+                            dialog.Filters.Add(new CommonFileDialogFilter("MP3", "*.mp3"));
+                            dialog.Filters.Add(new CommonFileDialogFilter("AIFF", "*.aiff"));
+                            dialog.Filters.Add(new CommonFileDialogFilter("Windows Media Audio", "*.wma"));
+                            var chkboxRel = new Microsoft.WindowsAPICodePack.Dialogs.Controls.CommonFileDialogCheckBox("Use relative path");
+                            dialog.Controls.Add(chkboxRel);
+                            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                            {
+                                int trackNo = partWE.Part.TrackNo;
+                                DocManager.Inst.StartUndoGroup();
+                                UWavePart part = Core.Formats.Wave.CreatePart(dialog.FileName);
+                                if (part != null)
+                                {
+                                    part.TrackNo = trackNo;
+                                    part.PosTick = partWE.Part.PosTick;
+                                    part.PartNo = partWE.Part.PartNo;
+                                    part.HeadTrimTick = ((UWavePart)partWE.Part).HeadTrimTick;
+                                    part.TailTrimTick = partWE.Part.Error ? 0 : ((UWavePart)partWE.Part).TailTrimTick;
+                                    part.UseRelativePath = chkboxRel.IsChecked;
+                                    DocManager.Inst.ExecuteCmd(new ReplacePartCommand(trackVM.Project, partEl.Part, part), true);
+                                }
+                                DocManager.Inst.EndUndoGroup();
                             }
-                            DocManager.Inst.EndUndoGroup();
                         }
                     }
-                }
-                else if (mousePos.X > partEl.X + partEl.VisualWidth - UIConstants.ResizeMargin && partEl is VoicePartElement) // resize
-                {
-                    _resizePartElement = true;
-                    _resizeMinDurTick = trackVM.GetPartMinDurTick(_hitPartElement.Part);
-                    Mouse.OverrideCursor = System.Windows.Input.Cursors.SizeWE;
-                    if (trackVM.SelectedParts.Count > 0)
+                    else if (mousePos.X > partEl.X + partEl.VisualWidth - UIConstants.ResizeMargin && partEl is VoicePartElement) // resize
                     {
-                        _partResizeShortest = _hitPartElement.Part;
-                        foreach (UPart part in trackVM.SelectedParts)
+                        _resizePartElement = true;
+                        _resizeMinDurTick = trackVM.GetPartMinDurTick(_hitPartElement.Part);
+                        Mouse.OverrideCursor = System.Windows.Input.Cursors.SizeWE;
+                        if (trackVM.SelectedParts.Count > 0)
                         {
-                            if (part.DurTick - part.GetMinDurTick(trackVM.Project) <
-                                _partResizeShortest.DurTick - _partResizeShortest.GetMinDurTick(trackVM.Project))
-                                _partResizeShortest = part;
+                            _partResizeShortest = _hitPartElement.Part;
+                            foreach (UPart part in trackVM.SelectedParts)
+                            {
+                                if (part.DurTick - part.GetMinDurTick(trackVM.Project) <
+                                    _partResizeShortest.DurTick - _partResizeShortest.GetMinDurTick(trackVM.Project))
+                                    _partResizeShortest = part;
+                            }
+                            _resizeMinDurTick = _partResizeShortest.GetMinDurTick(trackVM.Project);
                         }
-                        _resizeMinDurTick = _partResizeShortest.GetMinDurTick(trackVM.Project);
+                        DocManager.Inst.StartUndoGroup();
                     }
-                    DocManager.Inst.StartUndoGroup();
+                    else // move
+                    {
+                        _movePartElement = true;
+                        _partMoveRelativeTick = trackVM.CanvasToSnappedTick(mousePos.X) - _hitPartElement.Part.PosTick;
+                        _partMoveStartTick = partEl.Part.PosTick;
+                        Mouse.OverrideCursor = System.Windows.Input.Cursors.SizeAll;
+                        if (trackVM.SelectedParts.Count > 0)
+                        {
+                            _partMovePartLeft = _partMovePartMin = _partMovePartMax = _hitPartElement.Part;
+                            foreach (UPart part in trackVM.SelectedParts)
+                            {
+                                if (part.PosTick < _partMovePartLeft.PosTick) _partMovePartLeft = part;
+                                if (part.TrackNo < _partMovePartMin.TrackNo) _partMovePartMin = part;
+                                if (part.TrackNo > _partMovePartMax.TrackNo) _partMovePartMax = part;
+                            }
+                        }
+                        DocManager.Inst.StartUndoGroup();
+                    }
                 }
-                else // move
+                else
                 {
+                    if (trackVM.CanvasToTrack(mousePos.Y) > trackVM.Project.Tracks.Count - 1) return;
+                    UVoicePart part = new UVoicePart()
+                    {
+                        PosTick = trackVM.CanvasToSnappedTick(mousePos.X),
+                        TrackNo = trackVM.CanvasToTrack(mousePos.Y),
+                        DurTick = trackVM.Project.Resolution / trackVM.Project.BeatUnit * trackVM.Project.BeatPerBar
+                    };
+                    DocManager.Inst.StartUndoGroup();
+                    DocManager.Inst.ExecuteCmd(new AddPartCommand(trackVM.Project, part));
+                    DocManager.Inst.EndUndoGroup();
+                    // Enable drag
+                    trackVM.DeselectAll();
                     _movePartElement = true;
-                    _partMoveRelativeTick = trackVM.CanvasToSnappedTick(mousePos.X) - _hitPartElement.Part.PosTick;
-                    _partMoveStartTick = partEl.Part.PosTick;
-                    Mouse.OverrideCursor = System.Windows.Input.Cursors.SizeAll;
-                    if (trackVM.SelectedParts.Count > 0)
-                    {
-                        _partMovePartLeft = _partMovePartMin = _partMovePartMax = _hitPartElement.Part;
-                        foreach (UPart part in trackVM.SelectedParts)
-                        {
-                            if (part.PosTick < _partMovePartLeft.PosTick) _partMovePartLeft = part;
-                            if (part.TrackNo < _partMovePartMin.TrackNo) _partMovePartMin = part;
-                            if (part.TrackNo > _partMovePartMax.TrackNo) _partMovePartMax = part;
-                        }
-                    }
-                    DocManager.Inst.StartUndoGroup();
+                    _hitPartElement = trackVM.GetPartElement(part);
+                    _partMoveRelativeTick = 0;
+                    _partMoveStartTick = part.PosTick;
                 }
-            }
-            else
-            {
-                if (trackVM.CanvasToTrack(mousePos.Y) > trackVM.Project.Tracks.Count - 1) return;
-                UVoicePart part = new UVoicePart()
-                {
-                    PosTick = trackVM.CanvasToSnappedTick(mousePos.X),
-                    TrackNo = trackVM.CanvasToTrack(mousePos.Y),
-                    DurTick = trackVM.Project.Resolution / trackVM.Project.BeatUnit * trackVM.Project.BeatPerBar
-                };
-                DocManager.Inst.StartUndoGroup();
-                DocManager.Inst.ExecuteCmd(new AddPartCommand(trackVM.Project, part));
-                DocManager.Inst.EndUndoGroup();
-                // Enable drag
-                trackVM.DeselectAll();
-                _movePartElement = true;
-                _hitPartElement = trackVM.GetPartElement(part);
-                _partMoveRelativeTick = 0;
-                _partMoveStartTick = part.PosTick;
-            }
             ((UIElement)sender).CaptureMouse();
         }
 
@@ -349,7 +357,7 @@ namespace OpenUtau.UI
                 else
                 {
                     int deltaTrackNo = trackVM.CanvasToTrack(mousePos.Y) - _hitPartElement.Part.TrackNo;
-                    int deltaPosTick = (int)(trackVM.Project.Resolution * trackVM.CanvasToSnappedQuarter(mousePos.X) /trackVM.BeatUnit - _partMoveRelativeTick) - _hitPartElement.Part.PosTick;
+                    int deltaPosTick = (int)(trackVM.Project.Resolution * trackVM.CanvasToSnappedQuarter(mousePos.X) / trackVM.BeatUnit - _partMoveRelativeTick) - _hitPartElement.Part.PosTick;
                     bool changeTrackNo = deltaTrackNo + _partMovePartMin.TrackNo >= 0 && deltaTrackNo + _partMovePartMax.TrackNo < trackVM.Project.Tracks.Count;
                     bool changePosTick = deltaPosTick + _partMovePartLeft.PosTick >= 0;
                     if (changeTrackNo || changePosTick)
@@ -470,13 +478,19 @@ namespace OpenUtau.UI
 
         private void MenuImportAudio_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog()
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog()
             {
-                Filter = "Audio Files|*.*",
-                Multiselect = false,
-                CheckFileExists = true
+                EnsureFileExists = true,
+                Multiselect = false
             };
-            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) CmdImportAudio(openFileDialog.FileName);
+            dialog.Filters.Add(new CommonFileDialogFilter("Audio Files", "*.wav; *.mp3; *.aiff; *.wma"));
+            dialog.Filters.Add(new CommonFileDialogFilter("Wave", "*.wav"));
+            dialog.Filters.Add(new CommonFileDialogFilter("MP3", "*.mp3"));
+            dialog.Filters.Add(new CommonFileDialogFilter("AIFF", "*.aiff"));
+            dialog.Filters.Add(new CommonFileDialogFilter("Windows Media Audio", "*.wma"));
+            var chkboxRel = new Microsoft.WindowsAPICodePack.Dialogs.Controls.CommonFileDialogCheckBox("Use relative path");
+            dialog.Controls.Add(chkboxRel);
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok) CmdImportAudio(dialog.FileName, chkboxRel.IsChecked);
         }
 
         private void MenuImportMidi_Click(object sender, RoutedEventArgs e)
@@ -489,7 +503,7 @@ namespace OpenUtau.UI
             };
             if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                CmdImportAudio(openFileDialog.FileName);
+                CmdImportAudio(openFileDialog.FileName, false);
                 var project = DocManager.Inst.Project;
                 var parts = Core.Formats.Midi.Load(openFileDialog.FileName, project);
 
@@ -512,19 +526,22 @@ namespace OpenUtau.UI
             w.ShowDialog();
         }
 
-        private void MenuExportUst_Click(object sender, RoutedEventArgs e) {
-            Core.Formats.Ust.Save(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(DocManager.Inst.Project.FilePath),DocManager.Inst.Project.Name), DocManager.Inst.Project);
+        private void MenuExportUst_Click(object sender, RoutedEventArgs e)
+        {
+            Core.Formats.Ust.Save(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(DocManager.Inst.Project.FilePath), DocManager.Inst.Project.Name), DocManager.Inst.Project);
         }
 
         private void MenuRenderAll_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new RenderDialog();
-            if (dialog.ShowDialog().Value) {
+            if (dialog.ShowDialog().Value)
+            {
 
             }
             return;
-            var savdialog = new SaveFileDialog() { DefaultExt = "wav", AddExtension = true, OverwritePrompt = true, Filter = "Wave file (*.wav)|*.wav|All Files|*.*"};
-            if (savdialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
+            var savdialog = new SaveFileDialog() { DefaultExt = "wav", AddExtension = true, OverwritePrompt = true, Filter = "Wave file (*.wav)|*.wav|All Files|*.*" };
+            if (savdialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
                 RenderDispatcher.Inst.WriteToFile(savdialog.FileName, DocManager.Inst.Project);
             }
         }
@@ -610,7 +627,7 @@ namespace OpenUtau.UI
         {
             List<UPart> removal = new List<UPart>();
             List<UPart> additional = new List<UPart>();
-            foreach (var group in trackVM.SelectedParts.GroupBy(upart=>upart.TrackNo))
+            foreach (var group in trackVM.SelectedParts.GroupBy(upart => upart.TrackNo))
             {
                 removal = removal.Concat(group.AsEnumerable()).ToList();
                 additional.Add(Core.Util.Utils.MergeParts(group.Key, group.ToArray()));
@@ -734,7 +751,7 @@ namespace OpenUtau.UI
             }
         }
 
-        private void CmdImportAudio(string file)
+        private void CmdImportAudio(string file, bool relative)
         {
             UWavePart part = Core.Formats.Wave.CreatePart(file);
             if (part == null) return;

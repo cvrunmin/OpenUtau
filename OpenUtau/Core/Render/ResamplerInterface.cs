@@ -286,7 +286,7 @@ namespace OpenUtau.Core.Render
             }
 
             double startMs = DocManager.Inst.Project.TickToMillisecond(phoneme.PosTick, part.PosTick + phoneme.Parent.PosTick) - (phoneme.Oto?.Preutter).GetValueOrDefault();
-            double endMs = DocManager.Inst.Project.TickToMillisecond(phoneme.DurTick, part.PosTick + phoneme.Parent.PosTick) -
+            double endMs = DocManager.Inst.Project.TickToMillisecond(phoneme.DurTick, part.PosTick + phoneme.Parent.PosTick + phoneme.PosTick) -
                 (nextNote != null && nextNote.Phonemes[0].Overlapped ? nextNote.Phonemes[0].Preutter - nextNote.Phonemes[0].Overlap : 0);
             if (pps.Count > 0)
             {
@@ -331,6 +331,7 @@ namespace OpenUtau.Core.Render
             double outMs = lengthMs * vibrato.Out / 100;
 
             double value = -Math.Sin(2 * Math.PI * (posMs / vibrato.Period + vibrato.Shift / 100)) * vibrato.Depth;
+            if(posMs >= 5 && posMs < lengthMs - 5) value += vibrato.Drift / 100 * vibrato.Depth;
 
             if (posMs < inMs) value *= posMs / inMs;
             else if (posMs > lengthMs - outMs) value *= (lengthMs - posMs) / outMs;

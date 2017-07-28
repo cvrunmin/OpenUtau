@@ -273,6 +273,10 @@
     <Compile Include="UI\Models\ProgressBarViewModel.cs" />
     <Compile Include="UI\Models\TracksViewModel.cs" />
     <Compile Include="UI\UIConstants.cs" />
+    <Page Include="Lang\zh-cht.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Lang\en-us.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

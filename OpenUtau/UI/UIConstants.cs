@@ -54,4 +54,9 @@ namespace OpenUtau.UI
 
         public const double PlayPosMarkerMargin = 0.92;
     }
+
+    enum EnumTool
+    {
+        Cursor, Brush
+    }
 }

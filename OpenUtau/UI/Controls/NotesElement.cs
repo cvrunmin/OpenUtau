@@ -137,7 +137,7 @@ namespace OpenUtau.UI.Controls
                 lyricBox.InputBindings.Add(new System.Windows.Input.KeyBinding() { Command = new DelegateCommand(OnEnterPressed), Key = System.Windows.Input.Key.Enter });
                 lyricBox.LostFocus += (sender, e) =>
                 {
-                    if (lyricBox == null) return; //already updated
+                    if (lyricBox == null || Part == null) return; //already updated
                     if (!(((midiVM.MidiCanvas.Parent as Grid).Parent as Grid).Parent as MidiWindow).LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                     DocManager.Inst.ExecuteCmd(new ChangeNoteLyricCommand(Part, note, lyricBox.Text));
                     if (!(((midiVM.MidiCanvas.Parent as Grid).Parent as Grid).Parent as MidiWindow).LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
@@ -207,46 +207,60 @@ namespace OpenUtau.UI.Controls
             fTextWidths.Add(text, fText.Width);
             fTextHeights.Add(text, fText.Height);
         }
-
+        Pen pen6;
         private void DrawVibrato(UNote note, DrawingContext cxt)
         {
             if (note.Vibrato == null) return;
             var vibrato = note.Vibrato;
-            double periodPix = DocManager.Inst.Project.MillisecondToTick(vibrato.Period) * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
-            double lengthPix = note.DurTick * vibrato.Length / 100 * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
-
-            double startX = (note.PosTick + note.DurTick * (1 - vibrato.Length / 100)) * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
-            double startY = TrackHeight * (UIConstants.MaxNoteNum - 1.0 - note.NoteNum) + TrackHeight / 2;
-            double inPix = lengthPix * vibrato.In / 100;
-            double outPix = lengthPix * vibrato.Out / 100;
-            double depthPix = vibrato.Depth / 100 * midiVM.TrackHeight;
-
-            if (vibrato.Length > 0 && vibrato.Depth > 0)
+            if (note.Vibrato.IsEnabled)
             {
-                StreamGeometry g = new StreamGeometry();
-                using (var gcxt = g.Open())
+                double periodPix = DocManager.Inst.Project.MillisecondToTick(vibrato.Period) * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
+                double lengthPix = note.DurTick * vibrato.Length / 100 * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
+
+                double startX = (note.PosTick + note.DurTick * (1 - vibrato.Length / 100)) * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
+                double startY = TrackHeight * (UIConstants.MaxNoteNum - 1.0 - note.NoteNum) + TrackHeight / 2;
+                double inPix = lengthPix * vibrato.In / 100;
+                double outPix = lengthPix * vibrato.Out / 100;
+                double depthPix = vibrato.Depth / 100 * midiVM.TrackHeight;
+
+                if (vibrato.Length > 0 && vibrato.Depth > 0)
                 {
-                    gcxt.BeginFigure(new Point(startX, startY), true, true);
-                    gcxt.LineTo(new Point(startX + inPix, startY + depthPix), false, false);
-                    gcxt.LineTo(new Point(startX + lengthPix - outPix, startY + depthPix), false, false);
-                    gcxt.LineTo(new Point(startX + lengthPix, startY), false, false);
-                    gcxt.LineTo(new Point(startX + lengthPix - outPix, startY - depthPix), false, false);
-                    gcxt.LineTo(new Point(startX + inPix, startY - depthPix), false, false);
-                    gcxt.Close();
+                    StreamGeometry g = new StreamGeometry();
+                    using (var gcxt = g.Open())
+                    {
+                        gcxt.BeginFigure(new Point(startX, startY), true, true);
+                        gcxt.LineTo(new Point(startX + inPix, startY + depthPix + depthPix * vibrato.Drift / 100), true, false);
+                        gcxt.LineTo(new Point(startX + inPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
+                        gcxt.LineTo(new Point(startX + lengthPix - outPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
+                        gcxt.LineTo(new Point(startX + lengthPix - outPix, startY + depthPix + depthPix * vibrato.Drift / 100), true, false);
+                        gcxt.LineTo(new Point(startX + lengthPix, startY), true, false);
+                        gcxt.LineTo(new Point(startX + lengthPix - outPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
+                        gcxt.LineTo(new Point(startX + inPix, startY + depthPix + depthPix * vibrato.Drift / 100), true, false);
+                        gcxt.LineTo(new Point(startX + lengthPix - outPix, startY + depthPix + depthPix * vibrato.Drift / 100), true, false);
+                        gcxt.LineTo(new Point(startX + inPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
+                        gcxt.LineTo(new Point(startX + inPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
+                        gcxt.Close();
+                    }
+                    if (pen6 == null)
+                    {
+                        pen6 = new Pen(Brushes.Black, 1);
+                        pen6.Freeze();
+                    }
+                    cxt.DrawGeometry(null, pen6, g);
                 }
-                cxt.DrawGeometry(null, null, g);
-            }
 
-            double _x0 = 0, _y0 = 0, _x1 = 0, _y1 = 0;
-            while (_x1 < lengthPix)
-            {
-                cxt.DrawLine(penPit, new Point(startX + _x0, startY + _y0), new Point(startX + _x1, startY + _y1));
-                _x0 = _x1;
-                _y0 = _y1;
-                _x1 += Math.Min(2, periodPix / 8);
-                _y1 = -Math.Sin(2 * Math.PI * (_x1 / periodPix + vibrato.Shift / 100)) * depthPix;
-                if (_x1 < inPix) _y1 = _y1 * _x1 / inPix;
-                else if (_x1 > lengthPix - outPix) _y1 = _y1 * (lengthPix - _x1) / outPix;
+                double _x0 = 0, _y0 = 0, _x1 = 0, _y1 = 0;
+                while (_x1 < lengthPix && _x1 >= 0)
+                {
+                    cxt.DrawLine(penPit, new Point(startX + _x0, startY + _y0), new Point(startX + _x1, startY + _y1));
+                    _x0 = _x1;
+                    _y0 = _y1;
+                    _x1 += Math.Min(2, periodPix / 8);
+                    _y1 = -Math.Sin(2 * Math.PI * (_x1 / periodPix + vibrato.Shift / 100)) * depthPix;
+                    _y1 += vibrato.Drift / 100 * depthPix * (_x1 < 5 ? _x1 / 5 : _x1 >= lengthPix - 5 ? (lengthPix - _x1) / 5 : 1);
+                    if (_x1 < inPix) _y1 = _y1 * _x1 / inPix;
+                    else if (_x1 > lengthPix - outPix) _y1 = _y1 * (lengthPix - _x1) / outPix;
+                }
             }
         }
 

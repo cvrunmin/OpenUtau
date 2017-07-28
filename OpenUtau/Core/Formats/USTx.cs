@@ -88,6 +88,7 @@ namespace OpenUtau.Core.Formats
                     result.Vibrato.Out = Convert.ToDouble(vbr[4]);
                     result.Vibrato.Shift = Convert.ToDouble(vbr[5]);
                     result.Vibrato.Drift = Convert.ToDouble(vbr[6]);
+                    result.Vibrato.Enable();
                 }
 
                 var exp = dictionary["exp"] as Dictionary<string, object>;
@@ -239,7 +240,17 @@ namespace OpenUtau.Core.Formats
                 }
                 else if (dictionary.ContainsKey("path"))
                 {
-                    result = Wave.CreatePart(dictionary["path"] as string);
+                    Uri.TryCreate(dictionary["path"] as string, UriKind.RelativeOrAbsolute, out var uri);
+                    if (uri.IsAbsoluteUri)
+                    {
+                        result = Wave.CreatePart(dictionary["path"] as string);
+                    }
+                    else
+                    {
+                        var abs = Path.Combine(Path.GetDirectoryName(Project.FilePath), uri.OriginalString);
+                        result = Wave.CreatePart(abs);
+                        ((UWavePart)result).UseRelativePath = true;
+                    }
                     if (dictionary.ContainsKey("headtrimtick"))
                     {
                         ((UWavePart)result).HeadTrimTick = Convert.ToInt32(dictionary["headtrimtick"]);
@@ -274,7 +285,17 @@ namespace OpenUtau.Core.Formats
                 if (obj is UWavePart)
                 {
                     var _obj = obj as UWavePart;
-                    result.Add("path", _obj.FilePath);
+                    if (_obj.UseRelativePath)
+                    {
+                        Uri.TryCreate(_obj.FilePath, UriKind.Absolute, out var uri1);
+                        Uri.TryCreate(Path.GetDirectoryName(DocManager.Inst.Project.FilePath), UriKind.Absolute, out var uri2);
+                        var uri = uri2.MakeRelativeUri(uri1);
+                        result.Add("path", uri.OriginalString);
+                    }
+                    else
+                    {
+                        result.Add("path", _obj.FilePath);
+                    }
                     result.Add("headtrimtick", _obj.HeadTrimTick);
                     result.Add("tailtrimtick", _obj.TailTrimTick);
                 }

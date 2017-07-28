@@ -434,6 +434,18 @@ namespace OpenUtau.UI.Models
                     if (!isUndo) OnPartRemoved(_cmd.part);
                     else OnPartAdded(_cmd.part);
                 }
+                else if (_cmd is ReplacePartCommand) {
+                    if(!isUndo)
+                    {
+                        OnPartRemoved(((ReplacePartCommand)_cmd).PartReplaced);
+                        OnPartAdded(((ReplacePartCommand)_cmd).PartReplacing);
+                    }
+                    else
+                    {
+                        OnPartRemoved(((ReplacePartCommand)_cmd).PartReplacing);
+                        OnPartAdded(((ReplacePartCommand)_cmd).PartReplaced);
+                    }
+                }
                 else if (_cmd is ResizePartCommand) MarkUpdate();
                 else if (_cmd is MovePartCommand) MarkUpdate();
             }

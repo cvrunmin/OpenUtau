@@ -1,7 +1,7 @@
 ﻿<Window x:Class="OpenUtau.UI.Dialogs.PreferencesDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Preferences" Height="400" Width="600" ResizeMode="NoResize">
+        Title="{DynamicResource Preutterance}" Height="400" Width="600" ResizeMode="NoResize">
     <Grid>
         <TreeView x:Name="treeView" HorizontalAlignment="Left" Margin="10" VerticalAlignment="Stretch" Width="150"
                   SelectedItemChanged="treeView_SelectedItemChanged">
@@ -18,7 +18,7 @@
             </TreeViewItem>
         </TreeView>
         <Grid x:Name="generalGrid" Margin="170,2,10,10" Visibility="Collapsed">
-            <CheckBox x:Name="chkboxEditOnEnter" Content="Edit note when enter is pressed" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Click="chkboxEditOnEnter_Click"/>
+            <CheckBox x:Name="chkboxEditOnEnter" Content="{DynamicResource EnterKeyEditNote}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Click="chkboxEditOnEnter_Click"/>
 
         </Grid>
         <Grid x:Name="pathsGrid" Margin="170,2,10,10" Visibility="Hidden">
@@ -49,32 +49,47 @@
                 <ComboBoxItem Content="WaveOut"/>
                 <ComboBoxItem Content="ASIO"/>
             </ComboBox>
+            <Label Content="{DynamicResource RenderManager}" HorizontalAlignment="Left" Margin="10,52,0,0" VerticalAlignment="Top"/>
+            <ComboBox x:Name="comboRenderMana" HorizontalAlignment="Left" Margin="10,82,0,0" VerticalAlignment="Top" Width="256" SelectionChanged="comboRenderMana_SelectionChanged">
+                <ComboBoxItem Content="Instant"/>
+                <ComboBoxItem Content="Pre-render"/>
+            </ComboBox>
         </Grid>
         <Grid x:Name="renderingGrid" Margin="170,2,10,10" Visibility="Hidden">
             <ScrollViewer>
                 <Grid>
-                    
-                    <GroupBox Header="{DynamicResource ResamplingPreviewTitle}" Height="80" VerticalAlignment="Top" Margin="0,76,0,0">
+
+                    <GroupBox Header="{DynamicResource ResamplingPreviewTitle}" Height="80" VerticalAlignment="Top" Margin="0,20,0,0">
                         <Grid>
                             <RadioButton x:Name="previewRatioInternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,10,0,0" GroupName="preview" Checked="previewEngine_Checked" Content="{DynamicResource ResamplingInternal}"/>
-                            <RadioButton x:Name="previewRatioExternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,36,0,0" GroupName="preview" Checked="previewEngine_Checked" Content="{DynamicResource ResamplingExternal}"/>
-                            <ComboBox x:Name="previewEngineCombo" Margin="110,34,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="256" SelectionChanged="previewEngineCombo_SelectionChanged"/>
+                            <Grid Margin="8,34,18,3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="5px"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+                                <RadioButton x:Name="previewRatioExternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,2,0,0" GroupName="preview" Checked="previewEngine_Checked" Content="{DynamicResource ResamplingExternal}"/>
+                                <ComboBox x:Name="previewEngineCombo" Margin="0" VerticalAlignment="Top" SelectionChanged="previewEngineCombo_SelectionChanged" Grid.Column="2"/>
+                            </Grid>
                         </Grid>
                     </GroupBox>
-                    <GroupBox Header="{DynamicResource ResamplingExportTitle}" Height="80" VerticalAlignment="Top" Margin="0,156,0,0">
+                    <GroupBox Header="{DynamicResource ResamplingExportTitle}" Height="80" VerticalAlignment="Top" Margin="0,105,0,0">
                         <Grid>
                             <RadioButton x:Name="exportRatioInternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,10,0,0" GroupName="export" Checked="exportEngine_Checked" Content="{DynamicResource ResamplingInternal}"/>
-                            <RadioButton x:Name="exportRatioExternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,36,0,0" GroupName="export" Checked="exportEngine_Checked" Content="{DynamicResource ResamplingExternal}"/>
-                            <ComboBox x:Name="exportEngineCombo" Margin="110,34,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="256" SelectionChanged="exportEngineCombo_SelectionChanged"/>
+                            <Grid Margin="8,34,18,3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="5px"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+                                <RadioButton x:Name="exportRatioExternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,2,0,0" GroupName="export" Checked="exportEngine_Checked" Content="{DynamicResource ResamplingExternal}"/>
+                                <ComboBox x:Name="exportEngineCombo" Margin="0" VerticalAlignment="Top" SelectionChanged="exportEngineCombo_SelectionChanged" Grid.Column="2"/>
+                            </Grid>
                         </Grid>
                     </GroupBox>
-                    <TextBlock TextWrapping="Wrap" Text="{DynamicResource ResamplingNotes}" Margin="9,238,0,0"/>
-                    <CheckBox x:Name="chkboxInstantRender" Content="Render at instant" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Click="chkboxInstantRender_Click"/>
-                    <Label Content="Rendering Manager" HorizontalAlignment="Left" Margin="10,20,0,0" VerticalAlignment="Top"/>
-                    <ComboBox x:Name="comboRenderMana" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top" Width="150" SelectionChanged="comboRenderMana_SelectionChanged">
-                        <ComboBoxItem Content="Instant"/>
-                        <ComboBoxItem Content="Pre-render"/>
-                    </ComboBox>
+                    <TextBlock TextWrapping="Wrap" Text="{DynamicResource ResamplingNotes}" Margin="9,190,0,0"/>
+                    <CheckBox x:Name="chkboxInstantRender" Content="{DynamicResource InstantRender}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Click="chkboxInstantRender_Click"/>
+
                 </Grid>
             </ScrollViewer>
         </Grid>

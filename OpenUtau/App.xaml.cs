@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenUtau.Lang;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -28,8 +29,17 @@ namespace OpenUtau
             Core.DocManager.Inst.SearchAllSingers();
             var pm = new OpenUtau.Core.PartManager();
             App app = new App();
+            LoadLanguage();
             UI.MainWindow window = new UI.MainWindow();
             app.Run(window);
+        }
+
+        private static void LoadLanguage()
+        {
+            LanguageManager.Add("en-us", "pack://application:,,,/Lang/en-us.xaml");
+            LanguageManager.Add("zh-cht", "pack://application:,,,/Lang/zh-cht.xaml");
+
+            LanguageManager.UseLanguage(Core.Util.Preferences.Default.Language);
         }
     }
 }

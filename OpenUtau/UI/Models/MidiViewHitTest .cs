@@ -59,6 +59,13 @@ namespace OpenUtau.UI.Models
             return null;
         }
 
+        public bool HitTestVibratoLengthenArea(UNote note, Point mousePos)
+        {
+            var tick = (midiVM.CanvasToQuarter(mousePos.X) * Project.Resolution / Project.BeatPerBar);
+            var x = note.PosTick + note.DurTick * (1 - note.Vibrato.Length / 100);
+            return x + UIConstants.ResizeMargin / 2 >= tick && x - UIConstants.ResizeMargin / 2 <= tick;
+        }
+
         public PitchPointHitTestResult HitTestPitchPoint(Point mousePos)
         {
             if (midiVM.ShowPitch)

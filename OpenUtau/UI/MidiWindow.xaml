@@ -16,9 +16,16 @@
     </Window.Resources>
     <local:BorderlessWindow.MenuContent>
         <Grid Width="Auto" Height="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
             <ToggleButton x:Name="showPitchToggle" Style="{StaticResource ShowPitchToggleButtonStyle}"
                           Width="20" Margin="0,0,0,0" HorizontalAlignment="Left" Focusable="False"
-                          IsChecked="{Binding ShowPitch, Source={StaticResource midiVM}}" ToolTip="Toggle pitch (I)">
+                          IsChecked="{Binding ShowPitch, Source={StaticResource midiVM}}" ToolTip="{DynamicResource TogglePitch}">
                 <ToggleButton.Content>
                     <Grid Width="18" Height="18">
                         <Ellipse Height="5" Width="5" StrokeThickness="1" Margin="2,0,0,4" HorizontalAlignment="Left" VerticalAlignment="Bottom"
@@ -31,8 +38,8 @@
                 </ToggleButton.Content>
             </ToggleButton>
             <ToggleButton x:Name="showPhonemeToggle" Style="{StaticResource ShowPitchToggleButtonStyle}"
-                          Width="20" Margin="20,0,0,0" HorizontalAlignment="Left" Focusable="False"
-                          IsChecked="{Binding ShowPhoneme, Source={StaticResource midiVM}}" ToolTip="Toggle phoneme (O)">
+                          Width="20" Margin="0,0,0,0" HorizontalAlignment="Left" Focusable="False"
+                          IsChecked="{Binding ShowPhoneme, Source={StaticResource midiVM}}" ToolTip="{DynamicResource TogglePho}" Grid.Column="1">
                 <ToggleButton.Content>
                     <Grid Width="18" Height="18">
                         <Path Data="M 3 13 L 6 5.5 L 12 5.5 L 15 13" StrokeThickness="1"
@@ -41,8 +48,8 @@
                 </ToggleButton.Content>
             </ToggleButton>
             <ToggleButton x:Name="snapToggle" Style="{StaticResource ShowPitchToggleButtonStyle}"
-                          Width="20" Margin="40,0,0,0" HorizontalAlignment="Left" Focusable="False"
-                          IsChecked="{Binding Snap, Source={StaticResource midiVM}}" ToolTip="Snap (P)">
+                          Width="20" Margin="0,0,0,0" HorizontalAlignment="Left" Focusable="False"
+                          IsChecked="{Binding Snap, Source={StaticResource midiVM}}" ToolTip="{DynamicResource Snap}" Grid.Column="2">
                 <ToggleButton.Content>
                     <Grid Width="18" Height="18">
                         <Path Data="M 4.5 13.5 L 7.5 13.5 L 7.5 9.5 A 1,1 0 1 1 10.5,9.5 L 10.5 13.5 L 13.5 13.5 L 13.5 8.5 A 1,1 0 1 0 4.5,8.5 Z" StrokeThickness="1"
@@ -50,7 +57,7 @@
                     </Grid>
                 </ToggleButton.Content>
             </ToggleButton>
-            <Menu x:Name="mainMenu" IsMainMenu="True" VerticalAlignment="Top" HorizontalAlignment="Left" Background="White" Margin="60,0,0,0">
+            <Menu x:Name="mainMenu" IsMainMenu="True" VerticalAlignment="Top" HorizontalAlignment="Left" Background="White" Margin="0,0,0,0" Grid.Column="3">
                 <MenuItem Header="{DynamicResource MenuEdit}">
                     <MenuItem Header="{DynamicResource MenuUndo}" InputGestureText="Ctrl+Z" Click="MenuUndo_Click" />
                     <MenuItem Header="{DynamicResource MenuRedo}" InputGestureText="Ctrl+Y" Click="MenuRedo_Click"/>
@@ -61,6 +68,26 @@
                     <MenuItem Header="{DynamicResource MenuSelectAll}" InputGestureText="Ctrl+A"/>
                 </MenuItem>
             </Menu>
+            <Grid x:Name="toolGrid" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="250" Margin="0,0,0,0" Grid.Column="4">
+                <RadioButton x:Name="radioToolCursor" HorizontalAlignment="Left" Width="20" Style="{DynamicResource ToolRadioButton}" Height="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" GroupName="ToolGroup" IsChecked="True" Margin="5,0,0,0">
+                    <RadioButton.Content>
+                        <Rectangle Width="15" Height="15" Fill="Black" Stretch="Uniform">
+                            <Rectangle.OpacityMask>
+                                <VisualBrush Visual="{StaticResource ToolCursor}" Stretch="Uniform"/>
+                            </Rectangle.OpacityMask>
+                        </Rectangle>
+                    </RadioButton.Content>
+                </RadioButton>
+                <RadioButton x:Name="radioToolPaint" HorizontalAlignment="Left" Width="20" Style="{DynamicResource ToolRadioButton}" Height="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="30,0,0,0" GroupName="ToolGroup">
+                    <RadioButton.Content>
+                        <Rectangle Width="15" Height="15" Fill="Black" Stretch="Uniform">
+                            <Rectangle.OpacityMask>
+                                <VisualBrush Visual="{StaticResource ToolPaint}" Stretch="Uniform"/>
+                            </Rectangle.OpacityMask>
+                        </Rectangle>
+                    </RadioButton.Content>
+                </RadioButton>
+            </Grid>
         </Grid>
     </local:BorderlessWindow.MenuContent>
     <Grid>

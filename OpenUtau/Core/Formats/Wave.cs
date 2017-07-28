@@ -16,7 +16,7 @@ namespace OpenUtau.Core.Formats
     {
         public static UWavePart CreatePart(string filepath)
         {
-            foreach(var part in DocManager.Inst.Project.Parts)
+            foreach (var part in DocManager.Inst.Project.Parts)
             {
                 var _part = part as UWavePart;
                 if (_part != null && _part.FilePath == filepath)

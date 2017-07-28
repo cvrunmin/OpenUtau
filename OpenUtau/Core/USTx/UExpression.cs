@@ -167,8 +167,8 @@ namespace OpenUtau.Core.USTx
         public double Length { set { _length = Math.Max(0, Math.Min(100, value)); } get { return _length; } }
         public double Period { set { _period = Math.Max(64, Math.Min(512, value)); } get { return _period; } }
         public double Depth { set { _depth = Math.Max(5, Math.Min(200, value)); } get { return _depth; } }
-        public double In { set { _in = Math.Max(0, Math.Min(100, value)); _out = Math.Min(_out, 100 - value); } get { return _in; } }
-        public double Out { set { _out = Math.Max(0, Math.Min(100, value)); _in = Math.Min(_in, 100 - value); } get { return _out; } }
+        public double In { set { _in = Math.Max(0, Math.Min(100, value)); _out = Math.Max(0, Math.Min(_out, 100 - value)); } get { return _in; } }
+        public double Out { set { _out = Math.Max(0, Math.Min(100, value)); _in = Math.Max(0, Math.Min(_in, 100 - value)); } get { return _out; } }
         public double Shift { set { _shift = Math.Max(0, Math.Min(100, value)); } get { return _shift; } }
         public double Drift { set { _drift = Math.Max(-100, Math.Min(100, value)); } get { return _drift; } }
         public override string Type { get { return "pitch"; } }
@@ -187,5 +187,25 @@ namespace OpenUtau.Core.USTx
             };
         }
         public override UExpression Split(UNote newParent, int postick) { var exp = Clone(newParent); return exp; }
+        public bool IsEnabled { get; private set; }
+        public void Disable()
+        {
+            _length = 0;
+            _depth = 0;
+            _period = 0;
+            IsEnabled = false;
+        }
+        public void Enable(bool force = false)
+        {
+            IsEnabled = true;
+            if (force)
+            {
+                Length = 10;
+                Depth = 30;
+                Period = -1;
+                In = 20;
+                Out = 20;
+            }
+        }
     }
 }

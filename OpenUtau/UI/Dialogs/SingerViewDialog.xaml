@@ -45,10 +45,10 @@
         <Grid x:Name="gridPhonemesTool" Margin="449,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Collapsed">
             <Button x:Name="butDuplicatePho" Content="{DynamicResource Duplicate}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="76" Click="butDuplicatePho_Click" Margin="81,0,0,0"/>
             <Button x:Name="butRemovePho" Content="{DynamicResource Remove}" HorizontalAlignment="Left" Margin="162,0,0,0" VerticalAlignment="Top" Width="76" Click="butRemovePho_Click"/>
-            <Button x:Name="butNewPho" Content="New" HorizontalAlignment="Left" VerticalAlignment="Top" Width="76" Click="butNewPho_Click"/>
+            <Button x:Name="butNewPho" Content="{DynamicResource New}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="76" Click="butNewPho_Click"/>
             <Button x:Name="butCheatCLP" Content="" HorizontalAlignment="Left" Margin="76,0,0,0" VerticalAlignment="Top" Width="5" BorderBrush="{x:Null}" Foreground="{x:Null}" Background="Transparent" BorderThickness="0" Height="19" Click="butCheatCLP_Click"/>
             <Button x:Name="butCheatRLP" Content="" HorizontalAlignment="Left" Margin="157,0,0,0" VerticalAlignment="Top" Width="5" BorderBrush="{x:Null}" Foreground="{x:Null}" Background="Transparent" BorderThickness="0" Height="19" Click="butCheatRLP_Click"/>
         </Grid>
-        <ToggleButton x:Name="toggleLyricsPs" Content="Lyrics Presets" HorizontalAlignment="Left" Margin="365,10,0,0" VerticalAlignment="Top" Height="19" Click="toggleLyricsPs_Click"/>
+        <ToggleButton x:Name="toggleLyricsPs" Content="{DynamicResource LyricsPreset}" HorizontalAlignment="Left" Margin="365,10,0,0" VerticalAlignment="Top" Height="19" Click="toggleLyricsPs_Click" Padding="5,1"/>
     </Grid>
 </Window>

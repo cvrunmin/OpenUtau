@@ -13,7 +13,7 @@ namespace OpenUtau.Lang
         public static readonly Dictionary<string, string> LanguagesInDisplayName = new Dictionary<string, string>();
         static private readonly ResourceDictionary DefaultLanguage = LoadLangFromResource("pack://application:,,,/Lang/en-us.xaml");
 
-        private static ResourceDictionary LoadLangFromResource(string uri)
+        internal static ResourceDictionary LoadLangFromResource(string uri)
         {
             return new ResourceDictionary() { Source = new Uri(uri) };
         }

@@ -412,6 +412,7 @@ namespace OpenUtau.Core.Formats
                 vibrato.Out = args[4];
                 vibrato.Shift = args[5];
                 vibrato.Drift = args[6];
+                vibrato.Enable();
             }
         }
 

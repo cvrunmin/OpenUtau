@@ -354,6 +354,7 @@ namespace OpenUtau.UI.Controls
         private void BuildPeaksAsync(object sender, DoWorkEventArgs e)
         {
             var _part = e.Argument as UWavePart;
+            if (_part.Error) return;
             float[] peaks = Core.Formats.Wave.BuildPeaks(_part, sender as BackgroundWorker);
             e.Result = peaks;
         }

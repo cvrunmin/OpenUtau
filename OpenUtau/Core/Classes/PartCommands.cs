@@ -82,6 +82,56 @@ namespace OpenUtau.Core
         }
     }
 
+    public class ReplacePartCommand : PartCommand
+    {
+        public UPart PartReplacing { get; private set; }
+        public UPart PartReplaced { get; private set; }
+        public ReplacePartCommand(UProject project, UPart replaced, UPart replacing) {
+            this.project = project;
+            this.part = replacing;
+            PartReplaced = replaced;
+            PartReplacing = replacing;
+        }
+        public override void Execute()
+        {
+            project.Parts.Remove(PartReplaced);
+            project.Parts.Insert(PartReplacing.PartNo, PartReplacing);
+            for (int i = 0; i < project.Parts.Count; i++)
+            {
+                project.Parts[i].PartNo = i;
+                if (project.Parts[i] is UVoicePart voice)
+                {
+                    foreach (var item in voice.Notes)
+                    {
+                        item.PartNo = i;
+                    }
+                }
+            }
+            base.Execute();
+        }
+        public override void Unexecute()
+        {
+            project.Parts.Remove(PartReplacing);
+            project.Parts.Insert(PartReplaced.PartNo, PartReplaced);
+            for (int i = 0; i < project.Parts.Count; i++)
+            {
+                project.Parts[i].PartNo = i;
+                if (project.Parts[i] is UVoicePart voice)
+                {
+                    foreach (var item in voice.Notes)
+                    {
+                        item.PartNo = i;
+                    }
+                }
+            }
+            base.Unexecute();
+        }
+        public override string ToString()
+        {
+            return "Replace a part";
+        }
+    }
+
     public class MovePartCommand : PartCommand
     {
         int newPos, oldPos, newTrackNo, oldTrackNo;

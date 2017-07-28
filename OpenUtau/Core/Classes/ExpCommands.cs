@@ -96,6 +96,42 @@ namespace OpenUtau.Core
         }
     }
 
+    public class UpdateNoteVibratoCommand : ExpCommand
+    {
+        public UNote note { get; set; }
+        public double Length { get; private set; }
+        public double Depth { get; private set; }
+        public double In { get; private set; }
+        public double Out { get; private set; }
+        public double Shift { get; private set; }
+        public double Drift { get; private set; }
+        public double Period { get; private set; }
+        public UpdateNoteVibratoCommand(UNote note, double len = double.NaN, double per = double.NaN, double dep = double.NaN, double din = double.NaN, double dout = double.NaN, double shift = double.NaN, double drift = double.NaN) {
+            this.note = note;
+            Length = len;
+            Depth = dep;
+            Period = per;
+            In = din;
+            Out = dout;
+            Shift = shift;
+            Drift = drift;
+        }
+        public override void Execute()
+        {
+            if (!double.IsNaN(Length)) note.Vibrato.Length = Length;
+            if (!double.IsNaN(Period)) note.Vibrato.Period = Period;
+            if (!double.IsNaN(Depth)) note.Vibrato.Depth = Depth;
+            if (!double.IsNaN(In)) note.Vibrato.In = In;
+            if (!double.IsNaN(Out)) note.Vibrato.Out = Out;
+            if (!double.IsNaN(Shift)) note.Vibrato.Shift = Shift;
+            if (!double.IsNaN(Drift)) note.Vibrato.Drift = Drift;
+        }
+        public override string ToString()
+        {
+            return "update note vibrato";
+        }
+    }
+
     public abstract class PitchExpCommand : ExpCommand { }
 
     public class DeletePitchPointCommand : PitchExpCommand
