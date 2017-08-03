@@ -10,6 +10,7 @@ using OpenUtau.Core.USTx;
 using OpenUtau.Core.Render;
 using OpenUtau.Core.ResamplerDriver;
 using OpenUtau.Core.Render.NAudio;
+using System.Threading;
 
 namespace OpenUtau.Core
 {
@@ -26,6 +27,8 @@ namespace OpenUtau.Core
         public abstract void OnNext(UCommand cmd, bool isUndo);
 
         public abstract void UpdatePlayPos();
+
+        public abstract bool IsPlayingBack();
 
         public void Subscribe(ICmdPublisher publisher)
         {
@@ -61,7 +64,7 @@ namespace OpenUtau.Core
         
         UWaveMixerStream32 masterMix;
         List<TrackWaveChannel> trackSources = new List<TrackWaveChannel>();
-
+        private CancellationTokenSource token;
         public override void Play(UProject project)
         {
             if (pendingParts > 0) return;
@@ -74,8 +77,16 @@ namespace OpenUtau.Core
             BuildAudioAndPlay(project);
         }
 
+        public override bool IsPlayingBack()
+        {
+            return outDevice.PlaybackState == PlaybackState.Playing;
+        }
+
         public override void StopPlayback()
         {
+            if (pendingParts > 0) {
+                token.Cancel();
+            }
             if (outDevice != null)
             {
                 outDevice.Stop();
@@ -107,8 +118,11 @@ namespace OpenUtau.Core
             outDevice.PlaybackStopped += (sender, e) => {
                 StopPlayback();
             };
-            outDevice.Init(masterMix);
-            outDevice.Play();
+            if (masterMix != null)
+            {
+                outDevice.Init(masterMix);
+                outDevice.Play();
+            }
         }
 
         int pendingParts = 0;
@@ -117,12 +131,22 @@ namespace OpenUtau.Core
 
         private async void BuildAudioAndPlay(UProject project)
         {
-            pendingParts = 1;
-            masterMix = await RenderDispatcher.Inst.GetMixingStream(project);
-            trackSources = new List<TrackWaveChannel>(masterMix.InputStreams.Cast<TrackWaveChannel>());
-            masterMix.CurrentTime = SkipedTimeSpan;
-            pendingParts = 0;
-            StartPlayback(true);
+            try
+            {
+                pendingParts = 1;
+                token = new CancellationTokenSource();
+                token.Token.Register(() => DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, ""), true));
+                masterMix = await RenderDispatcher.Inst.GetMixingStream(project,token.Token);
+                trackSources = new List<TrackWaveChannel>(masterMix.InputStreams.Cast<TrackWaveChannel>());
+            }
+            catch (OperationCanceledException) { }
+            finally
+            {
+                if(masterMix != null)
+                    masterMix.CurrentTime = SkipedTimeSpan;
+                pendingParts = 0;
+                StartPlayback(true);
+            }
         }
 
         public override void UpdatePlayPos()
@@ -210,7 +234,7 @@ namespace OpenUtau.Core
         MixingSampleProvider masterMix;
         List<TrackSampleProvider> trackSources = new List<TrackSampleProvider>();
         List<TrackSampleProvider> trackSourcesRaw = new List<TrackSampleProvider>();
-
+        private CancellationTokenSource token;
         public override void Play(UProject project)
         {
             if (pendingParts > 0) return;
@@ -223,8 +247,17 @@ namespace OpenUtau.Core
             BuildAudioAndPlay(project);
         }
 
+        public override bool IsPlayingBack()
+        {
+            return outDevice.PlaybackState == PlaybackState.Playing;
+        }
+
         public override void StopPlayback()
         {
+            if (pendingParts > 0)
+            {
+                token.Cancel();
+            }
             if (outDevice != null) outDevice.Stop();
             SkipedTimeSpan = TimeSpan.Zero;
         }
@@ -255,14 +288,7 @@ namespace OpenUtau.Core
             outDevice.PlaybackStopped += (sender, e) => {
                 StopPlayback();
             };
-            //if (span != TimeSpan.Zero)
-            //{
-                outDevice.Init(masterMix.USkip(span));
-            //}
-            //else
-            //{
-            //    outDevice.Init(masterMix);
-            //}
+            outDevice.Init(masterMix.USkip(span));
             outDevice.Play();
         }
 
@@ -271,12 +297,20 @@ namespace OpenUtau.Core
 
 
         private async void BuildAudioAndPlay(UProject project) {
-            //BuildAudio(project);
-            masterMix = await RenderDispatcher.Inst.GetMixingSampleProvider(project);
-            trackSources = new List<TrackSampleProvider>(masterMix.MixerInputs.Cast<TrackSampleProvider>());
-            //Task.Run(()=> trackSourcesRaw = DeepClone(trackSources)).Wait();
-            /*if (pendingParts == 0)*/
-            StartPlayback(SkipedTimeSpan, true);
+            try
+            {
+                token = new CancellationTokenSource();
+                token.Token.Register(() => DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, ""), true));
+                pendingParts = 1;
+                masterMix = await RenderDispatcher.Inst.GetMixingSampleProvider(project, new int[0], token.Token);
+                trackSources = new List<TrackSampleProvider>(masterMix.MixerInputs.Cast<TrackSampleProvider>());
+            }
+            catch (OperationCanceledException) { }
+            finally
+            {
+                pendingParts = 0;
+                StartPlayback(SkipedTimeSpan, true);
+            }
         }
 
         public override void UpdatePlayPos()

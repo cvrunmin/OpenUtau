@@ -9,6 +9,7 @@ using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using OpenUtau.Core.ResamplerDriver;
 using OpenUtau.Core.Render.NAudio;
+using System.Threading;
 
 namespace OpenUtau.Core.Render
 {
@@ -43,195 +44,190 @@ namespace OpenUtau.Core.Render
             return await GetMixingSampleProvider(project, new int[] { });
         }
         public List<TrackWaveChannel> trackCache = new List<TrackWaveChannel>();
-        public async Task<UWaveMixerStream32> GetMixingStream(UProject project)
+
+        public Task<UWaveMixerStream32> GetMixingStream(UProject project) {
+            return GetMixingStream(project, CancellationToken.None);
+        }
+        public async Task<UWaveMixerStream32> GetMixingStream(UProject project, CancellationToken token)
         {
             if (trackCache.Count == 0) trackCache = Enumerable.Repeat((TrackWaveChannel)null, project.Tracks.Count).ToList();
             if (trackCache.Capacity < project.Tracks.Count || trackCache.Count < project.Tracks.Count)
             {
                 trackCache.Capacity = project.Tracks.Count;
                 trackCache.AddRange(Enumerable.Repeat((TrackWaveChannel)null, trackCache.Capacity - trackCache.Count));
-            }
-
-            UWaveMixerStream32 masterMix = new UWaveMixerStream32();
-            List<TrackSampleProvider> trackSources = Enumerable.Repeat((TrackSampleProvider)null, project.Tracks.Count).ToList();
-            foreach (UTrack track in project.Tracks)
-            {
-                if (track.Amended || !trackCache.Any(track1 => track1?.TrackNo == track.TrackNo))
-                {
-                    trackSources[track.TrackNo] = (new TrackSampleProvider() { TrackNo = track.TrackNo, PlainVolume = DecibelToVolume(track.Volume), Muted = track.Mute, Pan = (float)track.Pan / 90f });
-                    track.Amended = false;
-                }
-                else
-                    masterMix.AddInputStream(trackCache[track.TrackNo]);
-            }
-            foreach (UPart part in project.Parts)
-            {
-                if(trackSources[part.TrackNo] != null)
-                if (part is UWavePart)
-                {
-                    lock (lockObject)
-                    {
-                        var src = BuildWavePartAudio(part as UWavePart, project);
-                        if (src != null)
-                        {
-                            trackSources[part.TrackNo].AddSource(
-                                src,
-                                TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)));
-                        }
-                    }
-                }
-                else
-                {
-                        UTrack track = project.Tracks[part.TrackNo];
-                        var singer = track.Singer;
-                    if (singer != null && singer.Loaded)
-                    {
-                        System.IO.FileInfo ResamplerFile = new System.IO.FileInfo(string.IsNullOrWhiteSpace(track.OverrideRenderEngine) ? PathManager.Inst.GetPreviewEnginePath() : System.IO.Path.Combine(PathManager.Inst.GetEngineSearchPath(), track.OverrideRenderEngine));
-                        IResamplerDriver engine = ResamplerDriver.ResamplerDriver.LoadEngine(ResamplerFile.FullName);
-                        trackSources[part.TrackNo].AddSource(await BuildVoicePartAudio(part as UVoicePart, project, engine) ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(),
-                            TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick) - project.TickToMillisecond(480, part.PosTick) * part.PosTick / project.Resolution));
-                    }
-                }
+                token.ThrowIfCancellationRequested();
             }
             int i = 0;
+            int total = project.Tracks.Count;
+            DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, $"Rendering Tracks 0/{total}"));
+            UWaveMixerStream32 masterMix = new UWaveMixerStream32();
+            List<TrackSampleProvider> trackSources = Enumerable.Repeat((TrackSampleProvider)null, project.Tracks.Count).ToList();
+            var parts = project.Parts.GroupBy(part => part.TrackNo).ToDictionary(group => group.Key);
             var schedule = new List<Task>();
-            DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, $"Rendering Tracks 0/{trackSources.Count}"));
-            int pending = 0;
-            int total = trackSources.Count;
-            var pre = new List<TrackSampleProvider>(trackSources);
-            foreach (var source in pre)
+            foreach (UTrack track in project.Tracks)
             {
-                if (source != null)
+                schedule.Add(Task.Run(async() =>
                 {
-                    double elisimatedMs;
-                    try
+                    token.ThrowIfCancellationRequested();
+                    if (track.Amended || !trackCache.Any(track1 => track1?.TrackNo == track.TrackNo))
                     {
-                        elisimatedMs = project.TickToMillisecond(project.Parts.Where(part => part.TrackNo == source.TrackNo).OrderByDescending(part => part.EndTick).First().EndTick);
-                    }
-                    catch (Exception)
-                    {
-                        elisimatedMs = 60000;
-                    }
-                    int limit = source.WaveFormat.AverageBytesPerSecond * (int)Math.Ceiling(elisimatedMs / 1000);
-                    var str = new System.IO.MemoryStream(limit);
-
-                    schedule.Add(Task.Run(async() =>
-                    {
-                        /*while (true)
+                        trackSources[track.TrackNo] = (new TrackSampleProvider() { TrackNo = track.TrackNo, PlainVolume = DecibelToVolume(track.Volume), Muted = track.Mute, Pan = (float)track.Pan / 90f });
+                        track.Amended = false;
+                        var singer = track.Singer;
+                        var subschedule = new List<Task>();
+                        if (!parts.TryGetValue(track.TrackNo, out var group)) return;
+                        foreach (var part in group)
                         {
-                            if (pending < 2) break;
-                            await Task.Delay(1000);
-                        }*/
-                        ++pending;
-                        var pan = source.Pan;
-                        var vol = source.PlainVolume;
-                        var m = source.Muted;
-                        source.Pan = 0;
-                        source.PlainVolume = MusicMath.DecibelToVolume(0);
-                        source.Muted = false;
-                        var wave = source.ToWaveProvider();
-                        var buffer = new byte[source.WaveFormat.AverageBytesPerSecond * 4];
-                        while (str.Position < limit)
-                        {
-                            if (2147483591 - str.Position < buffer.Length)
+                            if (part is UWavePart)
                             {
-                                buffer = new byte[2147483591 - str.Position - 1];
-                                var bytesRead1 = wave.Read(buffer, 0, buffer.Length);
-                                if (bytesRead1 == 0)
+                                lock (lockObject)
+                                {
+                                    var src = BuildWavePartAudio(part as UWavePart, project);
+                                    if (src != null)
+                                    {
+                                        trackSources[part.TrackNo].AddSource(
+                                            src,
+                                            TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)));
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (singer != null && singer.Loaded)
+                                {
+                                    System.IO.FileInfo ResamplerFile = new System.IO.FileInfo(string.IsNullOrWhiteSpace(track.OverrideRenderEngine) ? PathManager.Inst.GetPreviewEnginePath() : System.IO.Path.Combine(PathManager.Inst.GetEngineSearchPath(), track.OverrideRenderEngine));
+                                    IResamplerDriver engine = ResamplerDriver.ResamplerDriver.LoadEngine(ResamplerFile.FullName);
+                                    subschedule.Add(BuildVoicePartAudio(part as UVoicePart, project, engine, token).ContinueWith(task=> {
+                                        if(!task.IsCanceled)
+                                        {
+                                            trackSources[track.TrackNo].AddSource(task.Result ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(),
+                                            TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick) - project.TickToMillisecond(480, part.PosTick) * part.PosTick / project.Resolution));
+                                        }
+                                    }));
+                                }
+                            }
+                            token.ThrowIfCancellationRequested();
+                        }
+                        await Task.WhenAll(subschedule);
+                        token.ThrowIfCancellationRequested();
+                        DocManager.Inst.ExecuteCmd(new ProgressBarNotification((int)((float)i / total * 100), $"Rendering Tracks {i}/{total}"));
+                        var source = trackSources[track.TrackNo];
+                        double elisimatedMs;
+                        try
+                        {
+                            elisimatedMs = project.TickToMillisecond(project.Parts.Where(part => part.TrackNo == source.TrackNo).OrderByDescending(part => part.EndTick).First().EndTick);
+                        }
+                        catch (Exception)
+                        {
+                            elisimatedMs = 60000;
+                        }
+                        
+                        int limit = source.WaveFormat.AverageBytesPerSecond * (int)Math.Ceiling(elisimatedMs / 1000);
+                        var str = new System.IO.MemoryStream(limit);
+                            var pan = source.Pan;
+                            var vol = source.PlainVolume;
+                            var m = source.Muted;
+                            source.Pan = 0;
+                            source.PlainVolume = MusicMath.DecibelToVolume(0);
+                            source.Muted = false;
+                            var wave = source.ToWaveProvider();
+                            var buffer = new byte[source.WaveFormat.AverageBytesPerSecond * 4];
+                            while (str.Position < limit)
+                            {
+                            if (token.IsCancellationRequested) break;
+                                if (2147483591 - str.Position < buffer.Length)
+                                {
+                                    buffer = new byte[2147483591 - str.Position - 1];
+                                    var bytesRead1 = wave.Read(buffer, 0, buffer.Length);
+                                    if (bytesRead1 == 0)
+                                    {
+                                        // end of source provider
+                                        str.Flush();
+                                        break;
+                                    }
+                                    await str.WriteAsync(buffer, 0, bytesRead1);
+                                    break;
+                                }
+                                var bytesRead = wave.Read(buffer, 0, buffer.Length);
+                                if (bytesRead == 0)
                                 {
                                     // end of source provider
                                     str.Flush();
                                     break;
                                 }
-                                await str.WriteAsync(buffer, 0, bytesRead1);
-                                break;
+                                await str.WriteAsync(buffer, 0, bytesRead);
                             }
-                            var bytesRead = wave.Read(buffer, 0, buffer.Length);
-                            if (bytesRead == 0)
-                            {
-                                // end of source provider
-                                str.Flush();
-                                break;
-                            }
-                            await str.WriteAsync(buffer, 0, bytesRead);
-                        }
-                        buffer = null;
-                        wave = null;
-                        source.Pan = pan;
-                        source.PlainVolume = vol;
-                        source.Muted = m;
-                    }).ContinueWith(task =>
-                    {
-                        //if (task.IsFaulted) throw task.Exception;
-                        trackSources.Remove(source);
-                        ++i;
-                        --pending;
+                            buffer = null;
+                            wave = null;
+                            source.Pan = pan;
+                            source.PlainVolume = vol;
+                            source.Muted = m;
+                        token.ThrowIfCancellationRequested();
                         var src1 = new RawSourceWaveStream(str, source.WaveFormat);
                         var src2 = new TrackWaveChannel(src1) { TrackNo = source.TrackNo, PlainVolume = source.PlainVolume, Pan = source.Pan, Muted = source.Muted };
-                        masterMix.AddInputStream(src2);
                         trackCache[src2.TrackNo] = src2;
-                        DocManager.Inst.ExecuteCmd(new ProgressBarNotification((int)((float)i / total * 100), $"Rendering Tracks {i}/{total}"));
-                    }));
-                }
-                else
-                {
+                    }
+                    token.ThrowIfCancellationRequested();
                     ++i;
+                    masterMix.AddInputStream(trackCache[track.TrackNo]);
                     DocManager.Inst.ExecuteCmd(new ProgressBarNotification((int)((float)i / total * 100), $"Rendering Tracks {i}/{total}"));
-                }
+                }, token));
+                token.ThrowIfCancellationRequested();
             }
             await Task.WhenAll(schedule);
             trackSources.Clear();
             DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, ""));
             return masterMix;
         }
-        public async Task<MixingSampleProvider> GetMixingSampleProvider(UProject project, int[] skippedTracks)
+        public Task<MixingSampleProvider> GetMixingSampleProvider(UProject project, int[] skippedTracks)
         {
-            return await GetMixingSampleProvider(project, skippedTracks, System.Threading.CancellationToken.None);
+            return GetMixingSampleProvider(project, skippedTracks, CancellationToken.None);
         }
-        public async Task<MixingSampleProvider> GetMixingSampleProvider(UProject project, int[] skippedTracks, System.Threading.CancellationToken cancel) {
-            MixingSampleProvider masterMix;
-            List<TrackSampleProvider> trackSources;
-            trackSources = new List<TrackSampleProvider>();
-            foreach (UTrack track in project.Tracks)
+        public async Task<MixingSampleProvider> GetMixingSampleProvider(UProject project, int[] skippedTracks, CancellationToken token) {
+            MixingSampleProvider masterMix = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
+            List<TrackSampleProvider> trackSources = Enumerable.Repeat((TrackSampleProvider)null, project.Tracks.Count).ToList();
+            var parts = project.Parts.GroupBy(part => part.TrackNo).SkipWhile(group => skippedTracks.Contains(group.Key)).ToDictionary(group => group.Key);
+            var schedule = new List<Task>();
+            foreach (UTrack track in project.Tracks.SkipWhile(track=>skippedTracks.Contains(track.TrackNo)))
             {
-                //if(!skippedTracks.Contains(track.TrackNo))
+                schedule.Add(Task.Run(async() => {
+                    token.ThrowIfCancellationRequested();
                     trackSources.Add(new TrackSampleProvider() { PlainVolume = DecibelToVolume(track.Volume), Muted = track.Mute, Pan = (float)track.Pan / 90f });
-                cancel.ThrowIfCancellationRequested();
-            }
-            foreach (UPart part in project.Parts)
-            {
-                if (skippedTracks.Contains(part.TrackNo)) continue;
-                if (part is UWavePart)
-                {
-                    lock (lockObject)
-                    {
-                        var src = BuildWavePartAudio(part as UWavePart, project);
-                        if(src != null)
-                        trackSources[part.TrackNo].AddSource(
-                            src,
-                            TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)));
-                    }
-                }
-                else
-                {
-                    UTrack track = project.Tracks[part.TrackNo];
+                    var subschedule = new List<Task>();
                     var singer = track.Singer;
-                    if (singer != null && singer.Loaded)
+                    if (!parts.TryGetValue(track.TrackNo, out var group)) return;
+                    foreach (var part in group)
                     {
-                        System.IO.FileInfo ResamplerFile = new System.IO.FileInfo(string.IsNullOrWhiteSpace(track.OverrideRenderEngine) ? PathManager.Inst.GetPreviewEnginePath() : System.IO.Path.Combine(PathManager.Inst.GetEngineSearchPath(), track.OverrideRenderEngine));
-                        IResamplerDriver engine = ResamplerDriver.ResamplerDriver.LoadEngine(ResamplerFile.FullName);
-                            trackSources[part.TrackNo].AddSource(await BuildVoicePartAudio(part as UVoicePart, project, engine, cancel) ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(),
-                                TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick) - project.TickToMillisecond(480, part.PosTick) * part.PosTick / project.Resolution));
+                        if (part is UWavePart)
+                        {
+                            lock (lockObject)
+                            {
+                                var src = BuildWavePartAudio(part as UWavePart, project);
+                                if (src != null)
+                                    trackSources[part.TrackNo].AddSource(
+                                        src,
+                                        TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)));
+                            }
+                        }
+                        else
+                        {
+                            if (singer != null && singer.Loaded)
+                            {
+                                System.IO.FileInfo ResamplerFile = new System.IO.FileInfo(string.IsNullOrWhiteSpace(track.OverrideRenderEngine) ? PathManager.Inst.GetPreviewEnginePath() : System.IO.Path.Combine(PathManager.Inst.GetEngineSearchPath(), track.OverrideRenderEngine));
+                                IResamplerDriver engine = ResamplerDriver.ResamplerDriver.LoadEngine(ResamplerFile.FullName);
+                                subschedule.Add(BuildVoicePartAudio(part as UVoicePart, project, engine, token).ContinueWith(task => {
+                                    trackSources[part.TrackNo].AddSource(task.Result ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(),
+                                        TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick) - project.TickToMillisecond(480, part.PosTick) * part.PosTick / project.Resolution));
+                                }));
+                            }
+                        }
+                        token.ThrowIfCancellationRequested();
                     }
-                }
-                cancel.ThrowIfCancellationRequested();
+                    await Task.WhenAll(subschedule);
+                },token).ContinueWith(task => { if (!task.IsCanceled) masterMix.AddMixerInput(trackSources[track.TrackNo]); }));
+                token.ThrowIfCancellationRequested();
             }
-            masterMix = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
-            foreach (var source in trackSources)
-            {
-                masterMix.AddMixerInput(source);
-                cancel.ThrowIfCancellationRequested();
-            }
+            await Task.WhenAll(schedule);
             return masterMix;
         }
         private ISampleProvider BuildWavePartAudio(UWavePart part, UProject project)
@@ -253,7 +249,7 @@ namespace OpenUtau.Core.Render
         private Task<SequencingSampleProvider> BuildVoicePartAudio(UVoicePart part, UProject project, IResamplerDriver engine, System.Threading.CancellationToken cancel)
         {
             ResamplerInterface ri = new ResamplerInterface();
-            return ri.ResamplePartNew(part, project, engine);
+            return ri.ResamplePartNew(part, project, engine, cancel);
         }
 
         private float DecibelToVolume(double db)

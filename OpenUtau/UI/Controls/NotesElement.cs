@@ -239,6 +239,8 @@ namespace OpenUtau.UI.Controls
                         gcxt.LineTo(new Point(startX + lengthPix - outPix, startY + depthPix + depthPix * vibrato.Drift / 100), true, false);
                         gcxt.LineTo(new Point(startX + inPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
                         gcxt.LineTo(new Point(startX + inPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
+                        gcxt.LineTo(new Point(startX, startY), true, false);
+                        gcxt.LineTo(new Point(startX + lengthPix, startY), true, true);
                         gcxt.Close();
                     }
                     if (pen6 == null)

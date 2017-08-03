@@ -15,11 +15,13 @@ namespace OpenUtau.Core
         public string Key;
         public override void Execute()
         {
+            if(Part != null)
             DocManager.Inst.Project.Tracks[Part.TrackNo].Amended = true;
         }
         public override void Unexecute()
         {
-            DocManager.Inst.Project.Tracks[Part.TrackNo].Amended = true;
+            if (Part != null)
+                DocManager.Inst.Project.Tracks[Part.TrackNo].Amended = true;
         }
     }
 

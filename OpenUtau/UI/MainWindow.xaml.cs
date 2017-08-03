@@ -664,6 +664,17 @@ namespace OpenUtau.UI
                 while (trackVM.SelectedParts.Count > 0) DocManager.Inst.ExecuteCmd(new RemovePartCommand(trackVM.Project, trackVM.SelectedParts.Last()));
                 DocManager.Inst.EndUndoGroup();
             }
+            else if (Keyboard.Modifiers == ModifierKeys.None && e.Key == Key.Space)
+            {
+                if (PlaybackManager.GetActiveManager().IsPlayingBack())
+                {
+                    pauseButton_Click(sender, new RoutedEventArgs());
+                }
+                else
+                {
+                    playButton_Click(sender, new RoutedEventArgs());
+                }
+            }
             else if (Keyboard.Modifiers == ModifierKeys.Alt && e.SystemKey == Key.F4) CmdExit();
             else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.O) CmdOpenFileDialog();
             else if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.S) CmdSaveFile();
@@ -846,6 +857,16 @@ namespace OpenUtau.UI
         {
             //InstantPlaybackManager.Inst.StopPlayback();
             PlaybackManager.GetActiveManager().StopPlayback();
+        }
+
+        private void seekHomeButton_Click(object sender, RoutedEventArgs e)
+        {
+            DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(0, trackVM.Project));
+        }
+
+        private void seekEndButton_Click(object sender, RoutedEventArgs e)
+        {
+            DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(trackVM.Project.Parts.OrderBy(part=>part.EndTick).LastOrDefault()?.EndTick ?? 0, trackVM.Project));
         }
 
         private void bpmText_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

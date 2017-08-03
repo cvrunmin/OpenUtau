@@ -19,6 +19,18 @@ namespace OpenUtau.UI.Models
         public double Y;
     }
 
+    public class VibratoHitTestResult {
+        public UNote Note { get; set; }
+        public bool Success { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
+        public VibratoPart OnPoint { get; set; } = VibratoPart.No;
+
+        public enum VibratoPart {
+            No, Length, Depth, Period, In, Out, Shift, Drift
+        }
+    }
+
     class MidiViewHitTest : ICmdSubscriber
     {
         MidiViewModel midiVM;
@@ -49,21 +61,61 @@ namespace OpenUtau.UI.Models
             return mousePos.X <= x && mousePos.X > x - UIConstants.ResizeMargin;
         }
 
-        public UNote HitTestVibrato(Point mousePos)
+        public VibratoHitTestResult HitTestVibrato(Point mousePos)
         {
             int tick = (int)(midiVM.CanvasToQuarter(mousePos.X) * Project.Resolution / Project.BeatPerBar);
             double pitch = midiVM.CanvasToPitch(mousePos.Y);
             foreach (UNote note in midiVM.Part.Notes)
                 if (note.PosTick + note.DurTick * (1 - note.Vibrato.Length / 100) <= tick && note.EndTick >= tick &&
-                    Math.Abs(note.NoteNum - pitch) < note.Vibrato.Depth / 100) return note;
-            return null;
+                    Math.Abs(note.NoteNum - pitch) < note.Vibrato.Depth / 100) return HitTestVibrato(note,mousePos);
+            return new VibratoHitTestResult() { Success = false, X = mousePos.X, Y = mousePos.Y};
         }
 
-        public bool HitTestVibratoLengthenArea(UNote note, Point mousePos)
-        {
+        public VibratoHitTestResult HitTestVibrato(UNote note, Point mousePos) {
+            const int margin = UIConstants.ResizeMargin / 2;
+            var result = new VibratoHitTestResult() { Note = note, Success = true, X = mousePos.X, Y = mousePos.Y};
+
             var tick = (midiVM.CanvasToQuarter(mousePos.X) * Project.Resolution / Project.BeatPerBar);
-            var x = note.PosTick + note.DurTick * (1 - note.Vibrato.Length / 100);
-            return x + UIConstants.ResizeMargin / 2 >= tick && x - UIConstants.ResizeMargin / 2 <= tick;
+            double pitch = midiVM.CanvasToPitch(mousePos.Y);
+
+            var xLength = note.PosTick + note.DurTick * (1 - note.Vibrato.Length / 100);
+            var xIn = xLength + note.DurTick * (note.Vibrato.Length * note.Vibrato.In / 10000);
+            var xOut = note.PosTick + note.DurTick - note.DurTick * (note.Vibrato.Length * (note.Vibrato.Out) / 10000);
+            var xDrift = xIn + note.DurTick * (note.Vibrato.Length / 100) * (1 - (note.Vibrato.In + note.Vibrato.Out) / 100) * 0.5;
+            var depth = midiVM.TrackHeight * note.Vibrato.Depth / 100;
+            var yCenter = midiVM.NoteNumToCanvas(note.NoteNum) + midiVM.TrackHeight / 2;
+            yCenter += depth * (note.Vibrato.Drift / 100);
+            var yDepth1 = yCenter - depth;
+            var yDepth2 = yCenter + depth;
+
+            if (xIn + margin >= tick && xIn - margin <= tick)
+            {
+                result.OnPoint = VibratoHitTestResult.VibratoPart.In;
+            }
+            else if (xLength + margin >= tick && xLength - margin <= tick) {
+                result.OnPoint = VibratoHitTestResult.VibratoPart.Length;
+            }
+            else if (xOut + margin >= tick && xOut - margin <= tick)
+            {
+                result.OnPoint = VibratoHitTestResult.VibratoPart.Out;
+            }
+            else if ((xDrift + margin >= tick && xDrift - margin <= tick) && (Math.Abs(mousePos.Y - yCenter) <= margin * 2))
+            {
+                result.OnPoint = VibratoHitTestResult.VibratoPart.Drift;
+            }
+            else if (Math.Abs(mousePos.Y - yDepth1) <= margin || Math.Abs(mousePos.Y - yDepth2) <= margin)
+            {
+                result.OnPoint = VibratoHitTestResult.VibratoPart.Depth;
+            }
+            else if (mousePos.Y <= yCenter && mousePos.Y > yDepth1)
+            {
+                result.OnPoint = VibratoHitTestResult.VibratoPart.Period;
+            }
+            else if (mousePos.Y > yCenter && mousePos.Y <= yDepth2)
+            {
+                result.OnPoint = VibratoHitTestResult.VibratoPart.Shift;
+            }
+            return result;
         }
 
         public PitchPointHitTestResult HitTestPitchPoint(Point mousePos)

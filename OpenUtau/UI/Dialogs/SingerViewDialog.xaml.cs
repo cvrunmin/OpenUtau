@@ -338,7 +338,7 @@ namespace OpenUtau.UI.Dialogs
                 midiWindow.Topmost = false;
                 midiWindow.ShowInTaskbar = false;
                 midiWindow.Show();
-                midiWindow.midiVM.SelectNote(part.Notes.First());
+                midiWindow.MidiVM.SelectNote(part.Notes.First());
                 for (int i = 0; i < part.Notes.Count * 2; i++)
                 {
                     midiWindow.RaiseEvent(new System.Windows.Input.KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromDependencyObject(midiWindow), 0, Key.Enter) { RoutedEvent = KeyDownEvent});

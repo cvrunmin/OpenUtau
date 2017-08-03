@@ -34,7 +34,7 @@ namespace OpenUtau.Core.Render
         }
         public Task<SequencingSampleProvider> ResamplePartNew(UVoicePart part, UProject project, IResamplerDriver engine, System.Threading.CancellationToken cancel)
         {
-            return new TaskFactory().StartNew(() => RenderAsync(part, project, engine))
+            return new TaskFactory().StartNew(() => RenderAsync(part, project, engine, cancel), cancel)
                 .ContinueWith(task => {
                 List<RenderItemSampleProvider> renderItemSampleProviders = new List<RenderItemSampleProvider>();
                 foreach (var item in task.Result) renderItemSampleProviders.Add(new RenderItemSampleProvider(item));
@@ -172,11 +172,18 @@ namespace OpenUtau.Core.Render
                     Stream output = engine.DoResampler(engineArgs);
                     if (output.Length > 0)
                     {
-                        using (var deststr = File.Create(cachefile))
+                        try
                         {
-                            output.Seek(0, SeekOrigin.Begin);
-                            output.CopyTo(deststr);
-                            output.Seek(0, SeekOrigin.Begin);
+                            using (var deststr = File.Create(cachefile))
+                            {
+                                output.Seek(0, SeekOrigin.Begin);
+                                output.CopyTo(deststr);
+                                output.Seek(0, SeekOrigin.Begin);
+                            }
+                        }
+                        catch (IOException)
+                        {
+                            Debug.WriteLine($"unable to write file for Sound {item.HashParameters():x} ({Path.GetFileName(item.RawFile ?? "")})");
                         }
                         sound = new CachedSound(output);
                     }

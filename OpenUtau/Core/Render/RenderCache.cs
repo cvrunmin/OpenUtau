@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,20 +18,20 @@ namespace OpenUtau.Core.Render
         public int Capacity { set; get; }
         public int Count { get { return cache.Count; } }
 
-        Dictionary<uint, RenderCacheItem> cache;
+        ConcurrentDictionary<uint, RenderCacheItem> cache;
 
-        private RenderCache() { cache = new Dictionary<uint, RenderCacheItem>(); }
+        private RenderCache() { cache = new ConcurrentDictionary<uint, RenderCacheItem>(); }
         private static RenderCache _s;
         public static RenderCache Inst { get { if (_s == null) { _s = new RenderCache(); } return _s; } }
 
         public void Clear() { cache.Clear(); }
         public void Put(uint hash, CachedSound sound, string engine)
         {
-            if (cache.ContainsKey(hash)) cache.Remove(hash);
+            if (cache.ContainsKey(hash)) cache.TryRemove(hash, out _);
             RenderCacheItem item;
             item.Engine = engine;
             item.Sound = sound;
-            cache.Add(hash, item);
+            cache.TryAdd(hash, item);
         }
         public CachedSound Get(uint hash, string engine = "")
         {
@@ -44,16 +45,7 @@ namespace OpenUtau.Core.Render
         }
         public int TotalMemSize {
             get {
-                int size = 0;
-                lock (cache)
-                {
-                    foreach (var pair in cache)
-                    {
-                        if (pair.Value.Sound == null) continue;
-                        size += pair.Value.Sound.MemSize;
-                    }
-                }
-                return size;
+                return cache.Sum(pair=>pair.Value.Sound?.MemSize ?? 0);
             }
         }
     }
