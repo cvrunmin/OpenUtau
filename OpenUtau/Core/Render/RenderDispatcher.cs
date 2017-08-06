@@ -192,7 +192,7 @@ namespace OpenUtau.Core.Render
             {
                 schedule.Add(Task.Run(async() => {
                     token.ThrowIfCancellationRequested();
-                    trackSources.Add(new TrackSampleProvider() { PlainVolume = DecibelToVolume(track.Volume), Muted = track.Mute, Pan = (float)track.Pan / 90f });
+                    trackSources[track.TrackNo] = (new TrackSampleProvider() { TrackNo = track.TrackNo, PlainVolume = DecibelToVolume(track.Volume), Muted = track.Mute, Pan = (float)track.Pan / 90f });
                     var subschedule = new List<Task>();
                     var singer = track.Singer;
                     if (!parts.TryGetValue(track.TrackNo, out var group)) return;
@@ -224,7 +224,9 @@ namespace OpenUtau.Core.Render
                         token.ThrowIfCancellationRequested();
                     }
                     await Task.WhenAll(subschedule);
-                },token).ContinueWith(task => { if (!task.IsCanceled) masterMix.AddMixerInput(trackSources[track.TrackNo]); }));
+                },token).ContinueWith(task => { if (!task.IsCanceled)
+                        masterMix.AddMixerInput(trackSources[track.TrackNo]);
+                }));
                 token.ThrowIfCancellationRequested();
             }
             await Task.WhenAll(schedule);

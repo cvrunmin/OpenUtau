@@ -247,7 +247,7 @@ namespace OpenUtau.Core.Formats
                     }
                     else
                     {
-                        var abs = Path.Combine(Path.GetDirectoryName(Project.FilePath), uri.OriginalString);
+                        var abs = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Project.FilePath)), Uri.UnescapeDataString(uri.OriginalString));
                         result = Wave.CreatePart(abs);
                         ((UWavePart)result).UseRelativePath = true;
                     }
@@ -321,7 +321,14 @@ namespace OpenUtau.Core.Formats
             {
                 UProject result = Create();
                 string ustxVersion = dictionary["ustxversion"] as string;
-                USTx.Project = result;
+                if (Project == null)
+                {
+                    USTx.Project = result;
+                }
+                else
+                {
+                    result = Project;
+                }
                 result.Name = dictionary["name"] as string;
                 result.Comment = dictionary["comment"] as string;
                 result.OutputDir = dictionary["output"] as string;
@@ -550,6 +557,8 @@ namespace OpenUtau.Core.Formats
         public static UProject Load(string file)
         {
             UProject project;
+            Project = Create();
+            Project.FilePath = file;
 
             JavaScriptSerializer jss = new JavaScriptSerializer();
             jss.RegisterConverters(

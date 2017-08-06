@@ -22,12 +22,11 @@ namespace OpenUtau.UI.Dialogs
     /// <summary>
     /// RenderDialog.xaml 的互動邏輯
     /// </summary>
-    public partial class RenderDialog : Window, ICmdSubscriber
+    public partial class RenderDialog : Window
     {
         public RenderDialog()
         {
             InitializeComponent();
-            Subscribe(DocManager.Inst);
         }
         TaskDialog taskdialog;
         TaskDialogProgressBar taskprogress;
@@ -59,8 +58,9 @@ namespace OpenUtau.UI.Dialogs
             var cancel = new System.Threading.CancellationTokenSource();
             Task.Run(async () =>
             {
-
+                taskprogress.State = TaskDialogProgressBarState.Marquee;
                 var sampler = await RenderDispatcher.Inst.GetMixingSampleProvider(DocManager.Inst.Project, skipped.ToArray(), cancel.Token);
+                taskprogress.State = TaskDialogProgressBarState.Normal;
                 taskdialog.Text = GenTextInfo(task: "Writing into files", status:"Writing track 0/" + DocManager.Inst.Project.Tracks.Count);
                 if (!shouldMix)
                 {
@@ -69,7 +69,7 @@ namespace OpenUtau.UI.Dialogs
                     int i = 0;
                     foreach (var track in tracks)
                     {
-                        if(!skipped.Contains(i))
+                        if(track != null && !skipped.Contains(track.TrackNo))
                         {
                             double elisimatedMs;
                             try
@@ -85,7 +85,7 @@ namespace OpenUtau.UI.Dialogs
                             track.PlainVolume = MusicMath.DecibelToVolume(0);
                             track.Muted = false;
                             int limit = track.WaveFormat.AverageBytesPerSecond * (int)Math.Ceiling(elisimatedMs / 1000);
-                            using (var str = new WaveFileWriter(System.IO.Path.Combine(path, System.IO.Path.GetFileNameWithoutExtension(DocManager.Inst.Project.FilePath) + "_Track-" + i + ".wav"), track.WaveFormat))
+                            using (var str = new WaveFileWriter(System.IO.Path.Combine(path, System.IO.Path.GetFileNameWithoutExtension(DocManager.Inst.Project.FilePath) + "_Track-" + track.TrackNo + ".wav"), track.WaveFormat))
                             {
                                 var wave = track.ToWaveProvider();
                                 var buffer = new byte[track.WaveFormat.AverageBytesPerSecond * 4];
@@ -116,7 +116,7 @@ namespace OpenUtau.UI.Dialogs
                     WaveFileWriter.CreateWaveFile(path, sampler.ToWaveProvider());
                     Dispatcher.Invoke(()=>taskprogress.Value = 1000);
                 }
-            }).ContinueWith(task=>taskdialog.Close());
+            }, cancel.Token).ContinueWith(task=>taskdialog.Close());
             if (taskdialog.Show() == TaskDialogResult.Cancel) {
                 cancel.Cancel(true);
             }
@@ -181,24 +181,6 @@ namespace OpenUtau.UI.Dialogs
                 if (item is ContentControl control) {
                     control.Content = System.IO.Path.Combine(txtboxPath.Text, System.IO.Path.GetFileNameWithoutExtension(DocManager.Inst.Project.FilePath) + "_Track-" + control.Tag + ".wav");
                 }
-            }
-        }
-
-        public void Subscribe(ICmdPublisher publisher)
-        {
-            publisher?.Subscribe(this);
-        }
-
-        private int RequiredRenderItem => DocManager.Inst.Project.Parts.OfType<Core.USTx.UVoicePart>().SelectMany(part => part.Notes).Count();
-        private double decimals;
-        public void OnNext(UCommand cmd, bool isUndo)
-        {
-            if (cmd is ProgressBarNotification pbn && taskprogress != null) {
-                double progress = 1f / (RequiredRenderItem + 10) * 1000 + decimals;
-                int pi = (int)progress;
-                if(taskprogress.Value + pi <= taskprogress.Maximum)taskprogress.Value += pi;
-                decimals = progress - (int)progress;
-                taskdialog.Text = GenTextInfo("Rendering Tracks", pbn.Info);
             }
         }
 

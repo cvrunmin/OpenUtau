@@ -766,6 +766,7 @@ namespace OpenUtau.UI
         {
             UWavePart part = Core.Formats.Wave.CreatePart(file);
             if (part == null) return;
+            part.UseRelativePath = relative;
             int trackNo = trackVM.Project.Tracks.Count;
             part.TrackNo = trackNo;
             DocManager.Inst.StartUndoGroup();
