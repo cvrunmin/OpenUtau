@@ -66,8 +66,15 @@ namespace OpenUtau.UI.Dialogs
         {
             lblts.Visibility = SubBpm ? Visibility.Collapsed : Visibility.Visible;
             txtboxBeatPerBar.Visibility = SubBpm ? Visibility.Collapsed : Visibility.Visible;
-            txtboxBeatUnit.Visibility = SubBpm ? Visibility.Collapsed : Visibility.Visible;
+            comboBeatUnit.Visibility = SubBpm ? Visibility.Collapsed : Visibility.Visible;
             ForceUpdateTextBox();
+            comboBeatUnit.ItemsSource = new[] { 2,4,8,16 };
+            comboBeatUnit.SelectedIndex = (int)Math.Log(BeatUnit, 2) - 1;
+        }
+
+        private void comboBeatUnit_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            BeatUnit = (int)comboBeatUnit.SelectedItem;
         }
     }
 }

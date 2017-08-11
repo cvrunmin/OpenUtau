@@ -214,59 +214,126 @@ namespace OpenUtau.Core.Formats
             return project;
         }
 
-        static public void Save(string pathFormat, UProject project, Encoding encoding = null) {
+        static public void Save(string pathFormat, UProject project, bool exportTrack, bool addRest, Encoding encoding = null)
+        {
             //var validPath = pathFormat.SkipWhile(c => Path.GetInvalidFileNameChars().Contains(c));
-            foreach (var part in project.Parts.OfType<UVoicePart>())
+            var parts = project.Parts.OfType<UVoicePart>();
+            if (exportTrack)
             {
-                using (var file = File.CreateText(pathFormat + $"_Track-{part.TrackNo}_Part-{part.PartNo}.ust"))
+                foreach (var track in project.Tracks)
                 {
-                    file.WriteLine(versionTag);
-                    file.WriteLine("UST Version1.2");
-                    file.WriteLine(settingTag);
-                    file.WriteLine("Tempo=" + project.BPM);
-                    file.WriteLine("Tracks=1");
-                    file.WriteLine("ProjectName=" + project.Name + "-" + part.Name);
-                    file.WriteLine("VoiceDir=" + project.Tracks[part.TrackNo].Singer.Path);
-                    //file.WriteLine("OutFile="+project.OutputDir);
-                    file.WriteLine("CacheDir=" + project.CacheDir);
-                    List<UNote> writeNotes = new List<UNote>();
-                    if (part.PosTick > 0)
+                    var tParts = parts.Where(part => part.TrackNo == track.TrackNo).OrderBy(part => part.PosTick);
+                    using (var file = File.CreateText(pathFormat + $"_Track-{track.TrackNo}.ust"))
                     {
-                        var note = project.CreateNote(60, 0, part.PosTick);
-                        note.Lyric = "R";
-                        note.Phonemes[0].Phoneme = "R";
-                        writeNotes.Add(note);
-                    }
-                    int endtick = 0;
-                    int pos = 0;
-                    foreach (var note in part.Notes)
-                    {
-                        if (note.PosTick > endtick) {
-                            var note1 = project.CreateNote(60, 0, note.PosTick - endtick);
-                            note1.Lyric = "R";
-                            note1.Phonemes[0].Phoneme = "R";
-                            writeNotes.Add(note1);
-                        }
-                        foreach (var pho in note.Phonemes)
+                        file.WriteLine(versionTag);
+                        file.WriteLine("UST Version1.2");
+                        file.WriteLine(settingTag);
+                        file.WriteLine("Tempo=" + project.BPM);
+                        file.WriteLine("Tracks=1");
+                        file.WriteLine("ProjectName=" + project.Name + "-" + track.Name);
+                        file.WriteLine("VoiceDir=" + track.Singer.Path);
+                        //file.WriteLine("OutFile="+project.OutputDir);
+                        file.WriteLine("CacheDir=" + project.CacheDir);
+                        List<UNote> writeNotes = new List<UNote>();
+                        if ((tParts.FirstOrDefault()?.PosTick ?? 0) > 0)
                         {
-                            var nnote = note.Clone();
-                            nnote.DurTick = pho.DurTick;
-                            nnote.PosTick = note.PosTick + pho.PosTick;
-                            nnote.Phonemes.Clear();
-                            nnote.Phonemes.Add(pho.Clone(nnote));
-                            writeNotes.Add(nnote);
+                            var note = project.CreateNote(60, 0, tParts.FirstOrDefault().PosTick);
+                            note.Lyric = "R";
+                            note.Phonemes[0].Phoneme = "R";
+                            writeNotes.Add(note);
                         }
-                        endtick = note.EndTick;
+                        int endtick = 0;
+                        int pos = 0;
+                        foreach (var part in tParts)
+                        {
+                            foreach (var note in part.Notes)
+                            {
+                                if (note.PosTick > endtick)
+                                {
+                                    var note1 = project.CreateNote(60, 0, note.PosTick - endtick);
+                                    note1.Lyric = "R";
+                                    note1.Phonemes[0].Phoneme = "R";
+                                    writeNotes.Add(note1);
+                                }
+                                foreach (var pho in note.Phonemes)
+                                {
+                                    var nnote = note.Clone();
+                                    nnote.DurTick = pho.DurTick;
+                                    nnote.PosTick = note.PosTick + pho.PosTick;
+                                    nnote.Phonemes.Clear();
+                                    nnote.Phonemes.Add(pho.Clone(nnote));
+                                    writeNotes.Add(nnote);
+                                }
+                                endtick = note.EndTick;
+                            }
+                        }
+                        foreach (var note in writeNotes)
+                        {
+                            file.WriteLine($"[#{pos,4}]");
+                            note.DurTick *= project.BeatPerBar;
+                            note.Phonemes[0].DurTick *= project.BeatPerBar;
+                            NoteToUst(note, UstVersion.V1_2).ForEach(item1 => file.WriteLine(item1));
+                            ++pos;
+                        }
+                        file.WriteLine(endTag);
                     }
-                    foreach (var note in writeNotes)
+                }
+            }
+            else
+            {
+                foreach (var part in parts)
+                {
+                    using (var file = File.CreateText(pathFormat + $"_Track-{part.TrackNo}_Part-{part.PartNo}.ust"))
                     {
-                        file.WriteLine($"[#{pos,4}]");
-                        note.DurTick *= project.BeatPerBar;
-                        note.Phonemes[0].DurTick *= project.BeatPerBar;
-                        NoteToUst(note, UstVersion.V1_2).ForEach(item1 => file.WriteLine(item1));
-                        ++pos;
+                        file.WriteLine(versionTag);
+                        file.WriteLine("UST Version1.2");
+                        file.WriteLine(settingTag);
+                        file.WriteLine("Tempo=" + project.BPM);
+                        file.WriteLine("Tracks=1");
+                        file.WriteLine("ProjectName=" + project.Name + "-" + part.Name);
+                        file.WriteLine("VoiceDir=" + project.Tracks[part.TrackNo].Singer.Path);
+                        //file.WriteLine("OutFile="+project.OutputDir);
+                        file.WriteLine("CacheDir=" + project.CacheDir);
+                        List<UNote> writeNotes = new List<UNote>();
+                        if (addRest && part.PosTick > 0)
+                        {
+                            var note = project.CreateNote(60, 0, part.PosTick);
+                            note.Lyric = "R";
+                            note.Phonemes[0].Phoneme = "R";
+                            writeNotes.Add(note);
+                        }
+                        int endtick = 0;
+                        int pos = 0;
+                        foreach (var note in part.Notes)
+                        {
+                            if (note.PosTick > endtick)
+                            {
+                                var note1 = project.CreateNote(60, 0, note.PosTick - endtick);
+                                note1.Lyric = "R";
+                                note1.Phonemes[0].Phoneme = "R";
+                                writeNotes.Add(note1);
+                            }
+                            foreach (var pho in note.Phonemes)
+                            {
+                                var nnote = note.Clone();
+                                nnote.DurTick = pho.DurTick;
+                                nnote.PosTick = note.PosTick + pho.PosTick;
+                                nnote.Phonemes.Clear();
+                                nnote.Phonemes.Add(pho.Clone(nnote));
+                                writeNotes.Add(nnote);
+                            }
+                            endtick = note.EndTick;
+                        }
+                        foreach (var note in writeNotes)
+                        {
+                            file.WriteLine($"[#{pos,4}]");
+                            note.DurTick *= project.BeatPerBar;
+                            note.Phonemes[0].DurTick *= project.BeatPerBar;
+                            NoteToUst(note, UstVersion.V1_2).ForEach(item1 => file.WriteLine(item1));
+                            ++pos;
+                        }
+                        file.WriteLine(endTag);
                     }
-                    file.WriteLine(endTag);
                 }
             }
         }

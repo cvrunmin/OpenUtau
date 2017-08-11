@@ -43,15 +43,9 @@
                 </Binding>
             </TextBox.Text>
         </TextBox>
-        <TextBox x:Name="txtboxBeatUnit" HorizontalAlignment="Left" Height="23" Margin="109,66,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="50">
-            <TextBox.Text>
-                <Binding Path="BeatUnit" ElementName="window" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" ValidatesOnDataErrors="True" ValidatesOnExceptions="True" ValidatesOnNotifyDataErrors="True">
-                    <Binding.ValidationRules>
-                        <utils:NumericValidationRule ValidationType="{x:Type s:Double}" ValidatesOnTargetUpdated="True"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
+        <ComboBox x:Name="comboBeatUnit" SelectedItem="{Binding BeatUnit ,ElementName=window, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Left" Margin="109,66,0,0" VerticalAlignment="Top" Width="50" Height="23" SelectionChanged="comboBeatUnit_SelectionChanged"/>
+
+
 
     </Grid>
 </Window>

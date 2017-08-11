@@ -312,7 +312,7 @@ namespace OpenUtau.UI.Models
             double snapUnit = GetSnapUnit();
             return Math.Round(quater / snapUnit) * snapUnit;
         }
-        public int CanvasToSnappedTick(double X) { return (int)(CanvasToSnappedQuarter(X) * Project.Resolution / BeatUnit); }
+        public int CanvasToSnappedTick(double X) { return (int)(CanvasToSnappedQuarter(X) * Project.Resolution / BeatPerBar); }
 
         # endregion
 
@@ -456,11 +456,13 @@ namespace OpenUtau.UI.Models
                 {
                     if (!isUndo) OnTrackAdded(_cmd.track);
                     else OnTrackRemoved(_cmd.track);
+                    foreach (var trackHeader in TrackHeaders) trackHeader.UpdateSingerName();
                 }
                 else if (_cmd is RemoveTrackCommand)
                 {
                     if (!isUndo) OnTrackRemoved(_cmd.track, ((RemoveTrackCommand)_cmd).removedParts);
                     else OnTrackAdded(_cmd.track, ((RemoveTrackCommand)_cmd).removedParts);
+                    foreach (var trackHeader in TrackHeaders) trackHeader.UpdateSingerName();
                 }
                 else if (_cmd is TrackChangeSingerCommand)
                 {
@@ -478,6 +480,12 @@ namespace OpenUtau.UI.Models
             else if(cmd is UpdateProjectBpmsNotification)
             {
                 BackgroundElement.MarkUpdateCallback(TimelineBG, new DependencyPropertyChangedEventArgs());
+            }
+            else if (cmd is UpdateProjectPropertiesNotification)
+            {
+                OnPropertyChanged("BPM");
+                OnPropertyChanged("BeatPerBar");
+                OnPropertyChanged("BeatUnit");
             }
             else if (cmd is SetPlayPosTickNotification)
             {

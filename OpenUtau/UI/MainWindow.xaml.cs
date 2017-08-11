@@ -350,14 +350,14 @@ namespace OpenUtau.UI
                 if (trackVM.SelectedParts.Count == 0)
                 {
                     int newTrackNo = Math.Min(trackVM.Project.Tracks.Count - 1, Math.Max(0, trackVM.CanvasToTrack(mousePos.Y)));
-                    int newPosTick = Math.Max(0, (int)(trackVM.Project.Resolution * trackVM.CanvasToSnappedQuarter(mousePos.X) / trackVM.BeatUnit) - _partMoveRelativeTick);
+                    int newPosTick = Math.Max(0, (int)(trackVM.Project.Resolution * trackVM.CanvasToSnappedQuarter(mousePos.X) / trackVM.BeatPerBar) - _partMoveRelativeTick);
                     if (newTrackNo != _hitPartElement.Part.TrackNo || newPosTick != _hitPartElement.Part.PosTick)
                         DocManager.Inst.ExecuteCmd(new MovePartCommand(trackVM.Project, _hitPartElement.Part, newPosTick, newTrackNo));
                 }
                 else
                 {
                     int deltaTrackNo = trackVM.CanvasToTrack(mousePos.Y) - _hitPartElement.Part.TrackNo;
-                    int deltaPosTick = (int)(trackVM.Project.Resolution * trackVM.CanvasToSnappedQuarter(mousePos.X) / trackVM.BeatUnit - _partMoveRelativeTick) - _hitPartElement.Part.PosTick;
+                    int deltaPosTick = (int)(trackVM.Project.Resolution * trackVM.CanvasToSnappedQuarter(mousePos.X) / trackVM.BeatPerBar - _partMoveRelativeTick) - _hitPartElement.Part.PosTick;
                     bool changeTrackNo = deltaTrackNo + _partMovePartMin.TrackNo >= 0 && deltaTrackNo + _partMovePartMax.TrackNo < trackVM.Project.Tracks.Count;
                     bool changePosTick = deltaPosTick + _partMovePartLeft.PosTick >= 0;
                     if (changeTrackNo || changePosTick)
@@ -371,13 +371,13 @@ namespace OpenUtau.UI
             {
                 if (trackVM.SelectedParts.Count == 0)
                 {
-                    int newDurTick = (int)(trackVM.Project.Resolution * trackVM.CanvasRoundToSnappedQuarter(mousePos.X) / trackVM.BeatUnit) - _hitPartElement.Part.PosTick;
+                    int newDurTick = (int)(trackVM.Project.Resolution * trackVM.CanvasRoundToSnappedQuarter(mousePos.X) / trackVM.BeatPerBar) - _hitPartElement.Part.PosTick;
                     if (newDurTick > _resizeMinDurTick && newDurTick != _hitPartElement.Part.DurTick)
                         DocManager.Inst.ExecuteCmd(new ResizePartCommand(trackVM.Project, _hitPartElement.Part, newDurTick));
                 }
                 else
                 {
-                    int deltaDurTick = (int)(trackVM.CanvasRoundToSnappedQuarter(mousePos.X) * trackVM.Project.Resolution / trackVM.BeatUnit) - _hitPartElement.Part.EndTick;
+                    int deltaDurTick = (int)(trackVM.CanvasRoundToSnappedQuarter(mousePos.X) * trackVM.Project.Resolution / trackVM.BeatPerBar) - _hitPartElement.Part.EndTick;
                     if (deltaDurTick != 0 && _partResizeShortest.DurTick + deltaDurTick > _resizeMinDurTick)
                         foreach (UPart part in trackVM.SelectedParts)
                             DocManager.Inst.ExecuteCmd(new ResizePartCommand(trackVM.Project, part, part.DurTick + deltaDurTick));
@@ -528,7 +528,11 @@ namespace OpenUtau.UI
 
         private void MenuExportUst_Click(object sender, RoutedEventArgs e)
         {
-            Core.Formats.Ust.Save(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(DocManager.Inst.Project.FilePath), DocManager.Inst.Project.Name), DocManager.Inst.Project);
+            var dialog = new ExportUstDialog();
+            if(dialog.ShowDialog().Value)
+            {
+                Core.Formats.Ust.Save(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(DocManager.Inst.Project.FilePath), DocManager.Inst.Project.Name), DocManager.Inst.Project, dialog.ExportTrack, dialog.chkboxPosAsRest.IsChecked.Value);
+            }
         }
 
         private void MenuRenderAll_Click(object sender, RoutedEventArgs e)
@@ -537,12 +541,6 @@ namespace OpenUtau.UI
             if (dialog.ShowDialog().Value)
             {
 
-            }
-            return;
-            var savdialog = new SaveFileDialog() { DefaultExt = "wav", AddExtension = true, OverwritePrompt = true, Filter = "Wave file (*.wav)|*.wav|All Files|*.*" };
-            if (savdialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                RenderDispatcher.Inst.WriteToFile(savdialog.FileName, DocManager.Inst.Project);
             }
         }
 

@@ -62,7 +62,7 @@ namespace OpenUtau.Core.USTx
 
     public class USinger
     {
-        public string Name = "";
+        public string Name { get; set; } = "";
         public string DisplayName { get { return Loaded ? Name : Name + "[Unloaded]"; } }
         public string Path = "";
         public string Author;
@@ -72,7 +72,7 @@ namespace OpenUtau.Core.USTx
 
         public bool Loaded = false;
 
-        public System.Windows.Media.Imaging.BitmapImage Avatar;
+        public System.Windows.Media.Imaging.BitmapImage Avatar { get; set; }
         public string AvatarPath;
 
         public Encoding FileEncoding;

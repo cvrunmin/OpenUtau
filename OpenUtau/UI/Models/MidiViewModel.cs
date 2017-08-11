@@ -355,6 +355,8 @@ namespace OpenUtau.UI.Models
             }
 
             foreach (var pair in expElements) { pair.Value.Part = this.Part; pair.Value.MarkUpdate(); }
+            BeatPerBar = project.BeatPerBar;
+            BeatUnit = project.BeatUnit;
             initPlayPosMarker();
         }
 
@@ -457,6 +459,11 @@ namespace OpenUtau.UI.Models
                     if (phonemesElement != null) phonemesElement.MarkUpdate();
                 }
                 else if (_cmd is SetPlayPosTickNotification) { OnPlayPosSet(((SetPlayPosTickNotification)_cmd).playPosTick); }
+                else if (cmd is UpdateProjectPropertiesNotification)
+                {
+                    OnPropertyChanged("BeatPerBar");
+                    OnPropertyChanged("BeatUnit");
+                }
             }
         }
 

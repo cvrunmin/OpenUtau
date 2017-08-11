@@ -31,6 +31,8 @@
     <s:String x:Key="MenuPreferences">選項</s:String>
     <s:String x:Key="MenuHelp">說明(_H)</s:String>
     <s:String x:Key="MenuAbout">關於 OpenUTAU</s:String>
+    <s:String x:Key="Name">名稱</s:String>
+    <s:String x:Key="Comment">備注</s:String>
     <s:String x:Key="Refresh">刷新</s:String>
     <s:String x:Key="Alias">別稱</s:String>
     <s:String x:Key="File">檔案</s:String>
@@ -51,15 +53,20 @@
     <s:String x:Key="Audio">音頻</s:String>
     <s:String x:Key="Playback">回放</s:String>
     <s:String x:Key="Rendering">渲染</s:String>
+    <s:String x:Key="Singer">歌手</s:String>
     <s:String x:Key="SingerPath">歌手路徑</s:String>
     <s:String x:Key="Add">新增</s:String>
     <s:String x:Key="New">新增</s:String>
     <s:String x:Key="Remove">移除</s:String>
+    <s:String x:Key="RemoveTrack">移除音軌</s:String>
     <s:String x:Key="OutputDevice">輸出裝置</s:String>
+    <s:String x:Key="ResamplingTitle">Resampler</s:String>
     <s:String x:Key="ResamplingPreviewTitle">預覽用Resampler</s:String>
     <s:String x:Key="ResamplingExportTitle">導出用Resampler</s:String>
     <s:String x:Key="ResamplingInternal">內部Resampler</s:String>
     <s:String x:Key="ResamplingExternal">外部Resampler</s:String>
+    <s:String x:Key="ResamplingGeneral">全局Resampler</s:String>
+    <s:String x:Key="ResamplingTrack">音軌特定Resampler</s:String>
     <s:String x:Key="ResamplingNotes">
         注: 若要使用外部Resampler，請將Resampler DLL或EXE檔案加入至OpenUtau安裝路徑下的Resamplers文件夾。
     </s:String>

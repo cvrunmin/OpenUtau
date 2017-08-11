@@ -44,6 +44,12 @@ namespace OpenUtau.UI.Dialogs
             Track = track;
             InitializeComponent();
 
+            var singers = new Dictionary<string, USinger>
+            {
+                { "No Singer", new USinger(){ Name = "No Singer", Loaded = true } }
+            };
+            comboSinger.ItemsSource = singers.Concat(DocManager.Inst.Singers).ToDictionary(pair=>pair.Key,pair=>pair.Value).Values;
+            comboSinger.SelectedItem = Track.Singer;
             generalItem.IsSelected = true;
             UpdateEngines();
         }
@@ -51,8 +57,7 @@ namespace OpenUtau.UI.Dialogs
 
         private void treeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (treeView.SelectedItem == playbackItem) SelectedGrid = playbackGrid;
-            else if (treeView.SelectedItem == renderingItem) SelectedGrid = renderingGrid;
+            if (treeView.SelectedItem == renderingItem) SelectedGrid = renderingGrid;
             else if (treeView.SelectedItem == generalItem) SelectedGrid = generalGrid;
             else SelectedGrid = null;
         }
@@ -99,5 +104,11 @@ namespace OpenUtau.UI.Dialogs
 
         #endregion
 
+        private void comboSinger_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            DocManager.Inst.StartUndoGroup();
+            DocManager.Inst.ExecuteCmd(new TrackChangeSingerCommand(DocManager.Inst.Project, Track, comboSinger.SelectedIndex == 0 ? null : comboSinger.SelectedItem as USinger));
+            DocManager.Inst.EndUndoGroup();
+        }
     }
 }

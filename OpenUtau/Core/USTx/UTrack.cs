@@ -8,9 +8,9 @@ namespace OpenUtau.Core.USTx
 {
     public class UTrack
     {
-        public string Name = "New Track";
-        public string Comment = "";
-        public USinger Singer;
+        public string Name { get; set; } = "New Track";
+        public string Comment { get; set; } = "";
+        public USinger Singer { get; set; }
 
         public string SingerName { get { if (Singer != null) return Singer.DisplayName; else return "[No Signer]"; } }
         public int TrackNo { set; get; }

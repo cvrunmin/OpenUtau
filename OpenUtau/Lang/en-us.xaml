@@ -31,6 +31,8 @@
     <s:String x:Key="MenuPreferences">Preferences</s:String>
     <s:String x:Key="MenuHelp">_Help</s:String>
     <s:String x:Key="MenuAbout">About OpenUTAU</s:String>
+    <s:String x:Key="Name">Name</s:String>
+    <s:String x:Key="Comment">Comment</s:String>
     <s:String x:Key="Refresh">Refresh</s:String>
     <s:String x:Key="Alias">Alias</s:String>
     <s:String x:Key="File">File</s:String>
@@ -51,15 +53,20 @@
     <s:String x:Key="Audio">Audio</s:String>
     <s:String x:Key="Playback">Playback</s:String>
     <s:String x:Key="Rendering">Rendering</s:String>
+    <s:String x:Key="Singer">Singer</s:String>
     <s:String x:Key="SingerPath">Singer paths</s:String>
     <s:String x:Key="Add">Add</s:String>
     <s:String x:Key="New">New</s:String>
     <s:String x:Key="Remove">Remove</s:String>
+    <s:String x:Key="RemoveTrack">Remove Track</s:String>
     <s:String x:Key="OutputDevice">Output device</s:String>
-    <s:String x:Key="ResamplingPreviewTitle">Resampling engine for preview</s:String>
-    <s:String x:Key="ResamplingExportTitle">Resampling engine for export</s:String>
-    <s:String x:Key="ResamplingInternal">Internal engine</s:String>
-    <s:String x:Key="ResamplingExternal">External engine</s:String>
+    <s:String x:Key="ResamplingTitle">Resampling engine</s:String>
+    <s:String x:Key="ResamplingPreviewTitle">Resampler for preview</s:String>
+    <s:String x:Key="ResamplingExportTitle">Resampler for export</s:String>
+    <s:String x:Key="ResamplingInternal">Internal resampler</s:String>
+    <s:String x:Key="ResamplingExternal">External resampler</s:String>
+    <s:String x:Key="ResamplingGeneral">General configured resampler</s:String>
+    <s:String x:Key="ResamplingTrack">Track-specific resampler</s:String>
     <s:String x:Key="ResamplingNotes">
         Note: to use external resamplers, please add resampler DLL or EXE file to Resamplers folder under OpenUtau install path.
     </s:String>

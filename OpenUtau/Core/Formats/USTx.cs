@@ -443,7 +443,7 @@ namespace OpenUtau.Core.Formats
                         Name = dictionary["name"] as string,
                         Comment = dictionary["comment"] as string,
                         TrackNo = Convert.ToInt32(dictionary["trackno"]),
-                        Singer = new USinger() { Name = dictionary["singer"] as string }
+                        Singer = string.IsNullOrWhiteSpace(dictionary["singer"] as string) ? null : new USinger() { Name = dictionary["singer"] as string }
                     };
                     if (dictionary.ContainsKey("override-engine"))
                         result.OverrideRenderEngine = dictionary["override-engine"] as string;

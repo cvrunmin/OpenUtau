@@ -1,43 +1,53 @@
-﻿<Window x:Class="OpenUtau.UI.Dialogs.TrackPreferencesDialog"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Preferences" Height="400" Width="600" ResizeMode="NoResize">
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" x:Name="window" mc:Ignorable="d" x:Class="OpenUtau.UI.Dialogs.TrackPreferencesDialog"
+    xmlns:ustx="clr-namespace:OpenUtau.Core.USTx"    
+    Title="Preferences" Height="400" Width="600" ResizeMode="NoResize">
     <Grid>
         <TreeView x:Name="treeView" HorizontalAlignment="Left" Margin="10" VerticalAlignment="Stretch" Width="150"
                   SelectedItemChanged="treeView_SelectedItemChanged">
             <TreeViewItem x:Name="generalItem" Header="{DynamicResource General}"/>
 
             <TreeViewItem Header="{DynamicResource Audio}" IsExpanded="True">
-                <TreeViewItem x:Name="playbackItem" Header="{DynamicResource Playback}" Margin="-12,0,0,0"/>
                 <TreeViewItem x:Name="renderingItem" Header="{DynamicResource Rendering}" Margin="-12,0,0,0"/>
             </TreeViewItem>
         </TreeView>
         <Grid x:Name="generalGrid" Margin="170,2,10,10" Visibility="Collapsed">
-
-        </Grid>
-        <Grid x:Name="playbackGrid" Margin="170,2,10,10" Visibility="Hidden">
-            <TextBlock Text="{DynamicResource OutputDevice}" Margin="10,4,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-            <ComboBox Width="256" Height="22" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,25,0,0">
-                <ComboBoxItem Content="WASAPI" IsSelected="True"/>
-                <ComboBoxItem Content="DirectSound"/>
-                <ComboBoxItem Content="WaveOut"/>
-                <ComboBoxItem Content="ASIO"/>
+            <Label Content="{DynamicResource ResourceKey=Name}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+            <TextBox x:Name="txtTrackName" HorizontalAlignment="Left" Height="23" Margin="59,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="175" Text="{Binding Track.Name, ElementName=window, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Content="{DynamicResource Singer}" HorizontalAlignment="Left" Margin="10,57,0,0" VerticalAlignment="Top"/>
+            <ComboBox x:Name="comboSinger" HorizontalAlignment="Left" Margin="61,40,0,0" VerticalAlignment="Top" Width="275" Height="60" ItemTemplate="{DynamicResource SingerDataTemplate}" SelectionChanged="comboSinger_SelectionChanged">
+                <ComboBox.Resources>
+                    <DataTemplate x:Key="SingerDataTemplate" DataType="{x:Type ustx:USinger}">
+                        <Grid d:DesignWidth="250" d:DesignHeight="50">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="50px"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Image HorizontalAlignment="Stretch" Height="50" Margin="0" VerticalAlignment="Top" Width="Auto" Source="{Binding Avatar, FallbackValue={x:Null}}"/>
+                            <Label Content="{Binding DisplayName,FallbackValue='No Singer'}" Grid.Column="1" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                    </DataTemplate>
+                </ComboBox.Resources>
             </ComboBox>
+            <Label Content="{DynamicResource Comment}" HorizontalAlignment="Left" Margin="10,105,0,0" VerticalAlignment="Top"/>
+            <TextBox x:Name="txtboxComment" HorizontalAlignment="Left" Height="90" Margin="81,105,0,0" Text="{Binding Track.Comment, ElementName=window}" VerticalAlignment="Top" Width="255" AcceptsReturn="True" AutoWordSelection="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
         </Grid>
-        <Grid x:Name="renderingGrid" Margin="170,2,10,10">
+        <Grid x:Name="renderingGrid" Margin="170,2,10,10" Visibility="Collapsed">
             <ScrollViewer>
                 <Grid>
 
                     <GroupBox Header="{DynamicResource ResamplingPreviewTitle}" Height="80" VerticalAlignment="Top" Margin="0,0,0,0">
                         <Grid>
-                            <RadioButton x:Name="previewRatioInternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,10,0,0" GroupName="preview" Checked="previewEngine_Checked" Content="General configured engine"/>
+                            <RadioButton x:Name="previewRatioInternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,10,0,0" GroupName="preview" Checked="previewEngine_Checked" Content="{DynamicResource ResamplingGeneral}"/>
                             <Grid Margin="8,34,8,0" Height="21" VerticalAlignment="Top">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="5px"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <RadioButton x:Name="previewRatioExternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,2,0,0" GroupName="preview" Checked="previewEngine_Checked" Content="Track-specific engine"/>
+                                <RadioButton x:Name="previewRatioExternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,2,0,0" GroupName="preview" Checked="previewEngine_Checked" Content="{DynamicResource ResamplingTrack}"/>
                                 <ComboBox x:Name="previewEngineCombo" Margin="4,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="224" SelectionChanged="previewEngineCombo_SelectionChanged" Grid.Column="2"/>
                             </Grid>
                         </Grid>

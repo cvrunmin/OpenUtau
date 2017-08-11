@@ -85,7 +85,7 @@ namespace OpenUtau.UI.Dialogs
                             track.PlainVolume = MusicMath.DecibelToVolume(0);
                             track.Muted = false;
                             int limit = track.WaveFormat.AverageBytesPerSecond * (int)Math.Ceiling(elisimatedMs / 1000);
-                            using (var str = new WaveFileWriter(System.IO.Path.Combine(path, System.IO.Path.GetFileNameWithoutExtension(DocManager.Inst.Project.FilePath) + "_Track-" + track.TrackNo + ".wav"), track.WaveFormat))
+                            using (var str = new WaveFileWriter(System.IO.Path.Combine(path, System.IO.Path.GetFileNameWithoutExtension(DocManager.Inst.Project.FilePath) + "_Track-" + (track.TrackNo + 1) + ".wav"), track.WaveFormat))
                             {
                                 var wave = track.ToWaveProvider();
                                 var buffer = new byte[track.WaveFormat.AverageBytesPerSecond * 4];
@@ -160,14 +160,14 @@ namespace OpenUtau.UI.Dialogs
                 {
                     foreach (var item in DocManager.Inst.Project.Tracks)
                     {
-                        listboxGenFiles.Items.Add(new CheckBox() { Content = System.IO.Path.Combine(txtboxPath.Text, System.IO.Path.GetFileNameWithoutExtension(DocManager.Inst.Project.FilePath) + "_Track-" + item.TrackNo + ".wav"), IsChecked = true, Tag = item.TrackNo });
+                        listboxGenFiles.Items.Add(new CheckBox() { Content = "Track " + item.DisplayTrackNo, IsChecked = true, Tag = item.TrackNo });
                     }
                 }
                 else if (radio == radioRenderSplitted)
                 {
                     foreach (var item in DocManager.Inst.Project.Tracks)
                     {
-                        listboxGenFiles.Items.Add(new Label() { Content = System.IO.Path.Combine(txtboxPath.Text, System.IO.Path.GetFileNameWithoutExtension(DocManager.Inst.Project.FilePath) + "_Track-" + item.TrackNo + ".wav"), Tag = item.TrackNo, Padding = new Thickness(0) });
+                        listboxGenFiles.Items.Add(new Label() { Content = "Track " + item.DisplayTrackNo, Tag = item.TrackNo, Padding = new Thickness(0) });
                     }
                 }
             }
@@ -175,13 +175,13 @@ namespace OpenUtau.UI.Dialogs
 
         private void txtboxPath_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if(listboxGenFiles != null)
+            /*if(listboxGenFiles != null)
             foreach (var item in listboxGenFiles.Items)
             {
                 if (item is ContentControl control) {
                     control.Content = System.IO.Path.Combine(txtboxPath.Text, System.IO.Path.GetFileNameWithoutExtension(DocManager.Inst.Project.FilePath) + "_Track-" + control.Tag + ".wav");
                 }
-            }
+            }*/
         }
 
         private string GenTextInfo(string task = "", string status = "") {

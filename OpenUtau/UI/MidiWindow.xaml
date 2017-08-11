@@ -68,10 +68,10 @@
                     <MenuItem Header="{DynamicResource MenuSelectAll}" InputGestureText="Ctrl+A"/>
                 </MenuItem>
             </Menu>
-            <Grid x:Name="toolGrid" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="250" Margin="0,0,0,0" Grid.Column="4">
+            <Grid x:Name="toolGrid" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="250" Grid.Column="4">
                 <RadioButton x:Name="radioToolCursor" HorizontalAlignment="Left" Width="20" Style="{DynamicResource ToolRadioButton}" Height="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" GroupName="ToolGroup" IsChecked="True" Margin="5,0,0,0">
                     <RadioButton.Content>
-                        <Rectangle Width="15" Height="15" Fill="Black" Stretch="Uniform">
+                        <Rectangle Width="15" Height="15" Fill="{Binding Foreground, ElementName=radioToolCursor}" Stretch="Uniform">
                             <Rectangle.OpacityMask>
                                 <VisualBrush Visual="{StaticResource ToolCursor}" Stretch="Uniform"/>
                             </Rectangle.OpacityMask>
@@ -80,7 +80,7 @@
                 </RadioButton>
                 <RadioButton x:Name="radioToolPaint" HorizontalAlignment="Left" Width="20" Style="{DynamicResource ToolRadioButton}" Height="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="30,0,0,0" GroupName="ToolGroup">
                     <RadioButton.Content>
-                        <Rectangle Width="15" Height="15" Fill="Black" Stretch="Uniform">
+                        <Rectangle Width="15" Height="15" Fill="{Binding Foreground, ElementName=radioToolPaint}" Stretch="Uniform">
                             <Rectangle.OpacityMask>
                                 <VisualBrush Visual="{StaticResource ToolPaint}" Stretch="Uniform"/>
                             </Rectangle.OpacityMask>

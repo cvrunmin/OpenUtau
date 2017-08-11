@@ -12,7 +12,7 @@
     <Grid Background="Transparent" MouseDown="Grid_MouseDown">
         <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="1" Stroke="LightGray"/>
         <Rectangle HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4" Width="20" Height="16" Fill="LightGray"/>
-        <TextBlock HorizontalAlignment="Left" VerticalAlignment="Top" Width="20" Height="16" Margin="4,6,0,0" TextAlignment="Center"
+        <TextBlock x:Name="txtTrackNo" HorizontalAlignment="Left" VerticalAlignment="Top" Width="20" Height="16" Margin="4,6,0,0" TextAlignment="Center"
                    FontWeight="Bold" FontFamily="Arial" FontSize="11" Foreground="White"
                    Text="{Binding Path=DisplayTrackNo}"/>
         <Button x:Name="singerNameButton" Style="{StaticResource TrackHeaderSingerButton}" HorizontalAlignment="Stretch" VerticalAlignment="Top"

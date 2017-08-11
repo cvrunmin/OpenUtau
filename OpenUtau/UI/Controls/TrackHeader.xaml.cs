@@ -122,7 +122,11 @@ namespace OpenUtau.UI.Controls
 
         public void UpdateSingerName()
         {
-            this.singerNameButton.GetBindingExpression(Button.ContentProperty).UpdateTarget();
+            singerNameButton.GetBindingExpression(ContentProperty).UpdateTarget();
+        }
+
+        public void UpdateDisplayTrackNo() {
+            txtTrackNo.GetBindingExpression(TextBlock.TextProperty).UpdateTarget();
         }
 
         ContextMenu headerMenu;
@@ -133,7 +137,7 @@ namespace OpenUtau.UI.Controls
                 if (headerMenu == null)
                 {
                     headerMenu = new ContextMenu();
-                    var item = new MenuItem() { Header = "Remove track" };
+                    var item = new MenuItem() { Header = Lang.LanguageManager.GetLocalized("RemoveTrack") };
                     item.Click += (_o, _e) =>
                     {
                         DocManager.Inst.StartUndoGroup();
@@ -141,7 +145,7 @@ namespace OpenUtau.UI.Controls
                         DocManager.Inst.EndUndoGroup();
                     };
                     headerMenu.Items.Add(item);
-                    var item1 = new MenuItem() { Header = "Preferences" };
+                    var item1 = new MenuItem() { Header = Lang.LanguageManager.GetLocalized("MenuPreferences") };
                     item1.Click += (_o, _c) => {
                         var dialog = new TrackPreferencesDialog(Track);
                         dialog.ShowDialog();

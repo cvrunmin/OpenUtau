@@ -5,8 +5,57 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OpenUtau.UI.Dialogs"
         mc:Ignorable="d"
-        Title="ExportUstDialog" Height="300" Width="300">
+        Title="ExportUstDialog" Height="300" Width="300" Loaded="Window_Loaded">
     <Grid>
-        
+        <Label Content="Export Unit" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <ComboBox x:Name="comboExportU" Margin="88.017,10,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120" SelectedIndex="0" SelectionChanged="comboExportU_SelectionChanged">
+            <ComboBoxItem Content="Part"/>
+            <ComboBoxItem Content="Track"/>
+        </ComboBox>
+        <CheckBox x:Name="chkboxPosAsRest" Content="Insert rest note at the beginning" HorizontalAlignment="Left" Margin="10,40.24,0,0" VerticalAlignment="Top" IsChecked="True" Click="chkboxPosAsRest_Click"/>
+        <Grid Margin="10,0,10,10" VerticalAlignment="Bottom" Grid.IsSharedSizeScope="True">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="Func"/>
+                <ColumnDefinition Width="5px"/>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="Func"/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="butCancel" Content="{DynamicResource Cancel}" Grid.Column="3" Margin="0" VerticalAlignment="Bottom" Padding="11,4" Click="butCancel_Click"/>
+            <Button x:Name="butOk" Content="Ok" Grid.Column="1" d:LayoutOverrides="Height" Padding="11,4" Click="butOk_Click"/>
+        </Grid>
+        <Canvas Margin="10,0,10,40.24" Height="110" VerticalAlignment="Bottom">
+            <Rectangle Fill="#FFF4F4F5" Height="90" Canvas.Left="10" Stroke="Black" Canvas.Top="10" Width="252"/>
+            <Rectangle x:Name="rectT1P1" Height="15" Canvas.Left="10" Canvas.Top="20" Width="75" Stroke="Black">
+                <Rectangle.Fill>
+                    <SolidColorBrush Color="{DynamicResource NoteFillColorBCh0}"/>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle x:Name="rectT2P2" Height="15" Canvas.Left="160" Stroke="Black" Canvas.Top="35" Width="70">
+                <Rectangle.Fill>
+                    <SolidColorBrush Color="{DynamicResource NoteFillColorBCh0}"/>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle x:Name="rectT2P1" Height="15" Canvas.Left="85" Canvas.Top="35" Width="55" Stroke="Black">
+                <Rectangle.Fill>
+                    <SolidColorBrush Color="{DynamicResource NoteFillColorBCh0}"/>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle x:Name="rectT3P1" Height="15" Canvas.Left="80" Stroke="Black" Canvas.Top="50" Width="160">
+                <Rectangle.Fill>
+                    <SolidColorBrush Color="{DynamicResource NoteFillColorBCh0}"/>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle x:Name="rectT4P2" Height="15" Canvas.Left="170" Stroke="Black" Canvas.Top="65" Width="60">
+                <Rectangle.Fill>
+                    <SolidColorBrush Color="{DynamicResource NoteFillColorBCh0}"/>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle x:Name="rectT4P1" Height="15" Canvas.Left="10" Stroke="Black" Canvas.Top="65" Width="110">
+                <Rectangle.Fill>
+                    <SolidColorBrush Color="{DynamicResource NoteFillColorBCh0}"/>
+                </Rectangle.Fill>
+            </Rectangle>
+        </Canvas>
+
     </Grid>
 </Window>
