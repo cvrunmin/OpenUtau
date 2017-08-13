@@ -79,7 +79,7 @@ namespace OpenUtau.Core
 
         public override bool IsPlayingBack()
         {
-            return outDevice.PlaybackState == PlaybackState.Playing;
+            return outDevice?.PlaybackState == PlaybackState.Playing;
         }
 
         public override void StopPlayback()
@@ -92,6 +92,8 @@ namespace OpenUtau.Core
                 outDevice.Stop();
                 outDevice.Dispose();
                 outDevice = null;
+                masterMix = null;
+                trackSources.Clear();
             }
 
             SkipedTimeSpan = TimeSpan.Zero;
@@ -233,7 +235,6 @@ namespace OpenUtau.Core
 
         MixingSampleProvider masterMix;
         List<TrackSampleProvider> trackSources = new List<TrackSampleProvider>();
-        List<TrackSampleProvider> trackSourcesRaw = new List<TrackSampleProvider>();
         private CancellationTokenSource token;
         public override void Play(UProject project)
         {
@@ -258,7 +259,13 @@ namespace OpenUtau.Core
             {
                 token.Cancel();
             }
-            if (outDevice != null) outDevice.Stop();
+            if (outDevice != null)
+            {
+                outDevice.Stop();
+                masterMix = null;
+                trackSources.Clear();
+            }
+
             SkipedTimeSpan = TimeSpan.Zero;
         }
 
@@ -364,10 +371,6 @@ namespace OpenUtau.Core
                 {
                     trackSources[_cmd.TrackNo].PlainVolume = DecibelToVolume(_cmd.Volume);
                 }
-                if (trackSourcesRaw != null && trackSourcesRaw.Count > _cmd.TrackNo)
-                {
-                    trackSourcesRaw[_cmd.TrackNo].PlainVolume = DecibelToVolume(_cmd.Volume);
-                }
             }
             else if (cmd is PanChangeNotification)
             {
@@ -379,10 +382,6 @@ namespace OpenUtau.Core
                 if (trackSources != null && trackSources.Count > _cmd.TrackNo)
                 {
                     trackSources[_cmd.TrackNo].Pan = (float)_cmd.Pan / 90f;
-                }
-                if (trackSourcesRaw != null && trackSourcesRaw.Count > _cmd.TrackNo)
-                {
-                    trackSourcesRaw[_cmd.TrackNo].Pan = (float)_cmd.Pan / 90f;
                 }
             }
             else if (cmd is MuteNotification mute)
@@ -396,10 +395,6 @@ namespace OpenUtau.Core
                 if (trackSources != null && trackSources.Count > mute.TrackNo)
                 {
                     trackSources[mute.TrackNo].Muted = mute.Muted;
-                }
-                if (trackSourcesRaw != null && trackSourcesRaw.Count > mute.TrackNo)
-                {
-                    trackSourcesRaw[mute.TrackNo].Muted = mute.Muted;
                 }
             }
         }

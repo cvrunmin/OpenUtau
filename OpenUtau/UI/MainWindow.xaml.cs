@@ -457,6 +457,7 @@ namespace OpenUtau.UI
         private void MenuClearCache_Click(object sender, RoutedEventArgs e)
         {
             RenderCache.Inst.Clear();
+            RenderDispatcher.Inst.trackCache.Clear();
         }
         private void MenuExit_Click(object sender, RoutedEventArgs e) { CmdExit(); }
         private void MenuUndo_Click(object sender, RoutedEventArgs e) { DocManager.Inst.Undo(); }
@@ -618,7 +619,7 @@ namespace OpenUtau.UI
                 trackVM.SelectPart(item);
             }
             DocManager.Inst.EndUndoGroup();
-            trackVM.RedrawIfUpdated();
+            trackVM.MarkUpdate();
         }
 
         private void MenuMergeSParts_Click(object sender, RoutedEventArgs e)
@@ -642,7 +643,7 @@ namespace OpenUtau.UI
                 trackVM.SelectPart(item);
             }
             DocManager.Inst.EndUndoGroup();
-            trackVM.RedrawIfUpdated();
+            trackVM.MarkUpdate();
         }
 
         # endregion

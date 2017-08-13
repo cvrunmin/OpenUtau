@@ -158,6 +158,15 @@ namespace OpenUtau.Core.Util
             }
             return (false, "");
         }
+
+        public static string MakeCompletePhonemes(params string[] phos) {
+            string r = phos[0];
+            for (int i = 1; i < phos.Length; i++)
+            {
+                r = new string(r.Union(phos[i]).ToArray());
+            }
+            return r;
+        }
     }
 
     public static class ColorsConverter

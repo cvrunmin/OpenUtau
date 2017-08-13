@@ -64,8 +64,9 @@
                     <MenuItem Header="{DynamicResource MenuCut}" InputGestureText="Ctrl+X" IsEnabled="{Binding Copiable, Source={StaticResource midiVM}}" Click="MenuCut_Click"/>
                     <MenuItem Header="{DynamicResource MenuCopy}" InputGestureText="Ctrl+C" IsEnabled="{Binding Copiable, Source={StaticResource midiVM}}" Click="MenuCopy_Click"/>
                     <MenuItem Header="{DynamicResource MenuPaste}" InputGestureText="Ctrl+V" IsEnabled="{Binding Pastable, Source={StaticResource midiVM}}" Click="MenuPaste_Click"/>
-                    <MenuItem Header="{DynamicResource MenuDelete}" InputGestureText="Del"/>
-                    <MenuItem Header="{DynamicResource MenuSelectAll}" InputGestureText="Ctrl+A"/>
+                    <MenuItem Header="{DynamicResource MenuDelete}" InputGestureText="Del" Click="MenuDelete_Click"/>
+                    <MenuItem Header="{DynamicResource MenuSelectAll}" InputGestureText="Ctrl+A" Click="MenuSelectAll_Click"/>
+                    <MenuItem Header="Merge Notes" InputGestureText="Ctrl+U" Click="MenuMergeNotes_Click"/>
                 </MenuItem>
             </Menu>
             <Grid x:Name="toolGrid" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="250" Grid.Column="4">

@@ -1018,18 +1018,17 @@ namespace OpenUtau.UI
                         {
                             MenuPaste_Click(this, new RoutedEventArgs());
                         }
+                        else if (e.Key == Key.U)
+                        {
+                            MenuMergeNotes_Click(this, new RoutedEventArgs());
+                        }
                     }
                 }
                 else if (Keyboard.Modifiers == 0) // No midifiers
                 {
                     if (e.Key == Key.Delete)
                     {
-                        if (MidiVM.SelectedNotes.Count > 0)
-                        {
-                            if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
-                            DocManager.Inst.ExecuteCmd(new RemoveNoteCommand(MidiVM.Part, MidiVM.SelectedNotes));
-                            if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
-                        }
+                        MenuDelete_Click(this, new RoutedEventArgs());
                     }
                     else if (e.Key == Key.I)
                     {
@@ -1160,6 +1159,39 @@ namespace OpenUtau.UI
             }
             if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
         }
+        
+        private void MenuMergeNotes_Click(object sender, RoutedEventArgs e)
+        {
+            if (MidiVM.SelectedNotes.Count > 1)
+            {
+                var sn = new List<UNote>(MidiVM.SelectedNotes);
+                var nl = Core.Util.Utils.MakeCompletePhonemes(sn.Select(note => new string(note.Lyric.SkipWhile((c, index)=>c == '-' && index == 0).ToArray())).ToArray());
+                var dur = sn.Sum(note => note.DurTick);
+                var notem = sn.OrderBy(note => note.PosTick).First();
+                MidiVM.DeselectAll();
+                if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
+                DocManager.Inst.ExecuteCmd(new RemoveNoteCommand(MidiVM.Part, sn.Skip(1).ToList()), true);
+                DocManager.Inst.ExecuteCmd(new ChangeNoteLyricCommand(MidiVM.Part, notem, nl), true);
+                DocManager.Inst.ExecuteCmd(new ResizeNoteCommand(MidiVM.Part, notem, dur - notem.DurTick),true);
+                if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
+                MidiVM.SelectNote(notem);
+                MidiVM.MarkUpdate();
+            }
+        }
 
+        private void MenuDelete_Click(object sender, RoutedEventArgs e)
+        {
+            if (MidiVM.SelectedNotes.Count > 0)
+            {
+                if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
+                DocManager.Inst.ExecuteCmd(new RemoveNoteCommand(MidiVM.Part, MidiVM.SelectedNotes));
+                if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
+            }
+        }
+
+        private void MenuSelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            MidiVM.SelectAll();
+        }
     }
 }

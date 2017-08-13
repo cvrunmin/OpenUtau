@@ -595,6 +595,7 @@ namespace OpenUtau.Core.Formats
 
             foreach (var track in project.Tracks)
             {
+                if (track.Singer == null) continue;
                 foreach (var singer in project.Singers)
                 {
                     if (singer.Loaded && track.Singer.Name == singer.Name)
