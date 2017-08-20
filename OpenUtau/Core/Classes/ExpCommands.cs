@@ -108,8 +108,16 @@ namespace OpenUtau.Core
         public double Shift { get; private set; }
         public double Drift { get; private set; }
         public double Period { get; private set; }
+        public double OldLength { get; private set; }
+        public double OldDepth { get; private set; }
+        public double OldIn { get; private set; }
+        public double OldOut { get; private set; }
+        public double OldShift { get; private set; }
+        public double OldDrift { get; private set; }
+        public double OldPeriod { get; private set; }
         public UpdateNoteVibratoCommand(UNote note, double len = double.NaN, double per = double.NaN, double dep = double.NaN, double din = double.NaN, double dout = double.NaN, double shift = double.NaN, double drift = double.NaN) {
             this.note = note;
+            Part = DocManager.Inst.Project.Parts[note.PartNo] as UVoicePart;
             Length = len;
             Depth = dep;
             Period = per;
@@ -127,6 +135,18 @@ namespace OpenUtau.Core
             if (!double.IsNaN(Out)) note.Vibrato.Out = Out;
             if (!double.IsNaN(Shift)) note.Vibrato.Shift = Shift;
             if (!double.IsNaN(Drift)) note.Vibrato.Drift = Drift;
+            base.Execute();
+        }
+        public override void Unexecute()
+        {
+            note.Vibrato.Length = OldLength;
+            note.Vibrato.Period = OldPeriod;
+            note.Vibrato.Depth = OldDepth;
+            note.Vibrato.In = OldIn;
+            note.Vibrato.Out = OldOut;
+            note.Vibrato.Shift = OldShift;
+            note.Vibrato.Drift = OldDrift;
+            base.Unexecute();
         }
         public override string ToString()
         {

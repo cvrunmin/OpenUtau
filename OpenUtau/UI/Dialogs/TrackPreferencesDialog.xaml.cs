@@ -80,10 +80,17 @@ namespace OpenUtau.UI.Dialogs
             else
             {
                 this.previewEngineCombo.ItemsSource = engines;
-                previewEngineCombo.SelectedIndex = Math.Max(0, engines.IndexOf(Track.OverrideRenderEngine));
+                if (string.IsNullOrWhiteSpace(Track.OverrideRenderEngine))
+                {
+                    previewRatioInternal.IsChecked = true;
+                }
+                else
+                {
+                    previewRatioExternal.IsChecked = true;
+                    previewEngineCombo.SelectedIndex = Math.Max(0, engines.IndexOf(Track.OverrideRenderEngine));
+                }
             }
-            if (string.IsNullOrWhiteSpace(Track.OverrideRenderEngine)) this.previewRatioInternal.IsChecked = true;
-            else this.previewRatioExternal.IsChecked = true;
+
         }
 
         private void previewEngine_Checked(object sender, RoutedEventArgs e)
@@ -91,7 +98,7 @@ namespace OpenUtau.UI.Dialogs
             if (sender == this.previewRatioInternal) {
                 Track.OverrideRenderEngine = "";
             }
-            else
+            else if(previewEngineCombo.SelectedIndex != -1)
             {
                 Track.OverrideRenderEngine = engines[this.previewEngineCombo.SelectedIndex];
             }

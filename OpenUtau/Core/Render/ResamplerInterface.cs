@@ -35,19 +35,21 @@ namespace OpenUtau.Core.Render
         public Task<SequencingSampleProvider> ResamplePartNew(UVoicePart part, UProject project, IResamplerDriver engine, System.Threading.CancellationToken cancel)
         {
             return new TaskFactory().StartNew(() => RenderAsync(part, project, engine, cancel), cancel)
-                .ContinueWith(task => {
-                List<RenderItemSampleProvider> renderItemSampleProviders = new List<RenderItemSampleProvider>();
-                foreach (var item in task.Result) renderItemSampleProviders.Add(new RenderItemSampleProvider(item));
-                DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, ""));
-                try
+                .ContinueWith(task =>
                 {
-                    return new SequencingSampleProvider(renderItemSampleProviders);
-                }
-                catch (ArgumentException)
-                {
-                    return null;
-                }
-            });
+                    List<RenderItemSampleProvider> renderItemSampleProviders = new List<RenderItemSampleProvider>();
+                    if (task.Status == TaskStatus.RanToCompletion)
+                        foreach (var item in task.Result) renderItemSampleProviders.Add(new RenderItemSampleProvider(item));
+                    DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, ""));
+                    try
+                    {
+                        return new SequencingSampleProvider(renderItemSampleProviders);
+                    }
+                    catch (ArgumentException)
+                    {
+                        return null;
+                    }
+                });
         }
 
         private void worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -84,25 +86,32 @@ namespace OpenUtau.Core.Render
             System.Diagnostics.Debug.WriteLine("Resampling start");
             lock (part)
             {
-                string cacheDir = PathManager.Inst.GetCachePath(project.FilePath);
-                int count = 0, i = 0;
-                foreach (UNote note in part.Notes) foreach (UPhoneme phoneme in note.Phonemes) count++;
-
-                foreach (UNote note in part.Notes)
+                try
                 {
-                    foreach (UPhoneme phoneme in note.Phonemes)
+                    string cacheDir = PathManager.Inst.GetCachePath(project.FilePath);
+                    int count = 0, i = 0;
+                    foreach (UNote note in part.Notes) foreach (UPhoneme phoneme in note.Phonemes) count++;
+
+                    foreach (UNote note in part.Notes)
                     {
-                        cancel.ThrowIfCancellationRequested();
-                        RenderItem item = BuildRenderItem(phoneme, part, project);
-                        if (!item.Error)
+                        foreach (UPhoneme phoneme in note.Phonemes)
                         {
-                            RenderPhoneme(engine, cacheDir, item, Path.GetFileNameWithoutExtension(project.FilePath), part.TrackNo);
-                            if(item.Sound != null) renderItems.Add(item);
+                            cancel.ThrowIfCancellationRequested();
+                            RenderItem item = BuildRenderItem(phoneme, part, project);
+                            if (!item.Error)
+                            {
+                                RenderPhoneme(engine, cacheDir, item, Path.GetFileNameWithoutExtension(project.FilePath), part.TrackNo);
+                                if (item.Sound != null) renderItems.Add(item);
+                            }
+                            DocManager.Inst.ExecuteCmd(new ProgressBarNotification(100 * ++i / count, string.Format("Resampling \"{0}\" {1}/{2}", phoneme.Phoneme, i, count)));
                         }
-                        DocManager.Inst.ExecuteCmd(new ProgressBarNotification(100 * ++i / count, string.Format("Resampling \"{0}\" {1}/{2}", phoneme.Phoneme, i, count)));
+                        cancel.ThrowIfCancellationRequested();
                     }
-                    cancel.ThrowIfCancellationRequested();
                 }
+                catch (OperationCanceledException)
+                {
+                }
+
             }
             watch.Stop();
             System.Diagnostics.Debug.WriteLine("Resampling end");
@@ -243,7 +252,7 @@ namespace OpenUtau.Core.Render
         private List<int> BuildPitchData(UPhoneme phoneme, UVoicePart part, UProject project)
         {
             List<int> pitches = new List<int>();
-            UNote lastNote = part.Notes.OrderByDescending(x => x).Where(x => x.CompareTo(phoneme.Parent) < 0).FirstOrDefault();
+            UNote lastNote = part.Notes.Where(x => x.CompareTo(phoneme.Parent) < 0).LastOrDefault();
             UNote nextNote = part.Notes.Where(x => x.CompareTo(phoneme.Parent) > 0).FirstOrDefault();
             // Get relevant pitch points
             List<PitchPoint> pps = new List<PitchPoint>();
@@ -293,7 +302,7 @@ namespace OpenUtau.Core.Render
             }
 
             double startMs = DocManager.Inst.Project.TickToMillisecond(phoneme.PosTick, part.PosTick + phoneme.Parent.PosTick) - (phoneme.Oto?.Preutter).GetValueOrDefault();
-            double endMs = DocManager.Inst.Project.TickToMillisecond(phoneme.DurTick, part.PosTick + phoneme.Parent.PosTick + phoneme.PosTick) -
+            double endMs = DocManager.Inst.Project.TickToMillisecond(phoneme.PosTick + phoneme.DurTick, part.PosTick + phoneme.Parent.PosTick) -
                 (nextNote != null && nextNote.Phonemes[0].Overlapped ? nextNote.Phonemes[0].Preutter - nextNote.Phonemes[0].Overlap : 0);
             if (pps.Count > 0)
             {
@@ -306,7 +315,7 @@ namespace OpenUtau.Core.Render
             }
 
             // Interpolation
-            const int intervalTick = 5;
+            const int intervalTick = 1;
             double intervalMs = DocManager.Inst.Project.TickToMillisecond(intervalTick, part.PosTick + phoneme.Parent.PosTick);
             double currMs = startMs;
             int i = 0;

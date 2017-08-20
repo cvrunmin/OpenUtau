@@ -117,8 +117,9 @@ namespace OpenUtau.UI.Dialogs
 
         private void name_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            SaveSinger(SelectedSinger);
             if (singerAmend)
+            {
+                SaveSinger(SelectedSinger);
                 foreach (var track in DocManager.Inst.Project.Tracks)
                 {
                     if (track.Singer.Equals(SelectedSinger))
@@ -126,6 +127,8 @@ namespace OpenUtau.UI.Dialogs
                         track.Amended = true;
                     }
                 }
+            }
+
             SetSinger(singerNames[this.name.SelectedIndex]);
         }
 
@@ -239,8 +242,9 @@ namespace OpenUtau.UI.Dialogs
 
         private void window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            SaveSinger(SelectedSinger);
             if (singerAmend)
+            {
+                SaveSinger(SelectedSinger);
                 foreach (var track in DocManager.Inst.Project.Tracks)
                 {
                     if (SelectedSinger.Equals(track.Singer))
@@ -248,6 +252,7 @@ namespace OpenUtau.UI.Dialogs
                         track.Amended = true;
                     }
                 }
+            }
         }
 
         private void butDuplicate_Click(object sender, RoutedEventArgs e)
