@@ -95,7 +95,7 @@ namespace OpenUtau.UI.Models
 
         void box_Click(object sender, EventArgs e)
         {
-            if (DisplayMode != ExpDisMode.Visible)
+            if (DisplayMode != ExpDisMode.Visible && SelectedIndex != -1)
                 DocManager.Inst.ExecuteCmd(new SelectExpressionNotification(Keys[SelectedIndex], this.Index, true));
         }
 

@@ -60,6 +60,7 @@ namespace OpenUtau.Core
                 }
                 else if (cmd is LoadProjectNotification)
                 {
+                    PlaybackManager.GetActiveManager().StopPlayback();
                     undoQueue.Clear();
                     redoQueue.Clear();
                     Render.RenderDispatcher.Inst.trackCache.Clear();

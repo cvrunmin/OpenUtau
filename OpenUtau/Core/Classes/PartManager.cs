@@ -128,7 +128,7 @@ namespace OpenUtau.Core
                         if (gapMs < phoneme.Preutter)
                         {
                             phoneme.Overlapped = true;
-                            double lastDurMs = DocManager.Inst.Project.TickToMillisecond(lastPhoneme.DurTick, part.PosTick + note.PosTick + phoneme.PosTick);
+                            double lastDurMs = DocManager.Inst.Project.TickToMillisecond(lastPhoneme.DurTick, part.PosTick + lastPhoneme.Parent.PosTick + lastPhoneme.PosTick);
                             double correctionRatio = (lastDurMs + Math.Min(0, gapMs)) / 2 / (phoneme.Preutter - phoneme.Overlap);
                             if (phoneme.Preutter - phoneme.Overlap > gapMs + lastDurMs / 2)
                             {
@@ -165,6 +165,7 @@ namespace OpenUtau.Core
         private static void UpdatePhonemeOto(UVoicePart part, USinger singer)
         {
             if (singer == null || !singer.Loaded) return;
+            UPhoneme oldpho = null;
             foreach (UNote note in part.Notes)
             {
                 foreach (UPhoneme phoneme in note.Phonemes)
@@ -180,7 +181,24 @@ namespace OpenUtau.Core
                         {
                             string noteString = MusicMath.GetNoteString(note.NoteNum);
                             if (singer.PitchMap.ContainsKey(noteString))
+                            {
                                 phoneme.RemappedBank = singer.PitchMap[noteString];
+                            }
+                            else
+                            {
+                                phoneme.RemappedBank = "";
+                            }
+                        }
+                    }
+                    bool hyphenHolder = note.Lyric.Equals("-") || phoneme.Phoneme.Equals("-");
+                    if (phoneme.Phoneme.Equals("-")) {
+                        try
+                        {
+                            phoneme.Phoneme = Util.LyricsHelper.GetVowel(oldpho.Phoneme);
+                        }
+                        catch (Exception)
+                        {
+                            System.Diagnostics.Debug.WriteLine("Cannot replace \"-\" placeholder");
                         }
                     }
 
@@ -188,8 +206,8 @@ namespace OpenUtau.Core
                     {
                         phoneme.Oto = singer.AliasMap[phoneme.PhonemeRemapped];
                         phoneme.PhonemeError = false;
-                        phoneme.Overlap = phoneme.Oto.Overlap;
-                        phoneme.Preutter = phoneme.Oto.Preutter;
+                        phoneme.Overlap = phoneme.Oto.Overlap + (hyphenHolder ? Math.Min(oldpho.DurTick * 0.6, phoneme.DurTick) : 0);
+                        phoneme.Preutter = phoneme.Oto.Preutter + (hyphenHolder ? Math.Min(oldpho.DurTick * 0.2, phoneme.DurTick) : 0);
                         int vel = (int)phoneme.Parent.Expressions["velocity"].Data;
                         if (vel != 100)
                         {
@@ -204,6 +222,7 @@ namespace OpenUtau.Core
                         phoneme.Overlap = 0;
                         phoneme.Preutter = 0;
                     }
+                    oldpho = phoneme;
                 }
             }
         }
@@ -248,16 +267,26 @@ namespace OpenUtau.Core
 
         private static void CheckOverlappedNotes(UVoicePart part)
         {
-            UNote lastNote = null;
+            //UNote lastNote = null;
             foreach (UNote note in part.Notes)
             {
+                var li = part.Notes.SkipWhile(note1=>note1.PosTick < note.PosTick && note1.EndTick <= note.PosTick).TakeWhile(note1 => note1.PosTick < note.EndTick);
+                if (li.Count() > 1) {
+                    note.Error = true;
+                    li.ToList().ForEach(note1 => note1.Error = true);
+                }
+                else
+                {
+                    note.Error = false;
+                }
+                /*
                 if (lastNote != null && lastNote.EndTick > note.PosTick)
                 {
                     lastNote.Error = true;
                     note.Error = true;
                 }
                 else note.Error = false;
-                lastNote = note;
+                lastNote = note;*/
             }
         }
 
