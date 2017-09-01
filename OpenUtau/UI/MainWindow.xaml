@@ -161,7 +161,7 @@
                     </ScrollBar>
                     <local:NavigateDrag x:Name="navigateDrag" HorizontalAlignment="Right" VerticalAlignment="Top" Width="20" Height="20" Margin="0,0,0,0" NavDrag="navigateDrag_NavDrag"/>
                     <local:ViewScaler x:Name="viewScalerX" HorizontalAlignment="Right" VerticalAlignment="Top" Width="20" Height="20" Margin="0,0,20,0"
-                              Value="{Binding QuarterWidth, Source={StaticResource tracksVM}, Mode=TwoWay}" HorizontallyScaled="True"/>
+                               HorizontallyScaled="True" ViewScaled="viewScalerX_ViewScaled"/>
                     <local:ViewScaler x:Name="viewScaler" HorizontalAlignment="Right" VerticalAlignment="Top" Width="20" Height="20" Margin="0,20,0,0"
                               Value="{Binding TrackHeight, Source={StaticResource tracksVM}, Mode=TwoWay}"/>
                     <Border x:Name="notesCanvasShadow" Background="{x:Null}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,20,20,0" BorderThickness="0" ClipToBounds="True">

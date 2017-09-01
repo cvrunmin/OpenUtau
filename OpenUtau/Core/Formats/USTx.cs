@@ -541,12 +541,12 @@ namespace OpenUtau.Core.Formats
             StringBuilder str = new StringBuilder();
             try
             {
+                project.FilePath = file;
                 jss.Serialize(project, str);
                 var f_out = new StreamWriter(file);
                 f_out.Write(str.ToString());
                 f_out.Close();
                 project.Saved = true;
-                project.FilePath = file;
             }
             catch (Exception e)
             {

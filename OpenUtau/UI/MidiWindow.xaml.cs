@@ -912,9 +912,9 @@ namespace OpenUtau.UI
         {
             if (e is ViewScaledEventArgs args)
             {
-                double zoomCenter = MidiVM.OffsetX / MidiVM.QuarterWidth;
+                double zoomCenter = (MidiVM.OffsetX + MidiVM.ViewWidth / 2) / MidiVM.QuarterWidth;
                 MidiVM.QuarterWidth = args.Value;
-                MidiVM.OffsetX = Math.Max(0, Math.Min(MidiVM.TotalWidth, zoomCenter * MidiVM.QuarterWidth));
+                MidiVM.OffsetX = Math.Max(0, Math.Min(MidiVM.TotalWidth, zoomCenter * MidiVM.QuarterWidth - MidiVM.ViewWidth / 2));
             }
         }
 

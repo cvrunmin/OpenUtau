@@ -879,5 +879,14 @@ namespace OpenUtau.UI
 
         #endregion
 
+        private void viewScalerX_ViewScaled(object sender, EventArgs e)
+        {
+            if (e is ViewScaledEventArgs args)
+            {
+                double zoomCenter = (trackVM.OffsetX + trackVM.ViewWidth / 2) / trackVM.QuarterWidth;
+                trackVM.QuarterWidth = args.Value;
+                trackVM.OffsetX = Math.Max(0, Math.Min(trackVM.TotalWidth, zoomCenter * trackVM.QuarterWidth - trackVM.ViewWidth / 2));
+            }
+        }
     }
 }
