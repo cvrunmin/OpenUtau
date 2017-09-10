@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace OpenUtau.Core.USTx
 {
@@ -21,6 +22,8 @@ namespace OpenUtau.Core.USTx
         public double Pan { set; get; }
         public bool Amended { get; set; }
         public string OverrideRenderEngine { get; set; }
+
+        public Color Color { get; set; }
 
         public UTrack() { }
     }

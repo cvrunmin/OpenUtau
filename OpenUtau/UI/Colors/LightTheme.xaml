@@ -55,7 +55,15 @@
     <!--Channel 0-->
     <Color x:Key="NoteFillColorACh0">#6eb6ee</Color>
     <Color x:Key="NoteFillColorBCh0">#4ea6ea</Color>
+    <Color x:Key="NoteFillColorBCh1">#ff7669</Color>
+    <Color x:Key="NoteFillColorBCh2">#4f61ea</Color>
+    <Color x:Key="NoteFillColorBCh3">#ff6a9f</Color>
+    <Color x:Key="NoteFillColorBCh4">#80a477</Color>
     <Color x:Key="NoteStrokeColorCh0">#5e9ccc</Color>
+    <Color x:Key="NoteStrokeColorCh1">#d68077</Color>
+    <Color x:Key="NoteStrokeColorCh2">#3c479e</Color>
+    <Color x:Key="NoteStrokeColorCh3">#b75b7c</Color>
+    <Color x:Key="NoteStrokeColorCh4">#496d40</Color>
 
     <!--Channel 1-->
     <Color x:Key="NoteFillColorCh0">#4ea6ea</Color>

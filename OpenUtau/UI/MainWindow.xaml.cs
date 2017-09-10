@@ -511,8 +511,11 @@ namespace OpenUtau.UI
                 DocManager.Inst.StartUndoGroup();
                 foreach (var part in parts)
                 {
-                    var track = new UTrack();
-                    track.TrackNo = project.Tracks.Count;
+                    var track = new UTrack
+                    {
+                        TrackNo = project.Tracks.Count,
+                        Color = Colors.Transparent
+                    };
                     part.TrackNo = track.TrackNo;
                     DocManager.Inst.ExecuteCmd(new AddTrackCommand(project, track));
                     DocManager.Inst.ExecuteCmd(new AddPartCommand(project, part));
@@ -769,7 +772,7 @@ namespace OpenUtau.UI
             int trackNo = trackVM.Project.Tracks.Count;
             part.TrackNo = trackNo;
             DocManager.Inst.StartUndoGroup();
-            DocManager.Inst.ExecuteCmd(new AddTrackCommand(trackVM.Project, new UTrack() { TrackNo = trackNo }));
+            DocManager.Inst.ExecuteCmd(new AddTrackCommand(trackVM.Project, new UTrack() { TrackNo = trackNo, Color = Colors.Transparent }));
             DocManager.Inst.ExecuteCmd(new AddPartCommand(trackVM.Project, part));
             DocManager.Inst.EndUndoGroup();
         }
@@ -834,7 +837,7 @@ namespace OpenUtau.UI
             {
                 var project = DocManager.Inst.Project;
                 DocManager.Inst.StartUndoGroup();
-                DocManager.Inst.ExecuteCmd(new AddTrackCommand(project, new UTrack() { TrackNo = project.Tracks.Count() }));
+                DocManager.Inst.ExecuteCmd(new AddTrackCommand(project, new UTrack() { TrackNo = project.Tracks.Count(), Color = Colors.Transparent }));
                 DocManager.Inst.EndUndoGroup();
             }
         }

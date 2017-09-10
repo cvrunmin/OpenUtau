@@ -50,7 +50,7 @@ namespace OpenUtau.UI
 
         public static bool LoadTheme(){
 
-            const int NumberOfChannel = 1;
+            const int NumberOfChannel = 5;
 
             WhiteKeyBrushNormal.GradientStops.Add(new GradientStop(GetColor("WhiteKeyColorNormalLeft"), 0));
             WhiteKeyBrushNormal.GradientStops.Add(new GradientStop(GetColor("WhiteKeyColorNormalRight"), 1));

@@ -218,6 +218,7 @@ namespace OpenUtau.UI.Models
                 {
                     Canvas.SetTop(trackHeader, -OffsetY + TrackHeight * trackHeader.Track.TrackNo);
                     trackHeader.Height = TrackHeight;
+                    trackHeader.UpdateDisplayTrackNo();
                 }
                 UpdatePlayPosMarker();
             }

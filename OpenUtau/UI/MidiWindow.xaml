@@ -58,7 +58,7 @@
                 </ToggleButton.Content>
             </ToggleButton>
             <Menu x:Name="mainMenu" IsMainMenu="True" VerticalAlignment="Top" HorizontalAlignment="Left" Background="White" Margin="0,0,0,0" Grid.Column="3">
-                <MenuItem Header="{DynamicResource MenuEdit}">
+                <MenuItem x:Name="menuEdit" Header="{DynamicResource MenuEdit}">
                     <MenuItem Header="{DynamicResource MenuUndo}" InputGestureText="Ctrl+Z" Click="MenuUndo_Click" />
                     <MenuItem Header="{DynamicResource MenuRedo}" InputGestureText="Ctrl+Y" Click="MenuRedo_Click"/>
                     <MenuItem Header="{DynamicResource MenuCut}" InputGestureText="Ctrl+X" IsEnabled="{Binding Copiable, Source={StaticResource midiVM}}" Click="MenuCut_Click"/>
@@ -67,6 +67,19 @@
                     <MenuItem Header="{DynamicResource MenuDelete}" InputGestureText="Del" Click="MenuDelete_Click"/>
                     <MenuItem Header="{DynamicResource MenuSelectAll}" InputGestureText="Ctrl+A" Click="MenuSelectAll_Click"/>
                     <MenuItem Header="Merge Notes" InputGestureText="Ctrl+U" Click="MenuMergeNotes_Click"/>
+                </MenuItem>
+                <MenuItem Header="Preview">
+                    <MenuItem Header="Play" Tag="Play" Click="MenuPlaybackCtrl_Click"/>
+                    <MenuItem Header="Pause" Tag="Pause" Click="MenuPlaybackCtrl_Click"/>
+                    <MenuItem Header="Stop" Tag="Stop" Click="MenuPlaybackCtrl_Click"/>
+                    <MenuItem Header="Seek to...">
+                        <MenuItem Header="Start" Tag="Start" Click="MenuSeek_Click"/>
+                        <MenuItem Header="First note" Tag="FirstNote" Click="MenuSeek_Click"/>
+                        <MenuItem Header="Last note" Tag="LastNote" Click="MenuSeek_Click"/>
+                        <MenuItem Header="End" Tag="End" Click="MenuSeek_Click"/>
+                    </MenuItem>
+                    <Separator/>
+                    <MenuItem Header="Preview Mode" Click="MenuSwitchPreview_Click" IsCheckable="True"/>
                 </MenuItem>
             </Menu>
             <Grid x:Name="toolGrid" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="250" Grid.Column="4">

@@ -360,6 +360,19 @@ namespace OpenUtau.UI.Models
             initPlayPosMarker();
         }
 
+        public void ToggleViewMode(bool toggle) {
+            MidiCanvas.Children.Remove(notesElement);
+            if (toggle) {
+                notesElement = new ViewOnlyNotesElement() { Key = "pitchbend", Part = Part, midiVM = this};
+            }
+            else
+            {
+                notesElement = new NotesElement() { Key = "pitchbend", Part = Part, midiVM = this };
+            }
+            MidiCanvas.Children.Add(notesElement);
+            MarkUpdate();
+        }
+
         private void OnPartModified()
         {
             Title = Part.Name;

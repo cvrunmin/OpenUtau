@@ -77,7 +77,7 @@ namespace OpenUtau.UI.Controls
             fTextHeights.Clear();
         }
 
-        private void DrawNote(UNote note, DrawingContext cxt)
+        protected virtual void DrawNote(UNote note, DrawingContext cxt)
         {
             DrawNoteBody(note, cxt);
             if (!note.Error)
@@ -164,7 +164,11 @@ namespace OpenUtau.UI.Controls
             lyricBox.Focus();
         }
 
-        private void DrawNoteBody(UNote note, DrawingContext cxt)
+        private void DrawNoteBody(UNote note, DrawingContext cxt) {
+            DrawNoteBody(note, cxt, ThemeManager.NoteFillBrushes[0], ThemeManager.NoteFillSelectedBrush);
+        }
+
+        protected void DrawNoteBody(UNote note, DrawingContext cxt, Brush fill, Brush selected)
         {
             double left = note.PosTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar + 1;
             double top = midiVM.TrackHeight * ((double)UIConstants.MaxNoteNum - 1 - note.NoteNum) + 1;
@@ -172,8 +176,8 @@ namespace OpenUtau.UI.Controls
             double height = Math.Max(2, midiVM.TrackHeight - 2);
             cxt.DrawRoundedRectangle(
                 note.Error ?
-                note.Selected ? ThemeManager.NoteFillSelectedErrorBrush : ThemeManager.NoteFillErrorBrushes[0] :
-                note.Selected ? ThemeManager.NoteFillSelectedBrush : ThemeManager.NoteFillBrushes[0],
+                (note.Selected ? new SolidColorBrush(ThemeManager.GetColorVariationAlpha(((SolidColorBrush)selected).Color, 127)) : new SolidColorBrush(ThemeManager.GetColorVariationAlpha(((SolidColorBrush)fill).Color, 127))) :
+                (note.Selected ? selected : fill),
                 null, new Rect(new Point(left, top), new Size(width, height)), 2, 2);
             if (height >= 10)
             {
@@ -208,7 +212,7 @@ namespace OpenUtau.UI.Controls
             fTextHeights.Add(text, fText.Height);
         }
         Pen pen6;
-        private void DrawVibrato(UNote note, DrawingContext cxt)
+        protected void DrawVibrato(UNote note, DrawingContext cxt)
         {
             if (note.Vibrato == null) return;
             var vibrato = note.Vibrato;
@@ -266,7 +270,7 @@ namespace OpenUtau.UI.Controls
             }
         }
 
-        private void DrawPitchBend(UNote note, DrawingContext cxt)
+        protected void DrawPitchBend(UNote note, DrawingContext cxt, bool drawPt = true)
         {
             var _pitchExp = note.PitchBend as PitchBendExpression;
             var _pts = _pitchExp.Data as List<PitchPoint>;
@@ -277,6 +281,7 @@ namespace OpenUtau.UI.Controls
             double pt0Pit = note.NoteNum + _pts[0].Y / 10.0;
             double pt0Y = TrackHeight * ((double)UIConstants.MaxNoteNum - 1.0 - pt0Pit) + TrackHeight / 2;
 
+            if(drawPt)
             if (note.PitchBend.SnapFirst) cxt.DrawEllipse(ThemeManager.WhiteKeyNameBrushNormal, penPit, new Point(pt0X, pt0Y), 2.5, 2.5);
             else cxt.DrawEllipse(null, penPit, new Point(pt0X, pt0Y), 2.5, 2.5);
 
@@ -312,7 +317,46 @@ namespace OpenUtau.UI.Controls
                 pt0X = pt1X;
                 pt0Pit = pt1Pit;
                 pt0Y = pt1Y;
-                cxt.DrawEllipse(null, penPit, new Point(pt0X, pt0Y), 2.5, 2.5);
+                if(drawPt) cxt.DrawEllipse(null, penPit, new Point(pt0X, pt0Y), 2.5, 2.5);
+            }
+        }
+    }
+
+    class ViewOnlyNotesElement : NotesElement
+    {
+        public override void RedrawIfUpdated()
+        {
+            if (!_updated) return;
+            DrawingContext cxt = visual.RenderOpen();
+            foreach(var Part in DocManager.Inst.Project.Parts.OfType<UVoicePart>())
+            {
+                bool inView, lastInView = false;
+                UNote lastNote = null;
+                Brush brush = new SolidColorBrush(ThemeManager.GetColorVariationAlpha(DocManager.Inst.Project.Tracks[Part.TrackNo].Color, (byte)(Part != this.Part ? 0x7f : 0xff)));
+                foreach (var note in Part.Notes)
+                {
+                    inView = midiVM.NoteIsInView(note);
+
+                    if (inView && !lastInView && lastNote != null)
+                        DrawNote(lastNote, cxt,brush,brush);
+
+                    if (inView || lastInView)
+                        DrawNote(note, cxt,brush,brush);
+
+                    lastNote = note;
+                    lastInView = inView;
+                }
+            }
+            cxt.Close();
+            _updated = false;
+        }
+        private void DrawNote(UNote note, DrawingContext cxt, Brush fill, Brush selected)
+        {
+            DrawNoteBody(note, cxt, fill, selected);
+            if (!note.Error)
+            {
+                if (ShowPitch) DrawPitchBend(note, cxt, false);
+                if (ShowPitch) DrawVibrato(note, cxt);
             }
         }
     }

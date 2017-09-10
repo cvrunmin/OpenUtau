@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using OpenUtau.Core.USTx;
+using System.Windows.Media;
 
 namespace OpenUtau.Core
 {
@@ -53,15 +54,39 @@ namespace OpenUtau.Core
 
     public class AddTrackCommand : TrackCommand
     {
+        internal static int colorRandCount = 0;
+        private static Random rand = new Random();
         public AddTrackCommand(UProject project, UTrack track) { this.project = project; this.track = track; }
         public override string ToString() { return "Add track"; }
         public override void Execute()
         {
             if (track.TrackNo < project.Tracks.Count) project.Tracks.Insert(track.TrackNo, track);
             else project.Tracks.Add(track);
+            if (track.Color.Equals(Colors.Transparent))
+            {
+                track.Color = GenerateColor();
+            }
             UpdateTrackNo();
             base.Execute();
         }
+
+        internal static Color GenerateColor()
+        {
+            Color clrR;
+            if (UI.ThemeManager.NoteFillBrushes.Count <= colorRandCount)
+            {
+                Color clr1 = UI.ThemeManager.NoteFillBrushes[rand.Next(UI.ThemeManager.NoteFillBrushes.Count)].Color;
+                Color clr2 = UI.ThemeManager.NoteFillBrushes[rand.Next(UI.ThemeManager.NoteFillBrushes.Count)].Color;
+                clrR = clr1 * (float)rand.NextDouble() + clr2 * (float)rand.NextDouble();
+            }
+            else
+            {
+                clrR = UI.ThemeManager.NoteFillBrushes[colorRandCount].Color;
+            }
+            colorRandCount++;
+            return clrR;
+        }
+
         public override void Unexecute() { project.Tracks.Remove(track); UpdateTrackNo();
             base.Unexecute();
         }

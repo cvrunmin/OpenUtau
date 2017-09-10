@@ -63,26 +63,28 @@ namespace OpenUtau.UI
                 if (value)
                 {
                     keyboardBackground.Visibility = Visibility.Collapsed;
-                    //expCanvas.Visibility = Visibility.Collapsed;
                     MidiVM.TrackHeight = 32;
                     showPitchToggle.Visibility = Visibility.Collapsed;
-                    //CCGrid.Visibility = Visibility.Collapsed;
-                    //expVerticalScroll.Visibility = Visibility.Collapsed;
-                    //expTickBackground.Visibility = Visibility.Collapsed;
                     mainButton.Visibility = Visibility.Collapsed;
                     MidiVM.ViewHeight = 22;
                 }
                 else
                 {
                     keyboardBackground.Visibility = Visibility.Visible;
-                    //expCanvas.Visibility = Visibility.Visible;
                     MidiVM.TrackHeight = 32;
                     showPitchToggle.Visibility = Visibility.Visible;
-                    //CCGrid.Visibility = Visibility.Visible;
-                    //expVerticalScroll.Visibility = Visibility.Visible;
-                    //expTickBackground.Visibility = Visibility.Visible;
                     mainButton.Visibility = Visibility.Visible;
                 }
+            }
+        }
+
+        private bool _viewOnly;
+        public bool ViewOnly { get {
+                return _viewOnly;
+            } set {
+                _viewOnly = value;
+                menuEdit.IsEnabled = !value;
+                MidiVM.ToggleViewMode(value);
             }
         }
 
@@ -296,7 +298,7 @@ namespace OpenUtau.UI
 
         private void notesCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (MidiVM.Part == null) return;
+            if (MidiVM.Part == null || ViewOnly) return;
             Point mousePos = e.GetPosition((Canvas)sender);
 
             var hit = VisualTreeHelper.HitTest(notesCanvas, mousePos).VisualHit;
@@ -569,7 +571,7 @@ namespace OpenUtau.UI
 
         private void notesCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (MidiVM.Part == null) return;
+            if (MidiVM.Part == null || ViewOnly) return;
             if (_inMove || _inResize || _vbrInDeepen || _vbrInLengthen || _vbrPeriodLengthen || _vbrPhaseMoving || _vbrInMoving || _vbrOutMoving || _vbrDriftMoving)
             {
                 if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
@@ -600,8 +602,11 @@ namespace OpenUtau.UI
 
         private void notesCanvas_MouseMove(object sender, MouseEventArgs e)
         {
-            Point mousePos = e.GetPosition((Canvas)sender);
-            notesCanvas_MouseMove_Helper(mousePos);
+            if (ViewOnly)
+            {
+                Point mousePos = e.GetPosition((Canvas)sender);
+                notesCanvas_MouseMove_Helper(mousePos);
+            }
         }
 
         private void notesCanvas_MouseMove_Helper(Point mousePos)
@@ -740,7 +745,7 @@ namespace OpenUtau.UI
                     {
                         Mouse.OverrideCursor = Cursors.SizeWE;
                     }
-                    else
+                    else if (showPitchToggle.IsChecked.Value)
                     {
                         VibratoHitTestResult vibHit = midiHT.HitTestVibrato(mousePos);
                         if (vibHit.Success)
@@ -765,13 +770,14 @@ namespace OpenUtau.UI
                         }
                         else Mouse.OverrideCursor = null;
                     }
+                    else Mouse.OverrideCursor = null;
                 }
             }
         }
 
         private void notesCanvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (MidiVM.Part == null) return;
+            if (MidiVM.Part == null || ViewOnly) return;
             Point mousePos = e.GetPosition((Canvas)sender);
 
             var pitHit = midiHT.HitTestPitchPoint(mousePos);
@@ -856,7 +862,7 @@ namespace OpenUtau.UI
 
         private void notesCanvas_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (MidiVM.Part == null) return;
+            if (MidiVM.Part == null || ViewOnly) return;
             Mouse.OverrideCursor = null;
             ((UIElement)sender).ReleaseMouseCapture();
             if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
@@ -1065,21 +1071,27 @@ namespace OpenUtau.UI
         }
         private void expCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            ((Canvas)sender).CaptureMouse();
-            if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
-            Point mousePos = e.GetPosition((UIElement)sender);
-            expCanvas_SetExpHelper(mousePos);
+            if (!ViewOnly)
+            {
+                ((Canvas)sender).CaptureMouse();
+                if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
+                Point mousePos = e.GetPosition((UIElement)sender);
+                expCanvas_SetExpHelper(mousePos);
+            }
         }
 
         private void expCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
-            ((Canvas)sender).ReleaseMouseCapture();
+            if (!ViewOnly)
+            {
+                if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
+                ((Canvas)sender).ReleaseMouseCapture();
+            }
         }
 
         private void expCanvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if (Mouse.LeftButton == MouseButtonState.Pressed)
+            if (!ViewOnly && Mouse.LeftButton == MouseButtonState.Pressed)
             {
                 Point mousePos = e.GetPosition((UIElement)sender);
                 expCanvas_SetExpHelper(mousePos);
@@ -1192,6 +1204,50 @@ namespace OpenUtau.UI
         private void MenuSelectAll_Click(object sender, RoutedEventArgs e)
         {
             MidiVM.SelectAll();
+        }
+
+        private void MenuPlaybackCtrl_Click(object sender, RoutedEventArgs e)
+        {
+            switch ((sender as MenuItem)?.Tag as string)
+            {
+                case "Play":
+                    PlaybackManager.GetActiveManager().Play(MidiVM.Project);
+                    break;
+                case "Pause":
+                    PlaybackManager.GetActiveManager().PausePlayback();
+                    break;
+                case "Stop":
+                    PlaybackManager.GetActiveManager().StopPlayback();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void MenuSeek_Click(object sender, RoutedEventArgs e)
+        {
+            switch ((sender as MenuItem)?.Tag as string)
+            {
+                case "Start":
+                    DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(0, MidiVM.Project));
+                    break;
+                case "FirstNote":
+                    DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(MidiVM.Project.Parts.OfType<UVoicePart>().SelectMany(part=>part.Notes).FirstOrDefault()?.PosTick ?? 0, MidiVM.Project));
+                    break;
+                case "LastNote":
+                    DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(MidiVM.Project.Parts.OfType<UVoicePart>().SelectMany(part => part.Notes).LastOrDefault()?.EndTick ?? 0, MidiVM.Project));
+                    break;
+                case "End":
+                    DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(MidiVM.Project.Parts.OrderBy(part => part.EndTick).LastOrDefault()?.EndTick ?? 0, MidiVM.Project));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void MenuSwitchPreview_Click(object sender, RoutedEventArgs e)
+        {
+            ViewOnly = (sender as MenuItem).IsChecked;
         }
     }
 }

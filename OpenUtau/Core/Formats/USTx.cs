@@ -12,6 +12,7 @@ using System.Xml.Linq;
 using OpenUtau.Core;
 using OpenUtau.Core.USTx;
 using OpenUtau.Core.Lib;
+using System.Windows.Media;
 
 namespace OpenUtau.Core.Formats
 {
@@ -447,6 +448,15 @@ namespace OpenUtau.Core.Formats
                     };
                     if (dictionary.ContainsKey("override-engine"))
                         result.OverrideRenderEngine = dictionary["override-engine"] as string;
+                    if(dictionary.ContainsKey("color"))
+                    {
+                        result.Color = (Color) ColorConverter.ConvertFromString(dictionary["color"] as string);
+                    }
+                    else
+                    {
+                        result.Color = AddTrackCommand.GenerateColor();
+                    }
+
                     return result;
                 }
                 else if (type == typeof(USinger))
@@ -475,6 +485,7 @@ namespace OpenUtau.Core.Formats
                         result.Add("singer", _obj.Singer == null ? "" : _obj.Singer.Name);
                         if (!string.IsNullOrWhiteSpace(_obj.OverrideRenderEngine))
                             result.Add("override-engine", _obj.OverrideRenderEngine);
+                        result.Add("color", _obj.Color.ToString());
                     }
                 }
                 else if (obj is USinger)
@@ -556,6 +567,7 @@ namespace OpenUtau.Core.Formats
 
         public static UProject Load(string file)
         {
+            AddTrackCommand.colorRandCount = 0;
             UProject project;
             Project = Create();
             Project.FilePath = file;

@@ -11,7 +11,11 @@
     </UserControl.Resources>
     <Grid Background="Transparent" MouseDown="Grid_MouseDown">
         <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="1" Stroke="LightGray"/>
-        <Rectangle HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4" Width="20" Height="16" Fill="LightGray"/>
+        <Rectangle HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4" Width="20" Height="16">
+            <Rectangle.Fill>
+                <SolidColorBrush Color="{Binding Path=Color, FallbackValue=LightGray}"/>
+            </Rectangle.Fill>
+        </Rectangle>
         <TextBlock x:Name="txtTrackNo" HorizontalAlignment="Left" VerticalAlignment="Top" Width="20" Height="16" Margin="4,6,0,0" TextAlignment="Center"
                    FontWeight="Bold" FontFamily="Arial" FontSize="11" Foreground="White"
                    Text="{Binding Path=DisplayTrackNo}"/>
