@@ -204,7 +204,7 @@ namespace OpenUtau.UI.Models
         public void updatePlayPosMarker()
         {
             if (Part == null) return;
-            double quarter = (double)(playPosTick - Part.PosTick) / DocManager.Inst.Project.Resolution * BeatPerBar;
+            double quarter = (double)(playPosTick - (ViewMode ? 0 : Part.PosTick)) / DocManager.Inst.Project.Resolution * BeatPerBar;
             int playPosMarkerOffset = (int)Math.Round(QuarterToCanvas(quarter) + 0.5);
             Canvas.SetLeft(playPosMarker, playPosMarkerOffset - 6);
             playPosMarkerHighlight.Height = MidiCanvas.ActualHeight;
@@ -301,7 +301,8 @@ namespace OpenUtau.UI.Models
         {
             double leftTick = OffsetX / QuarterWidth * Project.Resolution / Project.BeatPerBar - 512;
             double rightTick = leftTick + ViewWidth / QuarterWidth * Project.Resolution / Project.BeatPerBar + 512;
-            return ((double)note.PosTick < rightTick && (double)note.EndTick > leftTick);
+            int adjust = (ViewMode ? Project.Parts.Find(part => part.PartNo == note.PartNo)?.PosTick ?? 0 : 0);
+            return (note.PosTick + adjust < rightTick && note.EndTick + adjust > leftTick);
         }
 
         # endregion
@@ -360,29 +361,77 @@ namespace OpenUtau.UI.Models
             initPlayPosMarker();
         }
 
+        private bool _viewOnly;
+        public bool ViewMode { get {
+                return _viewOnly;
+            } set {
+                _viewOnly = value;
+                MarkUpdate();
+            }
+        }
+
+        UVoicePart _viewPart;
+        public UVoicePart ViewingPart => ViewMode ? (_viewPart ?? (_viewPart = _part)) : _part;
+
         public void ToggleViewMode(bool toggle) {
+            ViewMode = toggle;
+            var oriOff = OffsetX;
+            var newOff = oriOff;
             MidiCanvas.Children.Remove(notesElement);
+            PhonemeCanvas.Children.Remove(phonemesElement);
             if (toggle) {
-                notesElement = new ViewOnlyNotesElement() { Key = "pitchbend", Part = Part, midiVM = this};
+                notesElement = new ViewOnlyNotesElement() { Key = "pitchbend", Part = ViewingPart, midiVM = this};
+                phonemesElement = new ViewOnlyPhonemesElement() { Part = ViewingPart, midiVM = this };
+                foreach (var exp in new Dictionary<string, FloatExpElement>(expElements))
+                {
+                    ExpCanvas.Children.Remove(exp.Value);
+                    expElements[exp.Key] = new ViewOnlyFloatExpElement() { Key = exp.Value.Key, Part = ViewingPart, midiVM = this, DisplayMode = exp.Value.DisplayMode + 1 };
+                    expElements[exp.Key].DisplayMode = exp.Value.DisplayMode;
+                    ExpCanvas.Children.Add(expElements[exp.Key]);
+                    if (exp.Value.DisplayMode == ExpDisMode.Shadow) shadowExpElement = expElements[exp.Key];
+                    if (exp.Value.DisplayMode == ExpDisMode.Visible) visibleExpElement = expElements[exp.Key];
+                    expElements[exp.Key].MarkUpdate();
+                }
+                newOff = TickToCanvas(Part.PosTick + CanvasToSnappedTick(0)) + OffsetX;
             }
             else
             {
+                if (ViewingPart != Part) _part = ViewingPart;
                 notesElement = new NotesElement() { Key = "pitchbend", Part = Part, midiVM = this };
+                phonemesElement = new PhonemesElement() { Part = Part, midiVM = this };
+                foreach (var exp in new Dictionary<string, FloatExpElement>(expElements))
+                {
+                    ExpCanvas.Children.Remove(exp.Value);
+                    expElements[exp.Key] = new FloatExpElement() { Key = exp.Value.Key, Part = Part, midiVM = this, DisplayMode = exp.Value.DisplayMode + 1 };
+                    expElements[exp.Key].DisplayMode = exp.Value.DisplayMode;
+                    ExpCanvas.Children.Add(expElements[exp.Key]);
+                    if (exp.Value.DisplayMode == ExpDisMode.Shadow) shadowExpElement = expElements[exp.Key];
+                    if (exp.Value.DisplayMode == ExpDisMode.Visible) visibleExpElement = expElements[exp.Key];
+                    expElements[exp.Key].MarkUpdate();
+                }
+                newOff = TickToCanvas(CanvasToSnappedTick(0) - Part.PosTick) + OffsetX;
             }
+            /*foreach (var pair in expElements) pair.Value.DisplayMode = ExpDisMode.Hidden;
+            if (shadowExpElement != null) shadowExpElement.DisplayMode = ExpDisMode.Shadow;
+            visibleExpElement.DisplayMode = ExpDisMode.Visible;*/
             MidiCanvas.Children.Add(notesElement);
+            PhonemeCanvas.Children.Add(phonemesElement);
+            OnPartModified();
+            OffsetX = newOff;
             MarkUpdate();
         }
 
         private void OnPartModified()
         {
-            Title = Part.Name;
-            QuarterOffset = (double)Part.PosTick / Project.Resolution * BeatPerBar;
-            QuarterCount = (double)Part.DurTick / Project.Resolution * BeatPerBar;
+            Title = ViewingPart.Name;
+            QuarterOffset = (double)(ViewMode ? 0 : Part.PosTick) / Project.Resolution * BeatPerBar;
+            int projectDurTick = Project.Parts.OrderBy(part => part.PosTick).LastOrDefault()?.EndTick ?? 0;
+            QuarterCount = (double)(ViewMode ? projectDurTick : Part.DurTick) / Project.Resolution * BeatPerBar;
             QuarterWidth = QuarterWidth;
             OffsetX = OffsetX;
             MarkUpdate();
-            _visualPosTick = Part.PosTick;
-            _visualDurTick = Part.DurTick;
+            _visualPosTick = ViewMode ? 0 : Part.PosTick;
+            _visualDurTick = ViewMode ? projectDurTick : Part.DurTick;
         }
 
         private void OnSelectExpression(UNotification cmd)
@@ -414,9 +463,33 @@ namespace OpenUtau.UI.Models
 
         public void UpdateViewRegion(int tick)
         {
-            double tickPix = TickToCanvas(tick - (Part?.PosTick).GetValueOrDefault());
+            double tickPix = TickToCanvas(tick - (ViewMode ? 0 : (Part?.PosTick).GetValueOrDefault()));
             if (tickPix > MidiCanvas.ActualWidth * UIConstants.PlayPosMarkerMargin)
                 OffsetX += tickPix - MidiCanvas.ActualWidth * UIConstants.PlayPosMarkerMargin;
+            if (ViewMode && (ViewingPart.EndTick <= tick || tick <= ViewingPart.PosTick)) {
+                UVoicePart uPart = Project.Parts.OfType<UVoicePart>().OrderBy(part=>part.TrackNo).ThenBy(part=>part.PosTick).ToList().Find(part => part.PosTick <= tick && tick < part.EndTick);
+                if (uPart != null)
+                {
+                    _viewPart = uPart;
+                    if(notesElement != null)
+                    {
+                        notesElement.Part = ViewingPart;
+                        notesElement.MarkUpdate();
+                    }
+
+                    if (phonemesElement != null)
+                    {
+                        phonemesElement.Part = ViewingPart;
+                        phonemesElement.MarkUpdate();
+                    }
+
+                    foreach (var item in expElements)
+                    {
+                        item.Value.Part = ViewingPart;
+                        item.Value.MarkUpdate();
+                    }
+                }
+            }
         }
 
         private void OnPitchModified()

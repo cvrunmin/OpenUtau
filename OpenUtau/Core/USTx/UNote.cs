@@ -44,7 +44,8 @@ namespace OpenUtau.Core.USTx
                 PosTick = PosTick,
                 DurTick = DurTick,
                 NoteNum = NoteNum,
-                Lyric = Lyric
+                Lyric = Lyric,
+                PartNo = PartNo
             };
             _note.Phonemes.Clear();
             foreach (var phoneme in this.Phonemes) _note.Phonemes.Add(phoneme.Clone(_note));

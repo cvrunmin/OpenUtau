@@ -354,11 +354,11 @@ namespace OpenUtau.Core
 
             if (cmd is SeekPlayPosTickNotification)
             {
-                StopPlayback();
+                /*StopPlayback();
                 var _cmd = cmd as SeekPlayPosTickNotification;
                 int tick = _cmd.playPosTick;
                 DocManager.Inst.ExecuteCmd(new SetPlayPosTickNotification(tick));
-                SkipedTimeSpan = TimeSpan.FromMilliseconds(DocManager.Inst.Project.TickToMillisecond(tick));
+                SkipedTimeSpan = TimeSpan.FromMilliseconds(DocManager.Inst.Project.TickToMillisecond(tick));*/
             }
             else if (cmd is VolumeChangeNotification)
             {

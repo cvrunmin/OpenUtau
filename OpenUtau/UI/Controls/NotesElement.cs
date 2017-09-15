@@ -168,7 +168,7 @@ namespace OpenUtau.UI.Controls
             DrawNoteBody(note, cxt, ThemeManager.NoteFillBrushes[0], ThemeManager.NoteFillSelectedBrush);
         }
 
-        protected void DrawNoteBody(UNote note, DrawingContext cxt, Brush fill, Brush selected)
+        protected virtual void DrawNoteBody(UNote note, DrawingContext cxt, Brush fill, Brush selected)
         {
             double left = note.PosTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar + 1;
             double top = midiVM.TrackHeight * ((double)UIConstants.MaxNoteNum - 1 - note.NoteNum) + 1;
@@ -212,7 +212,7 @@ namespace OpenUtau.UI.Controls
             fTextHeights.Add(text, fText.Height);
         }
         Pen pen6;
-        protected void DrawVibrato(UNote note, DrawingContext cxt)
+        protected virtual void DrawVibrato(UNote note, DrawingContext cxt)
         {
             if (note.Vibrato == null) return;
             var vibrato = note.Vibrato;
@@ -270,7 +270,7 @@ namespace OpenUtau.UI.Controls
             }
         }
 
-        protected void DrawPitchBend(UNote note, DrawingContext cxt, bool drawPt = true)
+        protected virtual void DrawPitchBend(UNote note, DrawingContext cxt, bool drawPt = true)
         {
             var _pitchExp = note.PitchBend as PitchBendExpression;
             var _pts = _pitchExp.Data as List<PitchPoint>;
@@ -358,6 +358,27 @@ namespace OpenUtau.UI.Controls
                 if (ShowPitch) DrawPitchBend(note, cxt, false);
                 if (ShowPitch) DrawVibrato(note, cxt);
             }
+        }
+
+        protected override void DrawNoteBody(UNote note, DrawingContext cxt, Brush fill, Brush selected)
+        {
+            UNote note1 = note.Clone();
+            note1.PosTick += DocManager.Inst.Project.Parts.Find(part => part.PartNo == note1.PartNo)?.PosTick ?? 0;
+            base.DrawNoteBody(note1, cxt, fill, selected);
+        }
+
+        protected override void DrawPitchBend(UNote note, DrawingContext cxt, bool drawPt = true)
+        {
+            UNote note1 = note.Clone();
+            note1.PosTick += DocManager.Inst.Project.Parts.Find(part => part.PartNo == note1.PartNo)?.PosTick ?? 0;
+            base.DrawPitchBend(note1, cxt, drawPt);
+        }
+
+        protected override void DrawVibrato(UNote note, DrawingContext cxt)
+        {
+            UNote note1 = note.Clone();
+            note1.PosTick += DocManager.Inst.Project.Parts.Find(part => part.PartNo == note1.PartNo)?.PosTick ?? 0;
+            base.DrawVibrato(note1, cxt);
         }
     }
 }

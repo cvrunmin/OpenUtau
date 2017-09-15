@@ -602,7 +602,7 @@ namespace OpenUtau.UI
 
         private void notesCanvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if (ViewOnly)
+            if (!ViewOnly)
             {
                 Point mousePos = e.GetPosition((Canvas)sender);
                 notesCanvas_MouseMove_Helper(mousePos);
@@ -929,7 +929,7 @@ namespace OpenUtau.UI
             if (MidiVM.Part == null) return;
             Point mousePos = e.GetPosition((UIElement)sender);
             int tick = (int)(MidiVM.CanvasToSnappedQuarter(mousePos.X) * MidiVM.Project.Resolution / MidiVM.Project.BeatPerBar);
-            DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(Math.Max(0, tick) + MidiVM.Part.PosTick));
+            DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(Math.Max(0, tick) + (ViewOnly ? 0 : MidiVM.Part.PosTick)));
             ((Canvas)sender).CaptureMouse();
         }
 
@@ -943,8 +943,8 @@ namespace OpenUtau.UI
             if (Mouse.LeftButton == MouseButtonState.Pressed && Mouse.Captured == timelineCanvas)
             {
                 int tick = (int)(MidiVM.CanvasToSnappedQuarter(mousePos.X) * MidiVM.Project.Resolution / MidiVM.Project.BeatPerBar);
-                if (MidiVM.playPosTick != tick + MidiVM.Part.PosTick)
-                    DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(Math.Max(0, tick) + MidiVM.Part.PosTick));
+                if (MidiVM.playPosTick != tick + (ViewOnly ? 0 : MidiVM.Part.PosTick))
+                    DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(Math.Max(0, tick) + (ViewOnly ? 0 : MidiVM.Part.PosTick)));
             }
         }
 
@@ -1232,10 +1232,12 @@ namespace OpenUtau.UI
                     DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(0, MidiVM.Project));
                     break;
                 case "FirstNote":
-                    DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(MidiVM.Project.Parts.OfType<UVoicePart>().SelectMany(part=>part.Notes).FirstOrDefault()?.PosTick ?? 0, MidiVM.Project));
+                    UNote uNote = MidiVM.Project.Parts.OfType<UVoicePart>().OrderBy(part => part.PosTick).SelectMany(part => part.Notes).FirstOrDefault();
+                    DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(uNote?.PosTick ?? 0 + MidiVM.Project.Parts.Find(part=>part.PartNo == (uNote?.PartNo ?? -1))?.PosTick ?? 0, MidiVM.Project));
                     break;
                 case "LastNote":
-                    DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(MidiVM.Project.Parts.OfType<UVoicePart>().SelectMany(part => part.Notes).LastOrDefault()?.EndTick ?? 0, MidiVM.Project));
+                    UNote uNote1 = MidiVM.Project.Parts.OfType<UVoicePart>().OrderBy(part => part.PosTick).SelectMany(part => part.Notes).LastOrDefault();
+                    DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(uNote1?.EndTick ?? 0 + MidiVM.Project.Parts.Find(part => part.PartNo == (uNote1?.PartNo ?? -1))?.PosTick ?? 0, MidiVM.Project));
                     break;
                 case "End":
                     DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(MidiVM.Project.Parts.OrderBy(part => part.EndTick).LastOrDefault()?.EndTick ?? 0, MidiVM.Project));

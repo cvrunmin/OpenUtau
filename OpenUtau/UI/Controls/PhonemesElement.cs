@@ -22,6 +22,8 @@ namespace OpenUtau.UI.Controls
 
         protected Pen penEnv;
         protected Pen penEnvSel;
+        protected Brush brushEnv;
+        protected Brush brushEnvSel;
 
         public PhonemesElement()
             : base()
@@ -30,6 +32,8 @@ namespace OpenUtau.UI.Controls
             penEnv.Freeze();
             penEnvSel = new Pen(ThemeManager.NoteFillSelectedBrush, 1);
             penEnvSel.Freeze();
+            brushEnv = ThemeManager.NoteFillErrorBrushes[0];
+            brushEnvSel = ThemeManager.NoteFillSelectedErrorBrush;
         }
 
         public override void RedrawIfUpdated()
@@ -60,7 +64,7 @@ namespace OpenUtau.UI.Controls
             _updated = false;
         }
 
-        private void DrawPhoneme(UNote note, DrawingContext cxt)
+        protected virtual void DrawPhoneme(UNote note, DrawingContext cxt)
         {
             const double y = 23.5;
             const double height = 24;
@@ -86,7 +90,7 @@ namespace OpenUtau.UI.Controls
                 double y4 = (1 - phoneme.Envelope.Points[4].Y / 100) * height;
 
                 Pen pen = note.Selected ? penEnvSel : penEnv;
-                Brush brush = note.Selected ? ThemeManager.NoteFillSelectedErrorBrush : ThemeManager.NoteFillErrorBrushes[0];
+                Brush brush = note.Selected ? brushEnvSel : brushEnv;
                 if (note.Error || phoneme.PhonemeError) {
                     var penb = new SolidColorBrush((pen.Brush as SolidColorBrush).Color);
                     penb.Opacity = 0.25;
@@ -132,6 +136,46 @@ namespace OpenUtau.UI.Controls
             fTextPool.Add(text, fText);
             fTextWidths.Add(text, fText.Width);
             fTextHeights.Add(text, fText.Height);
+        }
+    }
+
+    class ViewOnlyPhonemesElement : PhonemesElement {
+        public override void RedrawIfUpdated()
+        {
+            if (!_updated) return;
+            if (HidePhoneme) return;
+            DrawingContext cxt = visual.RenderOpen();
+            foreach(var Part in DocManager.Inst.Project.Parts.OfType<UVoicePart>()) {
+                bool inView, lastInView = false;
+                UNote lastNote = null;
+                penEnv = new Pen(new SolidColorBrush(DocManager.Inst.Project.Tracks[Part.TrackNo].Color), 1);
+                penEnv.Freeze();
+                brushEnv = new SolidColorBrush(ThemeManager.GetColorVariationAlpha(DocManager.Inst.Project.Tracks[Part.TrackNo].Color, 127));
+                brushEnv.Freeze();
+                foreach (var note in Part.Notes)
+                {
+                    inView = midiVM.NoteIsInView(note);
+
+                    if (inView && !lastInView)
+                        if (lastNote != null)
+                            DrawPhoneme(lastNote, cxt);
+
+                    if (inView || !inView && lastInView)
+                        DrawPhoneme(note, cxt);
+
+                    lastNote = note;
+                    lastInView = inView;
+                }
+            }
+            cxt.Close();
+            _updated = false;
+        }
+
+        protected override void DrawPhoneme(UNote note, DrawingContext cxt)
+        {
+            UNote note1 = note.Clone();
+            note1.PosTick += DocManager.Inst.Project.Parts.Find(part => part.PartNo == note1.PartNo)?.PosTick ?? 0;
+            base.DrawPhoneme(note1, cxt);
         }
     }
 }

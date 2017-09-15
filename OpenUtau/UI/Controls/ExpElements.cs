@@ -76,10 +76,12 @@ namespace OpenUtau.UI.Controls
     {
         public OpenUtau.UI.Models.MidiViewModel midiVM;
 
-        Pen pen3;
-        Pen pen2;
-        Pen pen5;
-        Pen pen4;
+        protected Pen pen3;
+        protected Pen pen2;
+        protected Pen pen5;
+        protected Pen pen4;
+
+        protected static readonly double PartSquarePointSide = Math.Sqrt(Math.Pow(7.5, 2) / 2);
 
         public FloatExpElement()
         {
@@ -108,7 +110,10 @@ namespace OpenUtau.UI.Controls
                     double partValueHeight = Math.Round(VisualHeight - VisualHeight * ((int)_exp.Data - _expTemplate.Min) / (_expTemplate.Max - _expTemplate.Min));
                     double partZeroHeight = Math.Round(VisualHeight - VisualHeight * (0f - _expTemplate.Min) / (_expTemplate.Max - _expTemplate.Min));
                     cxt.DrawLine(pen5, new Point(x1 + 0.5, partZeroHeight + 0.5), new Point(x1 + 0.5, partValueHeight + 3));
-                    cxt.DrawEllipse(Brushes.White, pen2, new Point(x1 + 0.5, partValueHeight), 2.5, 2.5);
+                    //cxt.DrawEllipse(Brushes.White, pen2, new Point(x1 + 0.5, partValueHeight), 2.5, 2.5);
+                    cxt.PushTransform(new RotateTransform(45, x1 + 0.5, partValueHeight + 0.5));
+                    cxt.DrawRectangle(Brushes.White, pen2, new Rect(x1 + 0.5 - PartSquarePointSide / 2, partValueHeight - PartSquarePointSide / 2, PartSquarePointSide, PartSquarePointSide));
+                    cxt.Pop();
                     cxt.DrawLine(pen4, new Point(x1 + 3, partValueHeight), new Point(Math.Max(x1 + 3, x2 - 3), partValueHeight));
                     cxt.DrawText(new FormattedText(_exp.Data.ToString(), System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Arial"),12, new SolidColorBrush(ThemeManager.NoteFillBrushes[0].Color)), new Point(x1 + 3, partValueHeight));
                     foreach (UNote note in Part.Notes)
@@ -134,6 +139,61 @@ namespace OpenUtau.UI.Controls
             else
             {
                 cxt.DrawRectangle(Brushes.Transparent, null, new Rect(new Point(0,0), new Point(100,100)));
+            }
+            cxt.Close();
+            _updated = false;
+        }
+    }
+
+    class ViewOnlyFloatExpElement : FloatExpElement {
+        public override void RedrawIfUpdated()
+        {
+            if (!_updated) return;
+            DrawingContext cxt = visual.RenderOpen();
+            foreach(var Part in DocManager.Inst.Project.Parts.OfType<UVoicePart>())
+            {
+                pen3 = new Pen(new SolidColorBrush(ThemeManager.GetColorVariationAlpha(DocManager.Inst.Project.Tracks[Part.TrackNo].Color, (byte)(Part == this.Part ? 0xff : 0x7f))), 3);
+                pen2 = new Pen(new SolidColorBrush(ThemeManager.GetColorVariationAlpha(DocManager.Inst.Project.Tracks[Part.TrackNo].Color, (byte)(Part == this.Part ? 0xff : 0x7f))), 2);
+                pen5 = new Pen(new SolidColorBrush(ThemeManager.GetColorVariationAlpha(DocManager.Inst.Project.Tracks[Part.TrackNo].Color, (byte)(0xaa * (Part == this.Part ? 0xff : 0x7f)))), 3);
+                pen4 = new Pen(new SolidColorBrush(ThemeManager.GetColorVariationAlpha(DocManager.Inst.Project.Tracks[Part.TrackNo].Color, (byte)(0xaa * (Part == this.Part ? 0xff : 0x7f)))), 2);
+                pen3.Freeze();
+                pen2.Freeze();
+                pen5.Freeze();
+                pen4.Freeze();
+                if (Part.Expressions.ContainsKey(Key))
+                {
+                    var _exp = Part.Expressions[Key] as IntExpression;
+                    var _expTemplate = DocManager.Inst.Project.ExpressionTable[Key] as IntExpression;
+                    double x1 = Math.Round(ScaleX * Part.PosTick * DocManager.Inst.Project.BeatPerBar);
+                    double x2 = Math.Round(ScaleX * Part.EndTick * DocManager.Inst.Project.BeatPerBar);
+                    double partValueHeight = Math.Round(VisualHeight - VisualHeight * ((int)_exp.Data - _expTemplate.Min) / (_expTemplate.Max - _expTemplate.Min));
+                    double partZeroHeight = Math.Round(VisualHeight - VisualHeight * (0f - _expTemplate.Min) / (_expTemplate.Max - _expTemplate.Min));
+                    cxt.DrawLine(pen5, new Point(x1 + 0.5, partZeroHeight + 0.5), new Point(x1 + 0.5, partValueHeight + 3));
+                    //cxt.DrawEllipse(Brushes.White, pen2, new Point(x1 + 0.5, partValueHeight), 2.5, 2.5);
+                    cxt.PushTransform(new RotateTransform(45, x1 + 0.5, partValueHeight + 0.5));
+                    cxt.DrawRectangle(Brushes.White, pen2, new Rect(x1 + 0.5 - PartSquarePointSide / 2, partValueHeight - PartSquarePointSide / 2, PartSquarePointSide, PartSquarePointSide));
+                    cxt.Pop();
+                    cxt.DrawLine(pen4, new Point(x1 + 3, partValueHeight), new Point(Math.Max(x1 + 3, x2 - 3), partValueHeight));
+                    cxt.DrawText(new FormattedText(_exp.Data.ToString(), System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, new SolidColorBrush(ThemeManager.NoteFillBrushes[0].Color)), new Point(x1 + 3, partValueHeight));
+                    foreach (UNote note in Part.Notes)
+                    {
+                        if (!midiVM.NoteIsInView(note)) continue;
+                        if (note.Expressions.ContainsKey(Key))
+                        {
+                            var _noteExp = note.Expressions[Key] as IntExpression;
+                            var _noteExpTemplate = Part.Expressions[Key] as IntExpression;
+                            double noteX1 = Math.Round(ScaleX * (note.PosTick + Part.PosTick) * DocManager.Inst.Project.BeatPerBar);
+                            double noteX2 = Math.Round(ScaleX * (note.EndTick + Part.PosTick) * DocManager.Inst.Project.BeatPerBar);
+                            double valueHeight = Math.Round(VisualHeight - VisualHeight * (note.VirtualExpressions[Key] + (int)_noteExpTemplate.Data - _noteExpTemplate.Min) / (_noteExpTemplate.Max - _noteExpTemplate.Min));
+                            double zeroHeight = partValueHeight;
+                            cxt.DrawLine(pen3, new Point(noteX1 + 0.5, zeroHeight + 0.5), new Point(noteX1 + 0.5, valueHeight + 3));
+                            cxt.DrawEllipse(Brushes.White, pen2, new Point(noteX1 + 0.5, valueHeight), 2.5, 2.5);
+                            cxt.DrawLine(pen2, new Point(noteX1 + 3, valueHeight), new Point(Math.Max(noteX1 + 3, noteX2 - 3), valueHeight));
+                            cxt.DrawText(new FormattedText(_noteExp.Data.ToString(), System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, new SolidColorBrush(ThemeManager.NoteFillBrushes[0].Color)), new Point(noteX1 + 3, valueHeight));
+                        }
+                    }
+                }
+
             }
             cxt.Close();
             _updated = false;
