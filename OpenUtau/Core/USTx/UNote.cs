@@ -52,6 +52,7 @@ namespace OpenUtau.Core.USTx
             foreach (var pair in this.Expressions) _note.Expressions.Add(pair.Key, pair.Value.Clone(_note));
             foreach (var pair in this.VirtualExpressions) _note.VirtualExpressions.Add(pair.Key, pair.Value);
             _note.PitchBend = (PitchBendExpression)this.PitchBend.Clone(_note);
+            _note.Vibrato = (VibratoExpression)Vibrato.Clone(_note);
             return _note;
         }
 
