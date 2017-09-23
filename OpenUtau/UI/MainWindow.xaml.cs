@@ -582,6 +582,7 @@ namespace OpenUtau.UI
                 trackVM.SelectPart(copied);
             }
             DocManager.Inst.EndUndoGroup();
+            trackVM.MarkUpdate();
         }
 
         private void MenuAbout_Click(object sender, RoutedEventArgs e)

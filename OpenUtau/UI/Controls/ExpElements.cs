@@ -152,6 +152,7 @@ namespace OpenUtau.UI.Controls
             DrawingContext cxt = visual.RenderOpen();
             foreach(var Part in DocManager.Inst.Project.Parts.OfType<UVoicePart>())
             {
+                if (DocManager.Inst.Project.Tracks[Part.TrackNo].ActuallyMuted) continue;
                 pen3 = new Pen(new SolidColorBrush(ThemeManager.GetColorVariationAlpha(DocManager.Inst.Project.Tracks[Part.TrackNo].Color, (byte)(Part == this.Part ? 0xff : 0x7f))), 3);
                 pen2 = new Pen(new SolidColorBrush(ThemeManager.GetColorVariationAlpha(DocManager.Inst.Project.Tracks[Part.TrackNo].Color, (byte)(Part == this.Part ? 0xff : 0x7f))), 2);
                 pen5 = new Pen(new SolidColorBrush(ThemeManager.GetColorVariationAlpha(DocManager.Inst.Project.Tracks[Part.TrackNo].Color, (byte)(0xaa * (Part == this.Part ? 0xff : 0x7f)))), 3);

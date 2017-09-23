@@ -181,7 +181,7 @@ namespace OpenUtau.UI.Controls
                 null, new Rect(new Point(left, top), new Size(width, height)), 2, 2);
             if (height >= 10)
             {
-                if (note.Lyric.Length == 0) return;
+                if (string.IsNullOrEmpty(note.Lyric)) return;
                 string displayLyric = note.Lyric;
 
                 if (!fTextPool.ContainsKey(displayLyric)) AddToFormattedTextPool(displayLyric);
@@ -330,6 +330,7 @@ namespace OpenUtau.UI.Controls
             DrawingContext cxt = visual.RenderOpen();
             foreach(var Part in DocManager.Inst.Project.Parts.OfType<UVoicePart>())
             {
+                if (DocManager.Inst.Project.Tracks[Part.TrackNo].ActuallyMuted) continue;
                 bool inView, lastInView = false;
                 UNote lastNote = null;
                 Brush brush = new SolidColorBrush(ThemeManager.GetColorVariationAlpha(DocManager.Inst.Project.Tracks[Part.TrackNo].Color, (byte)(Part != this.Part ? 0x7f : 0xff)));

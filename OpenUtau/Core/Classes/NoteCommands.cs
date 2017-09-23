@@ -178,13 +178,14 @@ namespace OpenUtau.Core
         public override string ToString() { return "Change notes lyric"; }
         public override void Execute()
         {
+            if (string.IsNullOrEmpty(NewLyric)) return;
             if(Part != null)
             lock (Part)
             {
                 foreach (var Note in Notes)
                 {
                     Note.Lyric = NewLyric;
-                    Dictionary<string, UDictionaryNote> presetLyricsMap = DocManager.Inst.Project.Tracks[Part.TrackNo].Singer?.PresetLyricsMap;
+                    var presetLyricsMap = DocManager.Inst.Project.Tracks[Part.TrackNo].Singer?.PresetLyricsMap;
                     if (presetLyricsMap != null && presetLyricsMap.ContainsKey(Note.Lyric))
                     {
                         UDictionaryNote.ApplyPreset(Note, presetLyricsMap[Note.Lyric]);
@@ -216,7 +217,7 @@ namespace OpenUtau.Core
                 {
                     Note.Lyric = OldLyric;
                     Note.Phonemes[0].Phoneme = OldLyric;
-                    Dictionary<string, UDictionaryNote> presetLyricsMap = DocManager.Inst.Project.Tracks[Part.TrackNo].Singer.PresetLyricsMap;
+                    var presetLyricsMap = DocManager.Inst.Project.Tracks[Part.TrackNo].Singer.PresetLyricsMap;
                     if (presetLyricsMap.ContainsKey(Note.Lyric))
                     {
                         UDictionaryNote.ApplyPreset(Note, presetLyricsMap[Note.Lyric]);

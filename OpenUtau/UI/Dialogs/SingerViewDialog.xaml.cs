@@ -319,7 +319,7 @@ namespace OpenUtau.UI.Dialogs
             var lyrics = SelectedSinger.PresetLyricsMap[key];
             var midiWindow = new MidiWindow();
             var project = DocManager.Inst.Project;
-            var track = new UTrack() { TrackNo = project.Tracks.Count(), Singer = SelectedSinger, Name = "Temp" };
+            var track = new UTrack() { TrackNo = project.Tracks.Count(), Singer = SelectedSinger, Name = "Temp", Color = Colors.Black };
             //Start preparing
             DocManager.Inst.StartUndoGroup();
             DocManager.Inst.ExecuteCmd(new AddTrackCommand(project, track), true);
@@ -363,6 +363,7 @@ namespace OpenUtau.UI.Dialogs
             DocManager.Inst.ExecuteCmd(new RemovePartCommand(project, project.Parts[part.PartNo]), true);
             DocManager.Inst.ExecuteCmd(new RemoveTrackCommand(project, project.Tracks[track.TrackNo]), true);
             DocManager.Inst.EndUndoGroup();
+            singerAmend = true;
             track = null;
             part = null;
         }
@@ -535,6 +536,7 @@ namespace OpenUtau.UI.Dialogs
                     editing = true;
                     queue = false;
                 }
+                singerAmend = true;
             }
         }
     }

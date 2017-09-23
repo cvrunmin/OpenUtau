@@ -145,7 +145,9 @@ namespace OpenUtau.UI.Controls
             if (!_updated) return;
             if (HidePhoneme) return;
             DrawingContext cxt = visual.RenderOpen();
-            foreach(var Part in DocManager.Inst.Project.Parts.OfType<UVoicePart>()) {
+            foreach(var Part in DocManager.Inst.Project.Parts.OfType<UVoicePart>())
+            {
+                if (DocManager.Inst.Project.Tracks[Part.TrackNo].ActuallyMuted) continue;
                 bool inView, lastInView = false;
                 UNote lastNote = null;
                 penEnv = new Pen(new SolidColorBrush(DocManager.Inst.Project.Tracks[Part.TrackNo].Color), 1);

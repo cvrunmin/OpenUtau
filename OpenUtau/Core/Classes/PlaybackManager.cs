@@ -179,7 +179,7 @@ namespace OpenUtau.Core
                 int tick = _cmd.playPosTick;
                 DocManager.Inst.ExecuteCmd(new SetPlayPosTickNotification(tick));
                 SkipedTimeSpan = TimeSpan.FromMilliseconds(DocManager.Inst.Project.TickToMillisecond(tick));
-                if (outDevice != null)
+                if (outDevice != null && masterMix != null)
                 {
                     masterMix.CurrentTime = SkipedTimeSpan;
                 }
@@ -210,13 +210,38 @@ namespace OpenUtau.Core
             }
             else if (cmd is MuteNotification mute)
             {
-                if (masterMix != null && masterMix.InputCount > mute.TrackNo)
+                /*if (masterMix != null && masterMix.InputCount > mute.TrackNo)
                 {
                     (masterMix.InputStreams.Find(stream => ((TrackWaveChannel)stream).TrackNo == mute.TrackNo) as TrackWaveChannel).Muted = mute.Muted;
                 }
                 if (trackSources != null && trackSources.Count > mute.TrackNo)
                 {
                     trackSources.Find(stream => stream.TrackNo == mute.TrackNo).Muted = mute.Muted;
+                }*/
+                if(masterMix != null)
+                foreach (var item in masterMix.InputStreams)
+                {
+                    TrackWaveChannel ch = (item as TrackWaveChannel);
+                    ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+                }
+                if(trackSources != null)
+                foreach (var ch in trackSources)
+                {
+                    ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+                }
+            }
+            else if (cmd is SoloNotification solo)
+            {
+                if(masterMix != null)
+                foreach (var item in masterMix.InputStreams)
+                {
+                    TrackWaveChannel ch = (item as TrackWaveChannel);
+                    ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+                }
+                if(trackSources != null)
+                foreach (var ch in trackSources)
+                {
+                    ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
                 }
             }
         }
@@ -386,7 +411,7 @@ namespace OpenUtau.Core
             }
             else if (cmd is MuteNotification mute)
             {
-                if (masterMix != null && masterMix.MixerInputs.Count() > mute.TrackNo)
+                /*if (masterMix != null && masterMix.MixerInputs.Count() > mute.TrackNo)
                 {
                     (masterMix.MixerInputs.ElementAt(mute.TrackNo) as TrackSampleProvider).Muted = mute.Muted;
 
@@ -395,6 +420,31 @@ namespace OpenUtau.Core
                 if (trackSources != null && trackSources.Count > mute.TrackNo)
                 {
                     trackSources[mute.TrackNo].Muted = mute.Muted;
+                }*/
+                if(masterMix != null)
+                foreach (var item in masterMix.MixerInputs)
+                {
+                    TrackSampleProvider ch = (item as TrackSampleProvider);
+                    ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+                }
+                if (trackSources != null)
+                foreach (var ch in trackSources)
+                {
+                    ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+                }
+            }
+            else if (cmd is SoloNotification solo)
+            {
+                if(masterMix != null)
+                foreach (var item in masterMix.MixerInputs)
+                {
+                    TrackSampleProvider ch = (item as TrackSampleProvider);
+                    ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+                }
+                if(trackSources != null)
+                foreach (var ch in trackSources)
+                {
+                    ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
                 }
             }
         }

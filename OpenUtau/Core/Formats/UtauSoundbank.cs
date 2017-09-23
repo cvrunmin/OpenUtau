@@ -296,7 +296,7 @@ namespace OpenUtau.Core.Formats
         static void SaveLyricPreset(USinger singer)
         {
             string path = singer.Path;
-            using (var preset = File.CreateText(Path.Combine(path, "lyrics-dictionary.json")))
+            using (var preset = new StreamWriter(Path.Combine(path, "lyrics-dictionary.json"), false))
             {
                 JavaScriptSerializer jss = new JavaScriptSerializer();
                 jss.RegisterConverters(
@@ -309,7 +309,7 @@ namespace OpenUtau.Core.Formats
                 StringBuilder str = new StringBuilder();
                 try
                 {
-                    jss.Serialize(singer.PresetLyricsMap, str);
+                    jss.Serialize(new Dictionary<string, UDictionaryNote>(singer.PresetLyricsMap), str);
                     preset.Write(str.ToString());
                 }
                 catch (Exception e)
@@ -336,7 +336,7 @@ namespace OpenUtau.Core.Formats
                     try
                     {
                         var a = jss.Deserialize<Dictionary<string, UDictionaryNote>>(preset.ReadToEnd());
-                        singer.PresetLyricsMap = a;
+                        singer.PresetLyricsMap = new SortedDictionary<string, UDictionaryNote>(a);
                     }
                     catch (Exception e)
                     {

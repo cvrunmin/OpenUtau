@@ -79,7 +79,7 @@ namespace OpenUtau.Core.USTx
         public Encoding PathEncoding;
 
         public Dictionary<string, string> PitchMap = new Dictionary<string, string>();
-        public Dictionary<string, UOto> AliasMap = new Dictionary<string, UOto>();
-        public Dictionary<string, UDictionaryNote> PresetLyricsMap = new Dictionary<string, UDictionaryNote>();
+        public SortedDictionary<string, UOto> AliasMap = new SortedDictionary<string, UOto>();
+        public SortedDictionary<string, UDictionaryNote> PresetLyricsMap = new SortedDictionary<string, UDictionaryNote>();
     }
 }

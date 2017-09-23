@@ -1170,6 +1170,7 @@ namespace OpenUtau.UI
                 DocManager.Inst.ExecuteCmd(new AddNoteCommand(MidiVM.Part, copied));
             }
             if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
+            MidiVM.MarkUpdate();
         }
         
         private void MenuMergeNotes_Click(object sender, RoutedEventArgs e)
@@ -1178,13 +1179,17 @@ namespace OpenUtau.UI
             {
                 var sn = new List<UNote>(MidiVM.SelectedNotes);
                 var nl = Core.Util.Utils.MakeCompletePhonemes(sn.Select(note => new string(note.Lyric.SkipWhile((c, index)=>c == '-' && index == 0).ToArray())).ToArray());
+                KeyValuePair<string, UDictionaryNote>? v = DocManager.Inst.Project.Tracks[MidiVM.Part.TrackNo].Singer?.PresetLyricsMap.FirstOrDefault(pair => pair.Value.MatchNotes(sn));
+                if (v.HasValue && !string.IsNullOrEmpty(v.GetValueOrDefault().Key)) {
+                    nl = v.Value.Key;
+                }
                 var dur = sn.Sum(note => note.DurTick);
                 var notem = sn.OrderBy(note => note.PosTick).First();
                 MidiVM.DeselectAll();
                 if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                 DocManager.Inst.ExecuteCmd(new RemoveNoteCommand(MidiVM.Part, sn.Skip(1).ToList()), true);
+                DocManager.Inst.ExecuteCmd(new ResizeNoteCommand(MidiVM.Part, notem, dur - notem.DurTick), true);
                 DocManager.Inst.ExecuteCmd(new ChangeNoteLyricCommand(MidiVM.Part, notem, nl), true);
-                DocManager.Inst.ExecuteCmd(new ResizeNoteCommand(MidiVM.Part, notem, dur - notem.DurTick),true);
                 if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
                 MidiVM.SelectNote(notem);
                 MidiVM.MarkUpdate();

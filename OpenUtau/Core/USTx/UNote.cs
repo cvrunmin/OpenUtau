@@ -150,9 +150,26 @@ namespace OpenUtau.Core.USTx
             applyee.ApplyingPreset = true;
         }
 
+        public bool MatchNotes(List<UNote> notes) {
+            return Notes.Values.SequenceEqual(notes, new LyricsComparer());
+        }
+
         public enum ExpressionProcessing
         {
             Overwrite, Difference, Multiplying
+        }
+
+        private class LyricsComparer : IEqualityComparer<UNote>
+        {
+            public bool Equals(UNote x, UNote y)
+            {
+                return x.Lyric.Equals(y.Lyric);
+            }
+
+            public int GetHashCode(UNote obj)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

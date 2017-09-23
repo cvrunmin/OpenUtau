@@ -456,6 +456,10 @@ namespace OpenUtau.Core.Formats
                     {
                         result.Color = AddTrackCommand.GenerateColor();
                     }
+                    if (dictionary.TryGetValue("mute", out var mute)) result.Mute = (bool)mute;
+                    if (dictionary.TryGetValue("solo", out var solo)) result.Solo = (bool)solo;
+                    if (dictionary.TryGetValue("vol", out var vol)) result.Volume = Convert.ToDouble(vol);
+                    if (dictionary.TryGetValue("pan", out var pan)) result.Pan = Convert.ToDouble(pan);
 
                     return result;
                 }
@@ -486,6 +490,10 @@ namespace OpenUtau.Core.Formats
                         if (!string.IsNullOrWhiteSpace(_obj.OverrideRenderEngine))
                             result.Add("override-engine", _obj.OverrideRenderEngine);
                         result.Add("color", _obj.Color.ToString());
+                        result.Add("mute", _obj.Mute);
+                        result.Add("solo", _obj.Solo);
+                        result.Add("vol", _obj.Volume);
+                        result.Add("pan", _obj.Pan);
                     }
                 }
                 else if (obj is USinger)

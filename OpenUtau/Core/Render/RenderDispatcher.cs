@@ -71,7 +71,7 @@ namespace OpenUtau.Core.Render
                     token.ThrowIfCancellationRequested();
                     if (track.Amended || !trackCache.Any(track1 => track1?.TrackNo == track.TrackNo))
                     {
-                        trackSources[track.TrackNo] = (new TrackSampleProvider() { TrackNo = track.TrackNo, PlainVolume = DecibelToVolume(track.Volume), Muted = track.Mute, Pan = (float)track.Pan / 90f });
+                        trackSources[track.TrackNo] = (new TrackSampleProvider() { TrackNo = track.TrackNo, PlainVolume = DecibelToVolume(track.Volume), Muted = track.ActuallyMuted, Pan = (float)track.Pan / 90f });
                         track.Amended = false;
                         var singer = track.Singer;
                         var subschedule = new List<Task>();
@@ -192,7 +192,7 @@ namespace OpenUtau.Core.Render
             {
                 schedule.Add(Task.Run(async() => {
                     token.ThrowIfCancellationRequested();
-                    trackSources[track.TrackNo] = (new TrackSampleProvider() { TrackNo = track.TrackNo, PlainVolume = DecibelToVolume(track.Volume), Muted = track.Mute, Pan = (float)track.Pan / 90f });
+                    trackSources[track.TrackNo] = (new TrackSampleProvider() { TrackNo = track.TrackNo, PlainVolume = DecibelToVolume(track.Volume), Muted = track.ActuallyMuted, Pan = (float)track.Pan / 90f });
                     var subschedule = new List<Task>();
                     var singer = track.Singer;
                     if (!parts.TryGetValue(track.TrackNo, out var group)) return;
