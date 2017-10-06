@@ -467,7 +467,7 @@ namespace OpenUtau.UI.Models
             if (tickPix > MidiCanvas.ActualWidth * UIConstants.PlayPosMarkerMargin)
                 OffsetX += tickPix - MidiCanvas.ActualWidth * UIConstants.PlayPosMarkerMargin;
             if (ViewMode && (ViewingPart.EndTick <= tick || tick <= ViewingPart.PosTick)) {
-                UVoicePart uPart = Project.Parts.OfType<UVoicePart>().OrderBy(part=>part.TrackNo).ThenBy(part=>part.PosTick).ToList().Find(part => part.PosTick <= tick && tick < part.EndTick);
+                UVoicePart uPart = Project.Parts.OfType<UVoicePart>().OrderBy(part=>part.TrackNo).ThenBy(part=>part.PosTick).SkipWhile(part=>Project.Tracks[part.TrackNo].ActuallyMuted).ToList().Find(part => part.PosTick <= tick && tick < part.EndTick);
                 if (uPart != null)
                 {
                     _viewPart = uPart;

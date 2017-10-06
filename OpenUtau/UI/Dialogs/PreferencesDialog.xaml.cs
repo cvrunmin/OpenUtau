@@ -50,6 +50,10 @@ namespace OpenUtau.UI.Dialogs
             comboBoxLang.SelectedItem = Lang.LanguageManager.GetLocalized("DisplayName");
             comboBoxLang.SelectionChanged += ComboBoxLang_SelectionChanged;
             chkboxEditOnEnter.IsChecked = Core.Util.Preferences.Default.EnterToEdit;
+            ComboWavePlayer.SelectedItem = Core.Util.Preferences.Default.WavePlayer;
+            if (!NAudio.Wave.AsioOut.isSupported()) {
+                ComboWavePlayer.Items.Remove("ASIO");
+            }
         }
 
         private void ComboBoxLang_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -189,6 +193,11 @@ namespace OpenUtau.UI.Dialogs
         private void chkboxEditOnEnter_Click(object sender, RoutedEventArgs e)
         {
             Core.Util.Preferences.Default.EnterToEdit = chkboxEditOnEnter.IsChecked.Value;
+        }
+
+        private void ComboWavePlayer_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Core.Util.Preferences.Default.WavePlayer = ComboWavePlayer.SelectedItem;
         }
     }
 }

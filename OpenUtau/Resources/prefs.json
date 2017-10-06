@@ -6,12 +6,14 @@
     "MidiHeight": 768,
 	"MidiMaximized": false,
     "UndoLimit": 100,
+	"MultiThreadLimit": 5,
     "SingerSearchPaths": [
         "Singers"
     ],
 	"EnterToEdit":false,
 	"RenderNoteAtInstant": false,
 	"RenderManager": "PreRender",
+	"WavePlayer": "WaveOut",
     "InternalEnginePreview": true,
     "InternalEngineExport": true,
     "ExternalPreviewEngine": "",

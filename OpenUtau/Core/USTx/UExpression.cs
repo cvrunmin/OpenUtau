@@ -123,6 +123,17 @@ namespace OpenUtau.Core.USTx
             newdata.Reverse();
             return new PitchBendExpression(newParent) { Data = newdata, SnapFirst = true };
         }
+
+        public UExpression Merge(UNote oldParnet) {
+            foreach (var item in oldParnet.PitchBend.Points)
+            {
+                var pre = item.Clone();
+                pre.X += DocManager.Inst.Project.TickToMillisecond(oldParnet.PosTick - Parent.PosTick);
+                pre.Y += (oldParnet.NoteNum - Parent.NoteNum) * 10;
+                AddPoint(pre);
+            }
+            return this;
+        }
     }
 
     public class EnvelopeExpression : UExpression

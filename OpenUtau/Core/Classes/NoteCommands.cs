@@ -217,8 +217,8 @@ namespace OpenUtau.Core
                 {
                     Note.Lyric = OldLyric;
                     Note.Phonemes[0].Phoneme = OldLyric;
-                    var presetLyricsMap = DocManager.Inst.Project.Tracks[Part.TrackNo].Singer.PresetLyricsMap;
-                    if (presetLyricsMap.ContainsKey(Note.Lyric))
+                    var presetLyricsMap = DocManager.Inst.Project.Tracks[Part.TrackNo].Singer?.PresetLyricsMap;
+                    if (presetLyricsMap != null && presetLyricsMap.ContainsKey(Note.Lyric))
                     {
                         UDictionaryNote.ApplyPreset(Note, presetLyricsMap[Note.Lyric]);
                     }

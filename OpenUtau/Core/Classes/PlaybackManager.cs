@@ -16,6 +16,8 @@ namespace OpenUtau.Core
 {
     abstract class PlaybackManager : ICmdSubscriber
     {
+        protected IWavePlayer outDevice;
+
         protected PlaybackManager() { Subscribe(DocManager.Inst); }
 
         public abstract void Play(UProject project);
@@ -52,10 +54,24 @@ namespace OpenUtau.Core
                 return InstantPlaybackManager.Inst;
             }
         }
+
+        protected IWavePlayer CreatePlayer() {
+            switch (Core.Util.Preferences.Default.WavePlayer)
+            {
+                case "WASAPI":
+                    return new WasapiOut();
+                case "DirectSound":
+                    return new DirectSoundOut();
+                case "ASIO":
+                    return new AsioOut();
+                case "WaveOut":
+                default:
+                    return new WaveOut();
+            }
+        }
     }
     class PreRenderPlaybackManager : PlaybackManager
     {
-        private WaveOut outDevice;
 
         private PreRenderPlaybackManager() : base() { }
 
@@ -71,7 +87,13 @@ namespace OpenUtau.Core
             else if (outDevice != null)
             {
                 if (outDevice.PlaybackState == PlaybackState.Playing) return;
-                else if (outDevice.PlaybackState == PlaybackState.Paused) { outDevice.Resume(); return; }
+                else if (outDevice.PlaybackState == PlaybackState.Paused)
+                {
+                    if (outDevice is WaveOut)
+                        (outDevice as WaveOut).Resume();
+                    else outDevice.Play();
+                    return;
+                }
                 else outDevice.Dispose();
             }
             BuildAudioAndPlay(project);
@@ -108,7 +130,9 @@ namespace OpenUtau.Core
         {
             if (outDevice != null && outDevice.PlaybackState == PlaybackState.Paused)
             {
-                outDevice.Resume();
+                if (outDevice is WaveOut)
+                    (outDevice as WaveOut).Resume();
+                else outDevice.Play();
                 return;
             }
             if (!preMade)
@@ -116,7 +140,7 @@ namespace OpenUtau.Core
                 masterMix = new UWaveMixerStream32();
                 foreach (var source in trackSources) masterMix.AddInputStream(source);
             }
-            outDevice = new WaveOut();
+            outDevice = CreatePlayer(); ;
             outDevice.PlaybackStopped += (sender, e) => {
                 StopPlayback();
             };
@@ -251,8 +275,6 @@ namespace OpenUtau.Core
 
     class InstantPlaybackManager : PlaybackManager
     {
-        private WaveOut outDevice;
-
         private InstantPlaybackManager() : base() { }
 
         private static InstantPlaybackManager _s;
@@ -267,7 +289,13 @@ namespace OpenUtau.Core
             else if (outDevice != null)
             {
                 if (outDevice.PlaybackState == PlaybackState.Playing) return;
-                else if (outDevice.PlaybackState == PlaybackState.Paused) { outDevice.Resume(); return; }
+                else if (outDevice.PlaybackState == PlaybackState.Paused)
+                {
+                    if (outDevice is WaveOut)
+                        (outDevice as WaveOut).Resume();
+                    else outDevice.Play();
+                    return;
+                }
                 else outDevice.Dispose();
             }
             BuildAudioAndPlay(project);
@@ -308,7 +336,9 @@ namespace OpenUtau.Core
         {
             if (outDevice != null && outDevice.PlaybackState == PlaybackState.Paused)
             {
-                outDevice.Resume();
+                if (outDevice is WaveOut)
+                    (outDevice as WaveOut).Resume();
+                else outDevice.Play();
                 return;
             }
             if (!preMade)
@@ -316,7 +346,7 @@ namespace OpenUtau.Core
                 masterMix = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
                 foreach (var source in trackSources) masterMix.AddMixerInput(source);
             }
-            outDevice = new WaveOut();
+            outDevice = CreatePlayer();
             outDevice.PlaybackStopped += (sender, e) => {
                 StopPlayback();
             };
@@ -349,7 +379,21 @@ namespace OpenUtau.Core
         {
             if (outDevice != null && outDevice.PlaybackState == PlaybackState.Playing)
             {
-                double ms = outDevice.GetPosition() * 1000.0 / masterMix.WaveFormat.BitsPerSample /masterMix.WaveFormat.Channels * 8 / masterMix.WaveFormat.SampleRate;
+                double ms;
+                switch (outDevice) {
+                    case WaveOut wo:
+                        ms = wo.GetPosition() * 1000.0 / masterMix.WaveFormat.BitsPerSample / masterMix.WaveFormat.Channels * 8 / masterMix.WaveFormat.SampleRate;
+                        break;
+                    case DirectSoundOut dso:
+                        ms = dso.PlaybackPosition.Milliseconds;
+                        break;
+                    case WasapiOut wao:
+                        ms = wao.GetPosition() * 1000.0 / masterMix.WaveFormat.BitsPerSample / masterMix.WaveFormat.Channels * 8 / masterMix.WaveFormat.SampleRate;
+                        break;
+                    case AsioOut ao:
+                    default:
+                        return;
+                }
                 int tick = DocManager.Inst.Project.MillisecondToTick(ms + SkipedTimeSpan.TotalMilliseconds);
                 DocManager.Inst.ExecuteCmd(new SetPlayPosTickNotification(tick), true);
             }

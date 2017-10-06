@@ -13,8 +13,19 @@ namespace OpenUtau.Core
     class DocManager : ICmdPublisher
     {
         DocManager() {
-            _project = new UProject();
+            _project = new UProject(); int limit;
+            try
+            {
+                limit = Util.Preferences.Default.MultiThreadLimit;
+            }
+            catch
+            {
+                limit = 5;
+            }
+            Factory = new TaskFactory(new LimitedTaskScheduler(limit));
         }
+
+        public TaskFactory Factory;
 
         static DocManager _s;
         static DocManager GetInst() { if (_s == null) { _s = new DocManager(); } return _s; }

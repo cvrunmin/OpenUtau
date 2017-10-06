@@ -34,7 +34,7 @@ namespace OpenUtau.Core.Render
         }
         public Task<SequencingSampleProvider> ResamplePartNew(UVoicePart part, UProject project, IResamplerDriver engine, System.Threading.CancellationToken cancel)
         {
-            return new TaskFactory().StartNew(() => RenderAsync(part, project, engine, cancel), cancel)
+            return DocManager.Inst.Factory.StartNew(() => RenderAsync(part, project, engine, cancel), cancel)
                 .ContinueWith(task =>
                 {
                     List<RenderItemSampleProvider> renderItemSampleProviders = new List<RenderItemSampleProvider>();

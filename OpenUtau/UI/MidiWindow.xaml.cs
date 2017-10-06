@@ -1190,6 +1190,17 @@ namespace OpenUtau.UI
                 DocManager.Inst.ExecuteCmd(new RemoveNoteCommand(MidiVM.Part, sn.Skip(1).ToList()), true);
                 DocManager.Inst.ExecuteCmd(new ResizeNoteCommand(MidiVM.Part, notem, dur - notem.DurTick), true);
                 DocManager.Inst.ExecuteCmd(new ChangeNoteLyricCommand(MidiVM.Part, notem, nl), true);
+                foreach (var note in sn.Skip(1))
+                {
+                    foreach (var item in note.PitchBend.Points)
+                    {
+                        var pre = item.Clone();
+                        pre.X += DocManager.Inst.Project.TickToMillisecond(note.PosTick - notem.PosTick);
+                        pre.Y += (note.NoteNum - notem.NoteNum) * 10;
+                        var index = notem.PitchBend.Points.FindIndex(pt => pt.X > pre.X);
+                        DocManager.Inst.ExecuteCmd(new AddPitchPointCommand(notem, pre, index != -1 ? index : notem.PitchBend.Points.Count));
+                    }
+                }
                 if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
                 MidiVM.SelectNote(notem);
                 MidiVM.MarkUpdate();
@@ -1238,11 +1249,11 @@ namespace OpenUtau.UI
                     break;
                 case "FirstNote":
                     UNote uNote = MidiVM.Project.Parts.OfType<UVoicePart>().OrderBy(part => part.PosTick).SelectMany(part => part.Notes).FirstOrDefault();
-                    DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(uNote?.PosTick ?? 0 + MidiVM.Project.Parts.Find(part=>part.PartNo == (uNote?.PartNo ?? -1))?.PosTick ?? 0, MidiVM.Project));
+                    DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification((uNote?.PosTick ?? 0) + MidiVM.Project.Parts.Find(part=>part.PartNo == (uNote?.PartNo ?? -1))?.PosTick ?? 0, MidiVM.Project));
                     break;
                 case "LastNote":
                     UNote uNote1 = MidiVM.Project.Parts.OfType<UVoicePart>().OrderBy(part => part.PosTick).SelectMany(part => part.Notes).LastOrDefault();
-                    DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(uNote1?.EndTick ?? 0 + MidiVM.Project.Parts.Find(part => part.PartNo == (uNote1?.PartNo ?? -1))?.PosTick ?? 0, MidiVM.Project));
+                    DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification((uNote1?.EndTick ?? 0) + MidiVM.Project.Parts.Find(part => part.PartNo == (uNote1?.PartNo ?? -1))?.PosTick ?? 0, MidiVM.Project));
                     break;
                 case "End":
                     DocManager.Inst.ExecuteCmd(new SeekPlayPosTickNotification(MidiVM.Project.Parts.OrderBy(part => part.EndTick).LastOrDefault()?.EndTick ?? 0, MidiVM.Project));

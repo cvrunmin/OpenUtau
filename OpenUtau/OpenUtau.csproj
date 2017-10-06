@@ -140,6 +140,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\Formats\UtauSoundbank.cs" />
+    <Compile Include="Core\Lib\LimitedTaskScheduler.cs" />
     <Compile Include="Core\Lib\MessageBoxManager.cs" />
     <Compile Include="Core\Lib\NAudio\ISampleChunkConverter.cs" />
     <Compile Include="Core\Lib\NAudio\Mono16SampleChunkConverter.cs" />
@@ -174,6 +175,7 @@
     <Compile Include="Core\Render\NAudio\TrackWaveChannel.cs" />
     <Compile Include="Core\Render\NAudio\UOffsetSampleProvider.cs" />
     <Compile Include="Core\Render\NAudio\UWaveMixerStream32.cs" />
+    <Compile Include="Core\Render\NAudio\UWaveOffsetStream.cs" />
     <Compile Include="Core\Render\RenderItem.cs" />
     <Compile Include="Core\Render\RenderCache.cs" />
     <Compile Include="Core\Render\NAudio\RenderItemSampleProvider.cs" />

@@ -144,6 +144,9 @@ namespace OpenUtau.Core
                             }
                             else phoneme.OverlapCorrection = false;
 
+                            phoneme.Preutter = Math.Min(phoneme.Preutter, DocManager.Inst.Project.TickToMillisecond(lastPhoneme.DurTick, part.PosTick + lastPhoneme.Parent.PosTick + lastPhoneme.PosTick));
+                            phoneme.Overlap = Math.Min(phoneme.Overlap, DocManager.Inst.Project.TickToMillisecond(phoneme.DurTick, part.PosTick + note.PosTick + phoneme.PosTick));
+
                             lastPhoneme.TailIntrude = phoneme.Preutter - gapMs;
                             lastPhoneme.TailOverlap = phoneme.Overlap;
 
