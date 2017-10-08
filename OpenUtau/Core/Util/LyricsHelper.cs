@@ -39,28 +39,34 @@ namespace OpenUtau.Core.Util
             "きゃ", "しゃ", "ちゃ", "にゃ", "ひゃ",
             "みゃ", "りゃ", "ぎゃ", "じゃ", "びゃ",
             "ぴゃ", "つぁ", "ふぁ", "くぁ", "ぐぁ",
-            "ゔぁ"
+            "ゔぁ", "うぁ", "すぁ", "ずぁ", "ぬぁ",
+            "ぶぁ", "ぷぁ", "むぁ","るぁ"
         };
         public static readonly string[] RomajiColumnA =
         { "a", "ka", "sa", "ta", "na",
             "ha", "ma", "ra", "ga", "za",
             "da", "ba", "pa", "ya", "wa",
             "kya", "sha", "cha", "nya", "hya",
-            "mya", "rya", "gya", "jya", "bya",
+            "mya", "rya", "gya", "ja", "bya",
             "pya", "tsa", "fa", "kwa", "gwa",
-            "va"
+            "va", "wha", "swa", "zwa", "nwa",
+            "bwa", "pwa", "mwa", "rwa"
         };
         public static readonly string[] HiraganaColumnI =
         { "い", "き", "し", "ち", "に",
             "ひ", "み", "り", "ぎ", "じ",
              "び", "ぴ", "てぃ", "ふぃ","でぃ",
-            "くぃ", "ゔぃ", "うぃ","つぃ"
+            "くぃ", "ぐぃ", "ゔぃ", "うぃ","つぃ",
+            "すぃ", "ずぃ", "ぬぃ", "ぶぃ", "ぷぃ",
+            "むぃ", "るぃ"
         };
         public static readonly string[] RomajiColumnI =
         { "i", "ki", "shi", "chi", "ni",
             "hi", "mi", "ri", "gi", "ji",
              "bi", "pi", "ti", "fi","di",
-            "kwi", "vi", "wi","tsi"
+            "kwi", "gwi", "vi", "wi","tsi",
+            "swi", "zwi", "nwi", "bwi", "pwi",
+            "mwi", "rwi"
         };
         public static readonly string[] HiraganaColumnU =
         { "う", "く", "す", "つ", "ぬ",
@@ -76,7 +82,7 @@ namespace OpenUtau.Core.Util
             "fu", "mu", "ru", "gu", "zu",
             "bu", "pu", "yu", "kyu", "shu",
             "chu", "nyu", "hyu", "myu", "ryu",
-            "gyu", "jyu", "byu", "pyu", "dyu",
+            "gyu", "ju", "byu", "pyu", "dyu",
             "tou", "dou", "tyu", "vu", "fyu",
             "vyu"
         };
@@ -84,30 +90,42 @@ namespace OpenUtau.Core.Util
         { "え", "け", "せ", "て", "ね",
             "へ", "め", "れ", "げ", "ぜ",
             "で", "べ", "ぺ", "しぇ","ちぇ",
-            "うぇ", "くぇ", "つぇ", "ふぇ", "じぇ",
-            "いぇ", "ゔぇ" };
+            "うぇ", "くぇ", "ぐぇ", "つぇ", "ふぇ", "じぇ",
+            "いぇ", "ゔぇ", "きぇ", "ぎぇ",
+            "すぇ", "ずぇ", "にぇ", "ぬぇ",
+            "ひぇ","びぇ","ぴぇ", "ぶぇ", "ぷぇ",
+            "みぇ", "むぇ","りぇ", "るぇ"
+        };
         public static readonly string[] RomajiColumnE =
         { "e", "ke", "se", "te", "ne",
-            "he", "me", "re", "ge", "se",
+            "he", "me", "re", "ge", "ze",
             "de", "be", "pe", "she","che",
-            "we", "kwe", "tse", "fe", "je",
-            "ye", "ve" };
+            "we", "kwe", "gwe", "tse", "fe", "je",
+            "ye", "ve", "kye", "gye",
+            "swe", "zwe", "nye", "nwe",
+            "hye", "bye", "pye", "bwe", "pwi",
+            "mye", "mwe","rye", "rwe"
+        };
         public static readonly string[] HiraganaColumnO =
         { "お", "こ", "そ", "と", "の",
             "ほ", "も", "ろ", "ご", "ぞ",
             "ど", "ぼ", "ぽ", "よ", "を",
             "きょ", "しょ", "ちょ", "にょ", "ひょ",
             "みょ", "りょ", "ぎょ", "じょ", "びょ",
-            "ぴょ", "つぉ", "ふぉ","うぉ", "くぉ",
-            "ゔぉ" };
+            "ぴょ", "つぉ", "ふぉ","うぉ", "くぉ", "ぐぉ",
+            "ゔぉ", "すぉ", "ずぉ", "ぬぉ",
+            "ぶぉ", "ぷぉ", "むぉ", "るぉ"
+        };
         public static readonly string[] RomajiColumnO =
         { "o", "ko", "so", "to", "no",
             "ho", "mo", "ro", "go", "zo",
             "do", "bo", "po", "yo", "wo",
             "kyo", "sho", "cho", "nyo", "hyo",
-            "myo", "ryo", "gyo", "jyo", "byo",
-            "pyo", "tso", "fo","who", "kwo",
-            "vo" };
+            "myo", "ryo", "gyo", "jo", "byo",
+            "pyo", "tso", "fo","who", "kwo", "gwo",
+            "vo", "swo", "zwo", "nwo",
+            "bwo", "pwo", "mwo", "rwo"
+        };
 
         public static string GetVowel(string lyrics)
         {
@@ -178,11 +196,11 @@ namespace OpenUtau.Core.Util
 
         public static bool IsSupportedHiragana(string proofing)
         {
-            return HiraganaColumnA.Contains(proofing) || HiraganaColumnE.Contains(proofing) || HiraganaColumnI.Contains(proofing) || HiraganaColumnO.Contains(proofing) || HiraganaColumnU.Contains(proofing);
+            return "ん".Equals(proofing) || HiraganaColumnA.Contains(proofing) || HiraganaColumnE.Contains(proofing) || HiraganaColumnI.Contains(proofing) || HiraganaColumnO.Contains(proofing) || HiraganaColumnU.Contains(proofing);
         }
         public static bool IsSupportedRomaji(string proofing)
         {
-            return RomajiColumnA.Contains(proofing) || RomajiColumnE.Contains(proofing) || RomajiColumnI.Contains(proofing) || RomajiColumnO.Contains(proofing) || RomajiColumnU.Contains(proofing);
+            return "n".Equals(proofing) || RomajiColumnA.Contains(proofing) || RomajiColumnE.Contains(proofing) || RomajiColumnI.Contains(proofing) || RomajiColumnO.Contains(proofing) || RomajiColumnU.Contains(proofing);
         }
     }
 

@@ -232,20 +232,7 @@ namespace OpenUtau.UI.Controls
                     StreamGeometry g = new StreamGeometry();
                     using (var gcxt = g.Open())
                     {
-                        gcxt.BeginFigure(new Point(startX, startY), true, true);
-                        gcxt.LineTo(new Point(startX + inPix, startY + depthPix + depthPix * vibrato.Drift / 100), true, false);
-                        gcxt.LineTo(new Point(startX + inPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
-                        gcxt.LineTo(new Point(startX + lengthPix - outPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
-                        gcxt.LineTo(new Point(startX + lengthPix - outPix, startY + depthPix + depthPix * vibrato.Drift / 100), true, false);
-                        gcxt.LineTo(new Point(startX + lengthPix, startY), true, false);
-                        gcxt.LineTo(new Point(startX + lengthPix - outPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
-                        gcxt.LineTo(new Point(startX + inPix, startY + depthPix + depthPix * vibrato.Drift / 100), true, false);
-                        gcxt.LineTo(new Point(startX + lengthPix - outPix, startY + depthPix + depthPix * vibrato.Drift / 100), true, false);
-                        gcxt.LineTo(new Point(startX + inPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
-                        gcxt.LineTo(new Point(startX + inPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
-                        gcxt.LineTo(new Point(startX, startY), true, false);
-                        gcxt.LineTo(new Point(startX + lengthPix, startY), true, true);
-                        gcxt.Close();
+                        DrawVibratoFrame(vibrato, lengthPix, startX, startY, inPix, outPix, depthPix, gcxt);
                     }
                     if (pen6 == null)
                     {
@@ -268,6 +255,24 @@ namespace OpenUtau.UI.Controls
                     else if (_x1 > lengthPix - outPix) _y1 = _y1 * (lengthPix - _x1) / outPix;
                 }
             }
+        }
+
+        protected virtual void DrawVibratoFrame(VibratoExpression vibrato, double lengthPix, double startX, double startY, double inPix, double outPix, double depthPix, StreamGeometryContext gcxt)
+        {
+            gcxt.BeginFigure(new Point(startX, startY), true, true);
+            gcxt.LineTo(new Point(startX + inPix, startY + depthPix + depthPix * vibrato.Drift / 100), true, false);
+            gcxt.LineTo(new Point(startX + inPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
+            gcxt.LineTo(new Point(startX + lengthPix - outPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
+            gcxt.LineTo(new Point(startX + lengthPix - outPix, startY + depthPix + depthPix * vibrato.Drift / 100), true, false);
+            gcxt.LineTo(new Point(startX + lengthPix, startY), true, false);
+            gcxt.LineTo(new Point(startX + lengthPix - outPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
+            gcxt.LineTo(new Point(startX + inPix, startY + depthPix + depthPix * vibrato.Drift / 100), true, false);
+            gcxt.LineTo(new Point(startX + lengthPix - outPix, startY + depthPix + depthPix * vibrato.Drift / 100), true, false);
+            gcxt.LineTo(new Point(startX + inPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
+            gcxt.LineTo(new Point(startX + inPix, startY - depthPix + depthPix * vibrato.Drift / 100), true, false);
+            gcxt.LineTo(new Point(startX, startY), true, false);
+            gcxt.LineTo(new Point(startX + lengthPix, startY), true, true);
+            gcxt.Close();
         }
 
         protected virtual void DrawPitchBend(UNote note, DrawingContext cxt, bool drawPt = true)
@@ -322,8 +327,10 @@ namespace OpenUtau.UI.Controls
         }
     }
 
-    class ViewOnlyNotesElement : NotesElement
+    internal class ViewOnlyNotesElement : NotesElement
     {
+        internal ViewOnlyNotesElement() : base() { }
+
         public override void RedrawIfUpdated()
         {
             if (!_updated) return;
@@ -380,6 +387,11 @@ namespace OpenUtau.UI.Controls
             UNote note1 = note.Clone();
             note1.PosTick += DocManager.Inst.Project.Parts.Find(part => part.PartNo == note1.PartNo)?.PosTick ?? 0;
             base.DrawVibrato(note1, cxt);
+        }
+
+        protected override void DrawVibratoFrame(VibratoExpression vibrato, double lengthPix, double startX, double startY, double inPix, double outPix, double depthPix, StreamGeometryContext gcxt)
+        {
+
         }
     }
 }

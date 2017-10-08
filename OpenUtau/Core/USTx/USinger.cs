@@ -17,6 +17,19 @@ namespace OpenUtau.Core.USTx
         public double Overlap { set; get; }
         public double Duration { get; set; }
 
+        public UOto() { }
+
+        public UOto(UOto clone) {
+            Alias = clone.Alias;
+            File = clone.File;
+            Offset = clone.Offset;
+            Consonant = clone.Consonant;
+            Cutoff = clone.Cutoff;
+            Preutter = clone.Preutter;
+            Overlap = clone.Overlap;
+            Duration = clone.Duration;
+        }
+
         public UOto SetAlias(string alia)
         {
             Alias = alia;

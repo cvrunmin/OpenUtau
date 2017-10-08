@@ -85,7 +85,7 @@ namespace OpenUtau.Core.Formats
             SavePrefixMap(singer);
             SaveLyricPreset(singer);
         }
-        static USinger LoadSinger(string path)
+        public static USinger LoadSinger(string path)
         {
             if (!Directory.Exists(path) ||
                 !File.Exists(Path.Combine(path, "character.txt")) ||
@@ -203,7 +203,7 @@ namespace OpenUtau.Core.Formats
             if (groupedAlias.Any(grouping=>grouping.Key.Equals(relativeDir)))
             {
                 var locatedAlias = groupedAlias.First(grouping => grouping.Key.Equals(relativeDir));
-                using (var writer = new StreamWriter(file, false, Encoding.UTF8))
+                using (var writer = new StreamWriter(file, false, new UTF8Encoding(false)))
                 {
                     writer.WriteLine("#Charset:UTF8");
                     foreach (var oto in locatedAlias)

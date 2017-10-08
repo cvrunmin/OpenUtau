@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 
 using JsonFx.Json;
+using System.Dynamic;
 
 namespace OpenUtau.Core.Util
 {
@@ -26,7 +27,16 @@ namespace OpenUtau.Core.Util
 
         private static void Load()
         {
-            if (File.Exists(filename)) Default = reader.Read(File.ReadAllText(filename));
+            if (File.Exists(filename))
+            {
+                dynamic r = reader.Read(File.ReadAllText(filename));
+                dynamic d = GetDefault();
+                foreach (var item in (ExpandoObject)r)
+                {
+                    ((IDictionary<string,object>)d)[item.Key] = item.Value;
+                }
+                Default = d;
+            }
             else Reset();
         }
 
@@ -37,10 +47,15 @@ namespace OpenUtau.Core.Util
 
         public static void Reset()
         {
+            Default = GetDefault();
+            Save();
+        }
+
+        private static dynamic GetDefault()
+        {
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
             var stream = new StreamReader(assembly.GetManifestResourceStream("OpenUtau.Resources.prefs.json"));
-            Default = reader.Read(stream.ReadToEnd());
-            Save();
+            return reader.Read(stream.ReadToEnd());
         }
     }
 }
