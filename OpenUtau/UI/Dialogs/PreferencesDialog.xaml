@@ -20,6 +20,7 @@
         </TreeView>
         <Grid x:Name="generalGrid" Margin="170,2,10,10" Visibility="Collapsed">
             <CheckBox x:Name="chkboxEditOnEnter" Content="{DynamicResource EnterKeyEditNote}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Click="chkboxEditOnEnter_Click"/>
+            <CheckBox x:Name="chkboxAutoConvert" Content="Convert among different record styles" HorizontalAlignment="Left" Margin="10,30,0,0" VerticalAlignment="Top" Click="chkboxAutoConvert_Click"/>
 
         </Grid>
         <Grid x:Name="pathsGrid" Margin="170,2,10,10" Visibility="Hidden">

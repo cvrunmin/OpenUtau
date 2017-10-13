@@ -41,6 +41,16 @@ namespace OpenUtau.Core
         public void SearchAllSingers()
         {
             _singers = Formats.UtauSoundbank.FindAllSingers();
+            var list = new List<USinger>();
+            foreach (var item in Project.Singers)
+            {
+                list.Add(Singers.FirstOrDefault(pair => pair.Value.Name.Equals(item.Name) && pair.Value.Path.Equals(item.Path)).Value);
+            }
+            Project.Singers = list.Distinct().ToList();
+            foreach (var track in Project.Tracks)
+            {
+                track.Singer = Project.Singers.Find(singer => singer.Loaded && singer.Name.Equals(track.SingerName) && singer.Path.Equals(track.Singer.Path));
+            }
         }
 
         # region Command Queue

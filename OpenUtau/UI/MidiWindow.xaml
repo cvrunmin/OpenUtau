@@ -66,7 +66,12 @@
                     <MenuItem Header="{DynamicResource MenuPaste}" InputGestureText="Ctrl+V" IsEnabled="{Binding Pastable, Source={StaticResource midiVM}}" Click="MenuPaste_Click"/>
                     <MenuItem Header="{DynamicResource MenuDelete}" InputGestureText="Del" Click="MenuDelete_Click"/>
                     <MenuItem Header="{DynamicResource MenuSelectAll}" InputGestureText="Ctrl+A" Click="MenuSelectAll_Click"/>
-                    <MenuItem Header="Merge Notes" InputGestureText="Ctrl+U" Click="MenuMergeNotes_Click"/>
+                    <MenuItem Header="{DynamicResource MenuMergeNote}" InputGestureText="Ctrl+U" Click="MenuMergeNotes_Click"/>
+                    <MenuItem Header="Convert Style">
+                        <MenuItem Header="CV" Tag="CV" Click="MenuConvertStyle_Click"/>
+                        <MenuItem Header="VCV" Tag="VCV" Click="MenuConvertStyle_Click"/>
+                        <MenuItem Header="CVVC" Tag="CVVC" Click="MenuConvertStyle_Click"/>
+                    </MenuItem>
                 </MenuItem>
                 <MenuItem Header="Preview">
                     <MenuItem Header="Play" Tag="Play" Click="MenuPlaybackCtrl_Click"/>

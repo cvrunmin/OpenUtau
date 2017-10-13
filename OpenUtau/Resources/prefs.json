@@ -12,6 +12,7 @@
     ],
 	"EnterToEdit":false,
 	"RenderNoteAtInstant": false,
+	"AutoConvertStyles": false,
 	"RenderManager": "PreRender",
 	"WavePlayer": "WaveOut",
     "InternalEnginePreview": true,

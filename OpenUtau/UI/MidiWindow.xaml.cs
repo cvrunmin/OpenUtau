@@ -1267,5 +1267,40 @@ namespace OpenUtau.UI
         {
             ViewOnly = (sender as MenuItem).IsChecked;
         }
+
+        private void MenuConvertStyle_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem mi) {
+                OpenUtau.Core.Util.SamplingStyleHelper.Style style;
+                switch (mi.Tag)
+                {
+                    case "CV":
+                        style = Core.Util.SamplingStyleHelper.Style.CV;
+                        break;
+                    case "VCV":
+                        style = Core.Util.SamplingStyleHelper.Style.VCV;
+                        break;
+                    case "CVVC":
+                        style = Core.Util.SamplingStyleHelper.Style.CVVC;
+                        break;
+                    default:
+                        style = Core.Util.SamplingStyleHelper.Style.Others;
+                        break;
+                }
+                if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
+                foreach (var item in new SortedSet<UNote>(MidiVM.Part.Notes))
+                {
+                    var mod = Core.Util.SamplingStyleHelper.GetCorrespondingPhoneme(item.Lyric, MidiVM.Part.Notes.FirstOrDefault(note => item.PosTick - note.EndTick < DocManager.Inst.Project.Resolution / 64), MidiVM.Part.Notes.FirstOrDefault(note => note.PosTick - item.EndTick < DocManager.Inst.Project.Resolution / 64), style);
+                    if (style == Core.Util.SamplingStyleHelper.Style.CVVC)
+                    {
+                    }
+                    else
+                    {
+                        DocManager.Inst.ExecuteCmd(new ChangeNoteLyricCommand(MidiVM.Part, item, mod));
+                    }
+                }
+                if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
+            }
+        }
     }
 }

@@ -194,7 +194,8 @@ namespace OpenUtau.Core.USTx
                 _in = _in,
                 _out = _out,
                 _shift = _shift,
-                _drift = _drift
+                _drift = _drift,
+                IsEnabled = IsEnabled
             };
         }
         public override UExpression Split(UNote newParent, int postick) { var exp = Clone(newParent); return exp; }

@@ -425,7 +425,7 @@ namespace OpenUtau.UI.Models
         {
             Title = ViewingPart.Name;
             QuarterOffset = (double)(ViewMode ? 0 : Part.PosTick) / Project.Resolution * BeatPerBar;
-            int projectDurTick = Project.Parts.OrderBy(part => part.PosTick).LastOrDefault()?.EndTick ?? 0;
+            int projectDurTick = Project.Parts.OrderBy(part => part.EndTick).LastOrDefault()?.EndTick ?? 0;
             QuarterCount = (double)(ViewMode ? projectDurTick : Part.DurTick) / Project.Resolution * BeatPerBar;
             QuarterWidth = QuarterWidth;
             OffsetX = OffsetX;

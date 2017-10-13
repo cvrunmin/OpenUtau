@@ -91,6 +91,8 @@ namespace OpenUtau.Core.USTx
         public Encoding FileEncoding;
         public Encoding PathEncoding;
 
+        public Util.SamplingStyleHelper.Style Style;
+
         public Dictionary<string, string> PitchMap = new Dictionary<string, string>();
         public SortedDictionary<string, UOto> AliasMap = new SortedDictionary<string, UOto>();
         public SortedDictionary<string, UDictionaryNote> PresetLyricsMap = new SortedDictionary<string, UDictionaryNote>();

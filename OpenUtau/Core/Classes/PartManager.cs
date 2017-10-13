@@ -48,6 +48,7 @@ namespace OpenUtau.Core
             {
                 if (part == null) return;
                 CheckOverlappedNotes(part);
+                UpdatePhonemes(part, singer);
                 UpdatePhonemeDurTick(part, singer);
                 UpdatePhonemeOto(part, singer);
                 UpdateOverlapAdjustment(part);
@@ -209,8 +210,8 @@ namespace OpenUtau.Core
                     {
                         phoneme.Oto = singer.AliasMap[phoneme.PhonemeRemapped];
                         phoneme.PhonemeError = false;
-                        phoneme.Overlap = phoneme.Oto.Overlap + (hyphenHolder ? Math.Min(oldpho.DurTick * 0.6, phoneme.DurTick) : 0);
-                        phoneme.Preutter = phoneme.Oto.Preutter + (hyphenHolder ? Math.Min(oldpho.DurTick * 0.2, phoneme.DurTick) : 0);
+                        phoneme.Overlap = phoneme.Oto.Overlap + DocManager.Inst.Project.TickToMillisecond(hyphenHolder ? Math.Min(oldpho.DurTick * 0.6, phoneme.DurTick) : 0);
+                        phoneme.Preutter = phoneme.Oto.Preutter + DocManager.Inst.Project.TickToMillisecond(hyphenHolder ? Math.Min(oldpho.DurTick * 0.2, phoneme.DurTick) : 0);
                         int vel = (int)phoneme.Parent.Expressions["velocity"].Data;
                         if (vel != 100)
                         {
@@ -248,7 +249,8 @@ namespace OpenUtau.Core
                         var presetpho = preset.Notes.Values.SelectMany(unote => unote.Phonemes).ToList();
                         for (int i = 0; i < note.Phonemes.Count && i < presetpho.Count; i++)
                         {
-                            note.Phonemes[i].DurTick = (int)Math.Round((float)presetpho[i].DurTick / totallen * note.DurTick);
+                            note.Phonemes[i].PosTick = (int)Math.Round((float)presetpho[i].Parent.PosTick / totallen * note.DurTick);
+                            note.Phonemes[i].DurTick = (int)Math.Round((float)presetpho[i].Parent.DurTick / totallen * note.DurTick);
                         }
                         
                     }
@@ -265,6 +267,62 @@ namespace OpenUtau.Core
                     }
                 }
                 lastNote = note;
+            }
+        }
+
+        private static void UpdatePhonemes(UVoicePart part, USinger singer)
+        {
+            if (part == null || singer == null) return;
+            foreach (var note in part.Notes)
+            {
+                if (singer.PresetLyricsMap.ContainsKey(note.Lyric))
+                {
+                    var preset = singer.PresetLyricsMap[note.Lyric];
+                    int totallen = preset.Notes.Sum(pair => pair.Value.DurTick);
+                    if (note.Phonemes.Count != preset.Notes.Values.Sum(unote => unote.Phonemes.Count))
+                        UDictionaryNote.ApplyPreset(note, preset);
+                }
+                else if (Util.Preferences.Default.AutoConvertStyles)
+                {
+                    UNote former = part.Notes.FirstOrDefault(note1 => note1 != note && Math.Abs(note.PosTick - note1.EndTick) < DocManager.Inst.Project.Resolution / 64);
+                    UNote lator = part.Notes.FirstOrDefault(note1 => note1 != note && Math.Abs(note1.PosTick - note.EndTick) < DocManager.Inst.Project.Resolution / 64);
+                    var mod = Util.SamplingStyleHelper.GetCorrespondingPhoneme(note.Lyric, former, lator, singer.Style);
+                    var mods = mod.Split('\t');
+                    if (mods.Length == 1) {
+                        if(note.Phonemes.Count == 1)
+                            note.Phonemes[0].Phoneme = mods[0];
+                        else
+                        {
+                            note.Phonemes.Clear();
+                            note.Phonemes.Add(new UPhoneme() { Phoneme = mods[0], Parent = note});
+                        }
+                    }
+                    else
+                    {
+                        if (note.Phonemes.Count == 2)
+                        {
+                            note.Phonemes[0].Phoneme = mods[0];
+                            note.Phonemes[1].Phoneme = mods[1];
+                            note.Phonemes[1].PosTick = (int)Math.Round(note.DurTick * 0.75);
+                        }
+                        else
+                        {
+                            note.Phonemes.Clear();
+                            note.Phonemes.Add(new UPhoneme() { Phoneme = mods[0], Parent = note });
+                            note.Phonemes.Add(new UPhoneme() { Phoneme = mods[1], Parent = note, PosTick = (int)Math.Round(note.DurTick * 0.75) });
+                        }
+                    }
+                }
+                else
+                {
+                    if(note.Phonemes.Count == 1)
+                        note.Phonemes[0].Phoneme = note.Lyric;
+                    else
+                    {
+                        note.Phonemes.Clear();
+                        note.Phonemes.Add(new UPhoneme() { Parent = note, Phoneme = note.Lyric });
+                    }
+                }
             }
         }
 

@@ -31,6 +31,7 @@
     <s:String x:Key="MenuPreferences">Preferences</s:String>
     <s:String x:Key="MenuHelp">_Help</s:String>
     <s:String x:Key="MenuAbout">About OpenUTAU</s:String>
+    <s:String x:Key="MenuMergeNote">Merge Notes</s:String>
     <s:String x:Key="Name">Name</s:String>
     <s:String x:Key="Comment">Comment</s:String>
     <s:String x:Key="Refresh">Refresh</s:String>

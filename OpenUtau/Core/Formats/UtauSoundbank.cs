@@ -150,6 +150,18 @@ namespace OpenUtau.Core.Formats
             singer.Detail = finalstring;
             LoadPrefixMap(singer);
             LoadLyricPreset(singer);
+            List<Util.SamplingStyleHelper.Style> list = new List<Util.SamplingStyleHelper.Style>();
+            foreach (var item in singer.AliasMap.Values)
+            {
+                list.Add(Util.SamplingStyleHelper.GetStyle(!string.IsNullOrWhiteSpace(item.Alias) ? item.Alias : Path.GetFileNameWithoutExtension(item.File)));
+            }
+            double avg = list.Average(style => style == Util.SamplingStyleHelper.Style.CV ? 1 : style == Util.SamplingStyleHelper.Style.VCV ? 3 : style == Util.SamplingStyleHelper.Style.VC ? 2 : 0);
+            double v = Math.Round(avg);
+            if (v == 1) singer.Style = Util.SamplingStyleHelper.Style.CV;
+            else if (v == 3) singer.Style = Util.SamplingStyleHelper.Style.VCV;
+            else if (v == 2) singer.Style = Util.SamplingStyleHelper.Style.CVVC;
+            else singer.Style = Util.SamplingStyleHelper.Style.Others;
+            singer.Detail += $"\n\n Style: {singer.Style.ToString()}";
             singer.Loaded = true;
 
             return singer;

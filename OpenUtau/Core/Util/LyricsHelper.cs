@@ -23,10 +23,26 @@ namespace OpenUtau.Core.Util
             return lyrics.Substring(idx != -1 ? idx : 0);
         }
 
+        public static string GetVowel(string lyrics, USinger singer) {
+            return GetVowel(lyrics);
+        }
+
         public static string GetConsonant(string lyrics)
         {
+            if (HiraganaRomajiHelper.IsSupportedHiragana(lyrics))
+                try
+                {
+                    return HiraganaRomajiHelper.ToRomaji(lyrics).Replace(HiraganaRomajiHelper.GetVowel(lyrics), "");
+                }
+                catch (ArgumentException)
+                {
+                }
             int idx = lyrics.IndexOfAny(new[] { 'a', 'e', 'i', 'o', 'u' });
             return idx == 0 ? "" : lyrics.Substring(0, idx != -1 ? idx : lyrics.Length);
+        }
+
+        public static string GetConsonant(string lyrics, USinger singer) {
+            return GetConsonant(lyrics);
         }
     }
 
@@ -40,7 +56,7 @@ namespace OpenUtau.Core.Util
             "みゃ", "りゃ", "ぎゃ", "じゃ", "びゃ",
             "ぴゃ", "つぁ", "ふぁ", "くぁ", "ぐぁ",
             "ゔぁ", "うぁ", "すぁ", "ずぁ", "ぬぁ",
-            "ぶぁ", "ぷぁ", "むぁ","るぁ"
+            "ぶぁ", "ぷぁ", "むぁ","るぁ", "てゃ", "でゃ"
         };
         public static readonly string[] RomajiColumnA =
         { "a", "ka", "sa", "ta", "na",
@@ -50,12 +66,12 @@ namespace OpenUtau.Core.Util
             "mya", "rya", "gya", "ja", "bya",
             "pya", "tsa", "fa", "kwa", "gwa",
             "va", "wha", "swa", "zwa", "nwa",
-            "bwa", "pwa", "mwa", "rwa"
+            "bwa", "pwa", "mwa", "rwa", "tya", "dha"
         };
         public static readonly string[] HiraganaColumnI =
         { "い", "き", "し", "ち", "に",
             "ひ", "み", "り", "ぎ", "じ",
-             "び", "ぴ", "てぃ", "ふぃ","でぃ",
+             "び", "ぴ", "てぃ", "ふぃ", "てぃ","でぃ",
             "くぃ", "ぐぃ", "ゔぃ", "うぃ","つぃ",
             "すぃ", "ずぃ", "ぬぃ", "ぶぃ", "ぷぃ",
             "むぃ", "るぃ"
@@ -63,7 +79,7 @@ namespace OpenUtau.Core.Util
         public static readonly string[] RomajiColumnI =
         { "i", "ki", "shi", "chi", "ni",
             "hi", "mi", "ri", "gi", "ji",
-             "bi", "pi", "ti", "fi","di",
+             "bi", "pi", "ti", "fi", "tyi", "dhi",
             "kwi", "gwi", "vi", "wi","tsi",
             "swi", "zwi", "nwi", "bwi", "pwi",
             "mwi", "rwi"
@@ -73,7 +89,7 @@ namespace OpenUtau.Core.Util
             "ふ", "む", "る", "ぐ", "ず",
             "ぶ", "ぷ", "ゆ", "きゅ", "しゅ",
             "ちゅ", "にゅ", "ひゅ", "みゅ", "りゅ",
-            "ぎゅ", "じゅ", "びゅ", "ぴゅ", "でゅ",
+            "ぎゅ", "じゅ", "びゅ", "ぴゅ", "てゅ", "でゅ",
             "とぅ", "どぅ", "てゅ", "ゔ", "ふゅ",
             "ゔゅ"
         };
@@ -82,8 +98,8 @@ namespace OpenUtau.Core.Util
             "fu", "mu", "ru", "gu", "zu",
             "bu", "pu", "yu", "kyu", "shu",
             "chu", "nyu", "hyu", "myu", "ryu",
-            "gyu", "ju", "byu", "pyu", "dyu",
-            "tou", "dou", "tyu", "vu", "fyu",
+            "gyu", "ju", "byu", "pyu", "tyu", "dhu",
+            "tou", "du", "tyu", "vu", "fyu",
             "vyu"
         };
         public static readonly string[] HiraganaColumnE =
@@ -94,7 +110,7 @@ namespace OpenUtau.Core.Util
             "いぇ", "ゔぇ", "きぇ", "ぎぇ",
             "すぇ", "ずぇ", "にぇ", "ぬぇ",
             "ひぇ","びぇ","ぴぇ", "ぶぇ", "ぷぇ",
-            "みぇ", "むぇ","りぇ", "るぇ"
+            "みぇ", "むぇ","りぇ", "るぇ", "てぇ", "でぇ"
         };
         public static readonly string[] RomajiColumnE =
         { "e", "ke", "se", "te", "ne",
@@ -104,7 +120,7 @@ namespace OpenUtau.Core.Util
             "ye", "ve", "kye", "gye",
             "swe", "zwe", "nye", "nwe",
             "hye", "bye", "pye", "bwe", "pwi",
-            "mye", "mwe","rye", "rwe"
+            "mye", "mwe","rye", "rwe", "tye", "dhe"
         };
         public static readonly string[] HiraganaColumnO =
         { "お", "こ", "そ", "と", "の",
@@ -114,7 +130,7 @@ namespace OpenUtau.Core.Util
             "みょ", "りょ", "ぎょ", "じょ", "びょ",
             "ぴょ", "つぉ", "ふぉ","うぉ", "くぉ", "ぐぉ",
             "ゔぉ", "すぉ", "ずぉ", "ぬぉ",
-            "ぶぉ", "ぷぉ", "むぉ", "るぉ"
+            "ぶぉ", "ぷぉ", "むぉ", "るぉ", "てゃ", "でゃ"
         };
         public static readonly string[] RomajiColumnO =
         { "o", "ko", "so", "to", "no",
@@ -124,7 +140,7 @@ namespace OpenUtau.Core.Util
             "myo", "ryo", "gyo", "jo", "byo",
             "pyo", "tso", "fo","who", "kwo", "gwo",
             "vo", "swo", "zwo", "nwo",
-            "bwo", "pwo", "mwo", "rwo"
+            "bwo", "pwo", "mwo", "rwo", "tyo", "dho"
         };
 
         public static string GetVowel(string lyrics)
@@ -243,11 +259,25 @@ namespace OpenUtau.Core.Util
                 }
                 else if(dest == Style.CVVC)
                 {
+                    string pt1 = "";
+                    string pt2 = "";
                     //TODO Smart CV2CVVC conversion
-                    if (former == null || GetStyle(former.Lyric) == Style.VCV)
-                    {
-
+                    if (former == null) {
+                        pt1 = "- " + original;
                     }
+                    else
+                    {
+                        pt1 = original;
+                    }
+                    if (lator == null) {
+                        pt2 = LyricsHelper.GetVowel(original) + " R";
+                    }
+                    else
+                    {
+                        string con = LyricsHelper.GetConsonant(lator.Lyric);
+                        pt2 = LyricsHelper.GetVowel(original) + " " + (string.IsNullOrEmpty(con) ? LyricsHelper.GetVowel(lator.Lyric) : con);
+                    }
+					return pt1 + '\t' + pt2;
                 }
             }
             else if (style == Style.VCV)
@@ -270,7 +300,7 @@ namespace OpenUtau.Core.Util
         /// <param name="phoneme"></param>
         /// <returns></returns>
         public static Style GetStyle(string phoneme) {
-            var match = System.Text.RegularExpressions.Regex.Match(phoneme, pattern: @"(\w+)\s(\w+)");
+            var match = System.Text.RegularExpressions.Regex.Match(phoneme, pattern: @"([\w-]+)\s(\w+)");
             if (match.Success)
             {
                 if (match.Groups[1].Value == "-")
@@ -279,10 +309,12 @@ namespace OpenUtau.Core.Util
                 }
                 else
                 {
-                    return Style.CVVC;
+                    if (HiraganaRomajiHelper.IsSupportedHiragana(match.Groups[2].Value) || HiraganaRomajiHelper.IsSupportedRomaji(match.Groups[2].Value))
+                        return Style.VCV;
+                    return Style.VC;
                 }
             }
-            else if(System.Text.RegularExpressions.Regex.IsMatch(phoneme, pattern: @"\w+"))
+            else if(System.Text.RegularExpressions.Regex.IsMatch(phoneme, pattern: @"[\w-]+"))
             {
                 return Style.CV;
             }

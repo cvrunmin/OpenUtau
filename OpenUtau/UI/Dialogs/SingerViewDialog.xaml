@@ -8,7 +8,9 @@
             <Image x:Name="avatar" Width="100" Height="100" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             <ComboBox x:Name="name" FontSize="18" HorizontalAlignment="Stretch" Margin="110,0,0,0" VerticalAlignment="Top" Height="30"
                 SelectionChanged="name_SelectionChanged"/>
-            <TextBlock x:Name="info" HorizontalAlignment="Stretch" Margin="110,40,0,0" TextWrapping="WrapWithOverflow" ScrollViewer.CanContentScroll="True"/>
+            <ScrollViewer HorizontalAlignment="Stretch" Margin="110,40,0,0" >
+                <TextBlock x:Name="info" TextWrapping="WrapWithOverflow" ScrollViewer.CanContentScroll="True"/>
+            </ScrollViewer>
         </Grid>
         <ListView x:Name="otoview" Margin="365,30,10,10" MouseDoubleClick="otoview_MouseDoubleClick">
             <ListView.View>
