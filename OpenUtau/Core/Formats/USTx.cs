@@ -603,6 +603,8 @@ namespace OpenUtau.Core.Formats
                 return null;
             }
 
+            project.Singers.RemoveAll(singer => singer == null);
+
             // Load singers
             for (int i = 0; i < project.Singers.Count; i++)
             {

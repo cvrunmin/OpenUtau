@@ -49,7 +49,7 @@ namespace OpenUtau.Core
             Project.Singers = list.Distinct().ToList();
             foreach (var track in Project.Tracks)
             {
-                track.Singer = Project.Singers.Find(singer => singer.Loaded && singer.Name.Equals(track.SingerName) && singer.Path.Equals(track.Singer.Path));
+                track.Singer = Project.Singers.Find(singer => singer != null && singer.Loaded && singer.Name.Equals(track.SingerName) && singer.Path.Equals(track.Singer.Path));
             }
         }
 

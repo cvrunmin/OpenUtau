@@ -68,8 +68,15 @@ namespace OpenUtau.Core.Render.NAudio
             }
             else
             {
-                if (!waveStream.WaveFormat.Equals(waveFormat))
-                    throw new ArgumentException("All incoming channels must have the same format", "waveStream");
+                if (!waveStream.WaveFormat.Equals(waveFormat)) {
+                    if (waveStream.WaveFormat.Channels != waveFormat.Channels) {
+                        waveStream = new WaveChannel32(waveStream);
+                    }else
+                    {
+                        waveStream = new WaveFormatConversionStream(waveFormat, waveStream);
+                    }
+                }
+                    //throw new ArgumentException("All incoming channels must have the same format", "waveStream");
             }
 
             lock (inputsLock)
