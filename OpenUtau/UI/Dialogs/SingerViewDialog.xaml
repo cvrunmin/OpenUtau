@@ -52,5 +52,6 @@
             <Button x:Name="butCheatRLP" Content="" HorizontalAlignment="Left" Margin="157,0,0,0" VerticalAlignment="Top" Width="5" BorderBrush="{x:Null}" Foreground="{x:Null}" Background="Transparent" BorderThickness="0" Height="19" Click="butCheatRLP_Click"/>
         </Grid>
         <ToggleButton x:Name="toggleLyricsPs" Content="{DynamicResource LyricsPreset}" HorizontalAlignment="Left" Margin="365,10,0,0" VerticalAlignment="Top" Height="19" Click="toggleLyricsPs_Click" Padding="5,1"/>
+        <Button Content="Button" HorizontalAlignment="Left" Margin="10,265,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
     </Grid>
 </Window>

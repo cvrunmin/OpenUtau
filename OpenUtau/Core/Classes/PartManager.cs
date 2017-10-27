@@ -282,7 +282,7 @@ namespace OpenUtau.Core
                     if (note.Phonemes.Count != preset.Notes.Values.Sum(unote => unote.Phonemes.Count))
                         UDictionaryNote.ApplyPreset(note, preset);
                 }
-                else if (Util.Preferences.Default.AutoConvertStyles)
+                else if (part.ConvertStyle ?? Util.Preferences.Default.AutoConvertStyles)
                 {
                     UNote former = part.Notes.FirstOrDefault(note1 => note1 != note && Math.Abs(note.PosTick - note1.EndTick) < DocManager.Inst.Project.Resolution / 64);
                     UNote lator = part.Notes.FirstOrDefault(note1 => note1 != note && Math.Abs(note1.PosTick - note.EndTick) < DocManager.Inst.Project.Resolution / 64);

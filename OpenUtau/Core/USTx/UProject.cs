@@ -28,6 +28,7 @@ namespace OpenUtau.Core.USTx
         public Dictionary<string, UExpression> ExpressionTable = new Dictionary<string, UExpression>();
 
         public void RegisterExpression(UExpression exp) { if (!ExpressionTable.ContainsKey(exp.Name)) ExpressionTable.Add(exp.Name, exp); }
+        public void UnregisterExpression(UExpression exp) { if (ExpressionTable.ContainsKey(exp.Name)) ExpressionTable.Remove(exp.Name); }
         public UNote CreateNote()
         {
             UNote note = UNote.Create();

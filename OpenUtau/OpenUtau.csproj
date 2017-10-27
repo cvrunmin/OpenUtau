@@ -252,6 +252,9 @@
     <Compile Include="UI\Dialogs\OtoEditDialog.xaml.cs">
       <DependentUpon>OtoEditDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Dialogs\SingerCVTableDialog.xaml.cs">
+      <DependentUpon>SingerCVTableDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Dialogs\TrackPreferencesDialog.xaml.cs">
       <DependentUpon>TrackPreferencesDialog.xaml</DependentUpon>
     </Compile>
@@ -318,6 +321,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UI\Dialogs\OtoEditDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\Dialogs\SingerCVTableDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

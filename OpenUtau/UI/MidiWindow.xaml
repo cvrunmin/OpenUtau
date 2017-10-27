@@ -22,6 +22,7 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <ToggleButton x:Name="showPitchToggle" Style="{StaticResource ShowPitchToggleButtonStyle}"
                           Width="20" Margin="0,0,0,0" HorizontalAlignment="Left" Focusable="False"
@@ -57,7 +58,25 @@
                     </Grid>
                 </ToggleButton.Content>
             </ToggleButton>
-            <Menu x:Name="mainMenu" IsMainMenu="True" VerticalAlignment="Top" HorizontalAlignment="Left" Background="White" Margin="0,0,0,0" Grid.Column="3">
+            <ToggleButton x:Name="convertToggle" Style="{StaticResource ShowPitchToggleButtonStyle}" Width="20" Margin="0" HorizontalAlignment="Left" Focusable="False" IsChecked="{Binding Part.ConvertStyle, Source={StaticResource midiVM}}" Grid.Column="3" IsThreeState="True">
+                <ToggleButton.Content>
+                    <Canvas Name="svg8" Width="4.7624999" Height="4.7625001" RenderTransformOrigin="0.5,0.5">
+                        <Canvas.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleY="3.78" ScaleX="3.78"/>
+                            </TransformGroup>
+                        </Canvas.RenderTransform>
+                        <Canvas>
+                            <Canvas.RenderTransform>
+                                <TranslateTransform X="0" Y="-292.23748"/>
+                            </Canvas.RenderTransform>
+                            <Path StrokeThickness="0.26511249" Stroke="{Binding Foreground, ElementName=convertToggle}" StrokeMiterLimit="4" StrokeLineJoin="Miter" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat" Data="m 4.0025623 294.0702 c 0 0 -0.056858 -0.5349 -0.2286934 -0.54383 -0.4641834 -0.0242 -1.4796255 -0.0613 -2.6371281 -0.003 -0.43734045 0.022 -0.35776396 0.65613 -0.37448006 1.08354 -7.286e-4 0.0186 -0.51859877 -0.65723 -0.51859877 -0.65723 l 0.51859877 0.65723 0.53973456 -0.65723"/>
+                            <Path StrokeThickness="0.26511249" Stroke="{Binding Foreground, ElementName=convertToggle}" StrokeMiterLimit="4" StrokeLineJoin="Miter" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat" Data="m 0.75993764 295.16725 c 0 0 0.056858 0.5349 0.2286934 0.54383 0.46418336 0.0242 1.47962546 0.0613 2.63712806 0.003 0.4373405 -0.022 0.357764 -0.65613 0.3744801 -1.08354 7.286e-4 -0.0186 0.5185988 0.65723 0.5185988 0.65723 l -0.5185988 -0.65723 -0.5397346 0.65723"/>
+                        </Canvas>
+                    </Canvas>
+                </ToggleButton.Content>
+            </ToggleButton>
+            <Menu x:Name="mainMenu" IsMainMenu="True" VerticalAlignment="Top" HorizontalAlignment="Left" Background="White" Margin="0,0,0,0" Grid.Column="4">
                 <MenuItem x:Name="menuEdit" Header="{DynamicResource MenuEdit}">
                     <MenuItem Header="{DynamicResource MenuUndo}" InputGestureText="Ctrl+Z" Click="MenuUndo_Click" />
                     <MenuItem Header="{DynamicResource MenuRedo}" InputGestureText="Ctrl+Y" Click="MenuRedo_Click"/>
@@ -87,7 +106,7 @@
                     <MenuItem Header="Preview Mode" Click="MenuSwitchPreview_Click" IsCheckable="True"/>
                 </MenuItem>
             </Menu>
-            <Grid x:Name="toolGrid" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="250" Grid.Column="4">
+            <Grid x:Name="toolGrid" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="250" Grid.Column="5">
                 <RadioButton x:Name="radioToolCursor" HorizontalAlignment="Left" Width="20" Style="{DynamicResource ToolRadioButton}" Height="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" GroupName="ToolGroup" IsChecked="True" Margin="5,0,0,0">
                     <RadioButton.Content>
                         <Rectangle Width="15" Height="15" Fill="{Binding Foreground, ElementName=radioToolCursor}" Stretch="Uniform">

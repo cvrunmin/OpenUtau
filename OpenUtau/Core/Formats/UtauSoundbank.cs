@@ -10,6 +10,7 @@ using OpenUtau.Core.Lib;
 using NAudio.Wave;
 using System.Web.Script.Serialization;
 using static OpenUtau.Core.Formats.USTx;
+using OpenUtau.Core.Util;
 
 namespace OpenUtau.Core.Formats
 {
@@ -90,7 +91,7 @@ namespace OpenUtau.Core.Formats
             if (!Directory.Exists(path) ||
                 !File.Exists(Path.Combine(path, "character.txt")) ||
                 !File.Exists(Path.Combine(path, "oto.ini"))) return null;
-            
+
             USinger singer = new USinger();
             singer.Path = path;
             singer.FileEncoding = EncodingUtil.DetectFileEncoding(Path.Combine(singer.Path, "oto.ini"), Encoding.Default);
@@ -109,7 +110,7 @@ namespace OpenUtau.Core.Formats
                 i++;
             }
             if (singer.PathEncoding == null) return null;
-            
+
             LoadOtos(singer);
 
             try
@@ -119,7 +120,8 @@ namespace OpenUtau.Core.Formats
             catch { return null; }
             string finalstring = "";
 
-            foreach (var line in lines){
+            foreach (var line in lines)
+            {
                 if (line.StartsWith("name=")) singer.Name = line.Trim().Replace("name=", "");
                 else if (line.StartsWith("image="))
                 {
@@ -150,10 +152,34 @@ namespace OpenUtau.Core.Formats
             singer.Detail = finalstring;
             LoadPrefixMap(singer);
             LoadLyricPreset(singer);
+            AddExtraDetail(singer);
+            singer.Loaded = true;
+
+            return singer;
+        }
+
+        private static void AddExtraDetail(USinger singer)
+        {
             List<Util.SamplingStyleHelper.Style> list = new List<Util.SamplingStyleHelper.Style>();
             foreach (var item in singer.AliasMap.Values)
             {
-                list.Add(Util.SamplingStyleHelper.GetStyle(!string.IsNullOrWhiteSpace(item.Alias) ? item.Alias : Path.GetFileNameWithoutExtension(item.File)));
+                string pho = !string.IsNullOrWhiteSpace(item.Alias) ? item.Alias : Path.GetFileNameWithoutExtension(item.File);
+                if (pho.ContainsAny(singer.PitchMap.Values, out var mat)) {
+                    pho = pho.Replace(mat, "");
+                }
+                list.Add(SamplingStyleHelper.GetStyle(pho));
+                var consonent = LyricsHelper.GetConsonant(pho);
+                var vowel = LyricsHelper.GetVowel(pho);
+                if (!singer.ConsonentMap.ContainsKey(consonent))
+                {
+                    singer.ConsonentMap.Add(consonent, new SortedSet<UOto>());
+                }
+                if (!singer.VowelMap.ContainsKey(vowel))
+                {
+                    singer.VowelMap.Add(vowel, new SortedSet<UOto>());
+                }
+                if(!singer.ConsonentMap[consonent].Contains(item))singer.ConsonentMap[consonent].Add(item);
+                if(!singer.VowelMap[vowel].Contains(item))singer.VowelMap[vowel].Add(item);
             }
             double avg = list.Average(style => style == Util.SamplingStyleHelper.Style.CV ? 1 : style == Util.SamplingStyleHelper.Style.VCV ? 3 : style == Util.SamplingStyleHelper.Style.VC ? 2 : 0);
             double v = Math.Round(avg);
@@ -162,9 +188,6 @@ namespace OpenUtau.Core.Formats
             else if (v == 2) singer.Style = Util.SamplingStyleHelper.Style.CVVC;
             else singer.Style = Util.SamplingStyleHelper.Style.Others;
             singer.Detail += $"\n\n Style: {singer.Style.ToString()}";
-            singer.Loaded = true;
-
-            return singer;
         }
 
         static Encoding DetectSingerPathEncoding(string singerPath, Encoding ustEncoding)

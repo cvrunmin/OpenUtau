@@ -159,13 +159,47 @@ namespace OpenUtau.Core.Util
             return (false, "");
         }
 
+        public static bool ContainsAny(this string str, IEnumerable<string> values, out string match) {
+            foreach (var val in values)
+            {
+                if (str.Contains(val))
+                {
+                    match = val;
+                    return true;
+                }
+            }
+            match = "";
+            return false;
+        }
+
         public static string MakeCompletePhonemes(params string[] phos) {
             string r = phos[0];
             for (int i = 1; i < phos.Length; i++)
             {
-                r = new string(r.Union(phos[i]).ToArray());
+                r = r.Remove(r.IndexOf(FindOverlapping(r, phos[i]))) + phos[i];
             }
             return r;
+        }
+
+        public static string FindOverlapping(string a, string b)
+        {
+            for (int i = a.Length - 1; i >= 0; i--)
+            {
+                if (a[i] == b[0])
+                {
+                    bool flag = true;
+                    for (int j = 0; j < a.Length - i; j++)
+                    {
+                        if (a[i + j] != b[j])
+                        {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    if (flag) return a.Substring(i);
+                }
+            }
+            return "";
         }
     }
 

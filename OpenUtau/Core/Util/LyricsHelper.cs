@@ -10,7 +10,7 @@ namespace OpenUtau.Core.Util
     public static class LyricsHelper {
         public static string GetVowel(string lyrics, bool recurse = false)
         {
-            if (!recurse)
+            if (!recurse && HiraganaRomajiHelper.IsSupported(lyrics))
                 try
                 {
                     return HiraganaRomajiHelper.GetVowel(lyrics);
@@ -18,9 +18,24 @@ namespace OpenUtau.Core.Util
                 catch (ArgumentException)
                 {
                 }
-
-            int idx = lyrics.IndexOfAny(new[] { 'a', 'e', 'i', 'o', 'u' });
-            return lyrics.Substring(idx != -1 ? idx : 0);
+            switch (SamplingStyleHelper.GetStyle(lyrics)) {
+                default:
+                case SamplingStyleHelper.Style.CV:
+                    {
+                        int idx = lyrics.IndexOfAny(new[] { 'a', 'e', 'i', 'o', 'u' });
+                        return lyrics.Substring(idx != -1 ? idx : 0);
+                    }
+                case SamplingStyleHelper.Style.VCV:
+                    {
+                        lyrics = lyrics.Split(' ')[1];
+                        int idx = lyrics.IndexOfAny(new[] { 'a', 'e', 'i', 'o', 'u' });
+                        return lyrics.Substring(idx != -1 ? idx : 0);
+                    }
+                case SamplingStyleHelper.Style.VC:
+                    {
+                        return lyrics.Split(' ')[0];
+                    }
+            }
         }
 
         public static string GetVowel(string lyrics, USinger singer) {
@@ -37,8 +52,25 @@ namespace OpenUtau.Core.Util
                 catch (ArgumentException)
                 {
                 }
-            int idx = lyrics.IndexOfAny(new[] { 'a', 'e', 'i', 'o', 'u' });
-            return idx == 0 ? "" : lyrics.Substring(0, idx != -1 ? idx : lyrics.Length);
+            switch (SamplingStyleHelper.GetStyle(lyrics))
+            {
+                default:
+                case SamplingStyleHelper.Style.CV:
+                    {
+                        int idx = lyrics.IndexOfAny(new[] { 'a', 'e', 'i', 'o', 'u' });
+                        return idx == 0 ? "" : lyrics.Substring(0, idx != -1 ? idx : lyrics.Length);
+                    }
+                case SamplingStyleHelper.Style.VCV:
+                    {
+                        lyrics = lyrics.Split(' ')[1];
+                        int idx = lyrics.IndexOfAny(new[] { 'a', 'e', 'i', 'o', 'u' });
+                        return idx == 0 ? "" : lyrics.Substring(0, idx != -1 ? idx : lyrics.Length);
+                    }
+                case SamplingStyleHelper.Style.VC:
+                    {
+                        return lyrics.Split(' ')[1];
+                    }
+            }
         }
 
         public static string GetConsonant(string lyrics, USinger singer) {
@@ -208,6 +240,10 @@ namespace OpenUtau.Core.Util
                 default:
                     throw new ArgumentException($"Unsupported parameter: {romaji}", nameof(romaji));
             }
+        }
+
+        public static bool IsSupported(string proofing) {
+            return IsSupportedHiragana(proofing) || IsSupportedRomaji(proofing);
         }
 
         public static bool IsSupportedHiragana(string proofing)

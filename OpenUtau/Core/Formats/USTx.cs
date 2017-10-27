@@ -218,6 +218,8 @@ namespace OpenUtau.Core.Formats
                     result = Project.CreateVoicePart(0,0);
                     var _result = result as UVoicePart;
 
+                    _result.ConvertStyle = dictionary.ContainsKey("convertStyle") ? (dictionary["convertStyle"].Equals("null") ? (bool?)null : Convert.ToBoolean(dictionary["convertStyle"])) : (bool?)null;
+
                     var notes = dictionary["notes"] as ArrayList;
                     foreach (var note in notes)
                     {
@@ -303,6 +305,7 @@ namespace OpenUtau.Core.Formats
                 else if (obj is UVoicePart)
                 {
                     var _obj = obj as UVoicePart;
+                    result.Add("convertStyle", _obj.ConvertStyle.HasValue ? _obj.ConvertStyle.Value.ToString() : "null");
                     result.Add("notes", _obj.Notes);
                     result.Add("expression", _obj.Expressions);
                 }

@@ -34,6 +34,7 @@ namespace OpenUtau.Core.USTx
     {
         public SortedSet<UNote> Notes = new SortedSet<UNote>();
         public Dictionary<string, UExpression> Expressions = new Dictionary<string, UExpression>();
+        public bool? ConvertStyle { get; set; }
 
         public override object Clone()
         {

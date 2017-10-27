@@ -491,6 +491,13 @@ namespace OpenUtau.UI.Dialogs
             }
         }
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            SingerCVTableDialog dialog = new SingerCVTableDialog();
+            dialog.LoadSinger(SelectedSinger);
+            dialog.ShowDialog();
+        }
+
         private void TextBoxLyrics_GotFocus(object sender, RoutedEventArgs e)
         {
             if (e.Source is System.Windows.Controls.TextBox)
