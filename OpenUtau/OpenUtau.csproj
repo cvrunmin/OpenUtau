@@ -182,6 +182,7 @@
     <Compile Include="Core\Render\ResamplerInterface.cs" />
     <Compile Include="Core\Classes\ExpCommands.cs" />
     <Compile Include="Core\Render\RenderDispatcher.cs" />
+    <Compile Include="Core\Render\SoundbankCache.cs" />
     <Compile Include="Core\ResamplerDriver\DriverEngine.cs" />
     <Compile Include="Core\ResamplerDriver\DriverModels.cs" />
     <Compile Include="Core\ResamplerDriver\Factorys\CppDriver.cs" />
@@ -245,6 +246,9 @@
     </Compile>
     <Compile Include="UI\Dialogs\CheatCLPDialog.xaml.cs">
       <DependentUpon>CheatCLPDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Dialogs\ClearCacheDialog.xaml.cs">
+      <DependentUpon>ClearCacheDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\Dialogs\ExportUstDialog.xaml.cs">
       <DependentUpon>ExportUstDialog.xaml</DependentUpon>
@@ -313,6 +317,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UI\Dialogs\CheatCLPDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\Dialogs\ClearCacheDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

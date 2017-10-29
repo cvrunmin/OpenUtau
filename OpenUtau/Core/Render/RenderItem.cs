@@ -8,7 +8,7 @@ using OpenUtau.Core.USTx;
 
 namespace OpenUtau.Core.Render
 {
-    class RenderItem
+    public class RenderItem
     {
         public bool Error;
         // For resampler

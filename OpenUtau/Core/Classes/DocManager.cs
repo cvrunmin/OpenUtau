@@ -7,11 +7,13 @@ using System.Threading.Tasks;
 using OpenUtau.Core;
 using OpenUtau.Core.Lib;
 using OpenUtau.Core.USTx;
+using System.IO;
 
 namespace OpenUtau.Core
 {
     class DocManager : ICmdPublisher
     {
+        public static readonly string CachePath = Path.Combine(Path.GetTempPath(), "OpenUtau");
         DocManager() {
             _project = new UProject(); int limit;
             try

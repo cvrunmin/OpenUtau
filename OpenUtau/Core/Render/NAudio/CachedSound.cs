@@ -8,7 +8,7 @@ using NAudio.Wave;
 
 namespace OpenUtau.Core.Render
 {
-    class CachedSound
+    public class CachedSound
     {
         public int MemSize { get { return AudioData.Length * sizeof(float); } }
         public float[] AudioData { get; private set; }

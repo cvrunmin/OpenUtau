@@ -274,17 +274,19 @@ namespace OpenUtau.Core.Util
                 {
                     if (former != null)
                     {
-                        if (HiraganaRomajiHelper.IsSupportedHiragana(former.Lyric))
+                        string mainPho = former.Lyric.Split(' ')[1];
+                        if (HiraganaRomajiHelper.IsSupportedHiragana(mainPho))
                         {
-                            return HiraganaRomajiHelper.GetVowel(former.Lyric) + " " + original;
+                            return HiraganaRomajiHelper.GetVowel(mainPho) + " " + original;
                         }
-                        else if (HiraganaRomajiHelper.IsSupportedRomaji(former.Lyric))
+                        else if (HiraganaRomajiHelper.IsSupportedRomaji(mainPho))
                         {
-                            return former.Lyric.Last() + " " + original;
+                            return mainPho.Last() + " " + original;
                         }
                         else
                         {
-                            var wildGuessVowel = former.Lyric.Substring(former.Lyric.IndexOfAny(new char[]{ 'a', 'e', 'i', 'o', 'u'}));
+                            int startIndex = mainPho.IndexOfAny(new char[] { 'a', 'e', 'i', 'o', 'u' });
+                            var wildGuessVowel = mainPho.Substring(Math.Min(0, startIndex));
                             return wildGuessVowel + " " + original;
                         }
                     }

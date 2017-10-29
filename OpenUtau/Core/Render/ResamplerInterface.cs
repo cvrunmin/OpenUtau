@@ -79,6 +79,7 @@ namespace OpenUtau.Core.Render
         }
         private List<RenderItem> RenderAsync(UVoicePart part, UProject project, IResamplerDriver engine, System.Threading.CancellationToken cancel)
         {
+            SoundbankCache.MakeSingerCache(project.Tracks[part.TrackNo].Singer);
             List<RenderItem> renderItems = new List<RenderItem>();
             Debug.Assert(engine != null, "Engine is not provided");
             System.Diagnostics.Stopwatch watch = new Stopwatch();
@@ -229,7 +230,7 @@ namespace OpenUtau.Core.Render
             {
                 Error = err,
                 // For resampler
-                RawFile = rawfile,
+                RawFile = SoundbankCache.GetSoundCachePath(rawfile, singer),
                 NoteNum = phoneme.Parent.NoteNum,
                 Velocity = (int)phoneme.Parent.Expressions["velocity"].Data,
                 Volume = (int)phoneme.Parent.Expressions["volume"].Data,

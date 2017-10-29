@@ -111,9 +111,18 @@ namespace OpenUtau.Core.Render
                                     }
                                     return null;
                                     }).ContinueWith(task=> {
-                                        if (!task.IsCanceled && !task.Result.IsFaulted && task.Result.Result != null) {
+                                        try
+                                        {
+
+                                        if (!task.IsCanceled && !task.Result.IsFaulted && !task.Result.IsCanceled && !task.Result.IsFaulted && task.Result.Result != null) {
                                             var s = task.Result.Result;
                                             trackMixing.AddInputStream(new UWaveOffsetStream(s, TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick) - project.TickToMillisecond(480, part.PosTick) * part.PosTick / project.Resolution), TimeSpan.Zero, s.TotalTime));
+                                        }
+
+                                        }
+                                        catch (AggregateException e) when (e.InnerException is TaskCanceledException)
+                                        {
+                                            
                                         }
                                     }));
                                 }
@@ -124,58 +133,6 @@ namespace OpenUtau.Core.Render
                         token.ThrowIfCancellationRequested();
                         DocManager.Inst.ExecuteCmd(new ProgressBarNotification((int)((float)i / total * 100), $"Rendering Tracks {i}/{total}"));
                         var source = trackSources[track.TrackNo];
-                        /*double elisimatedMs;
-                        try
-                        {
-                            elisimatedMs = project.TickToMillisecond(project.Parts.Where(part => part.TrackNo == source.TrackNo).OrderByDescending(part => part.EndTick).First().EndTick);
-                        }
-                        catch (Exception)
-                        {
-                            elisimatedMs = 60000;
-                        }
-                        
-                        int limit = source.WaveFormat.AverageBytesPerSecond * (int)Math.Ceiling(elisimatedMs / 1000);
-                        var str = new System.IO.MemoryStream(limit);
-                            var pan = source.Pan;
-                            var vol = source.PlainVolume;
-                            var m = source.Muted;
-                            source.Pan = 0;
-                            source.PlainVolume = MusicMath.DecibelToVolume(0);
-                            source.Muted = false;
-                            var wave = source.ToWaveProvider();
-                            var buffer = new byte[source.WaveFormat.AverageBytesPerSecond * 4];
-                            while (str.Position < limit)
-                            {
-                            if (token.IsCancellationRequested) break;
-                                if (2147483591 - str.Position < buffer.Length)
-                                {
-                                    buffer = new byte[2147483591 - str.Position - 1];
-                                    var bytesRead1 = wave.Read(buffer, 0, buffer.Length);
-                                    if (bytesRead1 == 0)
-                                    {
-                                        // end of source provider
-                                        str.Flush();
-                                        break;
-                                    }
-                                    await str.WriteAsync(buffer, 0, bytesRead1);
-                                    break;
-                                }
-                                var bytesRead = wave.Read(buffer, 0, buffer.Length);
-                                if (bytesRead == 0)
-                                {
-                                    // end of source provider
-                                    str.Flush();
-                                    break;
-                                }
-                                await str.WriteAsync(buffer, 0, bytesRead);
-                            }
-                            buffer = null;
-                            wave = null;
-                            source.Pan = pan;
-                            source.PlainVolume = vol;
-                            source.Muted = m;
-                        token.ThrowIfCancellationRequested();
-                        var src1 = new RawSourceWaveStream(str, source.WaveFormat);*/
                         var src2 = new TrackWaveChannel(trackMixing) { TrackNo = source.TrackNo, PlainVolume = source.PlainVolume, Pan = source.Pan, Muted = source.Muted };
                         trackCache[src2.TrackNo] = src2;
                         track.Amended = false;
@@ -315,6 +272,7 @@ namespace OpenUtau.Core.Render
             buffer = null;
             wave = null;
             token.ThrowIfCancellationRequested();
+            str.Position = 0;
             var src1 = new RawSourceWaveStream(str, source.WaveFormat);
             return src1;
         }

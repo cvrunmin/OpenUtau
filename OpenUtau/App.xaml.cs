@@ -32,6 +32,7 @@ namespace OpenUtau
             LoadLanguage();
             UI.MainWindow window = new UI.MainWindow();
             app.Run(window);
+            if (Core.PlaybackManager.GetActiveManager().IsPlayingBack()) Core.PlaybackManager.GetActiveManager().StopPlayback();
         }
 
         private static void LoadLanguage()

@@ -1288,19 +1288,52 @@ namespace OpenUtau.UI
                         break;
                 }
                 if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
-                foreach (var item in new SortedSet<UNote>(MidiVM.Part.Notes))
+                foreach (var note in new SortedSet<UNote>(MidiVM.Part.Notes))
                 {
-                    var mod = Core.Util.SamplingStyleHelper.GetCorrespondingPhoneme(item.Lyric, MidiVM.Part.Notes.FirstOrDefault(note => item.PosTick - note.EndTick < DocManager.Inst.Project.Resolution / 64), MidiVM.Part.Notes.FirstOrDefault(note => note.PosTick - item.EndTick < DocManager.Inst.Project.Resolution / 64), style);
+                    UNote former = MidiVM.Part.Notes.FirstOrDefault(note1 => note1 != note && Math.Abs(note.PosTick - note1.EndTick) < DocManager.Inst.Project.Resolution / 64);
+                    UNote lator = MidiVM.Part.Notes.FirstOrDefault(note1 => note1 != note && Math.Abs(note1.PosTick - note.EndTick) < DocManager.Inst.Project.Resolution / 64);
+                    var mod = Core.Util.SamplingStyleHelper.GetCorrespondingPhoneme(note.Lyric,former,lator, style);
                     if (style == Core.Util.SamplingStyleHelper.Style.CVVC)
                     {
                     }
                     else
                     {
-                        DocManager.Inst.ExecuteCmd(new ChangeNoteLyricCommand(MidiVM.Part, item, mod));
+                        DocManager.Inst.ExecuteCmd(new ChangeNoteLyricCommand(MidiVM.Part, note, mod));
                     }
                 }
                 if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
             }
+        }
+
+        private void MenuConvertRH_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem mi)
+            {
+                if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
+                foreach (var item in new SortedSet<UNote>(MidiVM.Part.Notes))
+                {
+                    if (!Core.Util.HiraganaRomajiHelper.IsSupported(item.Lyric)) continue;
+                    string mod;
+                    switch (mi.Tag)
+                    {
+                        case "Romaji":
+                            mod = Core.Util.HiraganaRomajiHelper.ToRomaji(item.Lyric);
+                            break;
+                        case "Hiragana":
+                            mod = Core.Util.HiraganaRomajiHelper.ToHiragana(item.Lyric);
+                            break;
+                        default:
+                            return;
+                    }
+                    DocManager.Inst.ExecuteCmd(new ChangeNoteLyricCommand(MidiVM.Part, item, mod));
+                }
+                if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
+            }
+        }
+
+        private void convertToggle_Click(object sender, RoutedEventArgs e)
+        {
+            MidiVM.Part.ConvertStyle = convertToggle.IsChecked;
         }
     }
 }
