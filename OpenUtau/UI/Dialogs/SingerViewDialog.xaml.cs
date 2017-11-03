@@ -39,17 +39,18 @@ namespace OpenUtau.UI.Dialogs
         private void UpdateSingers()
         {
             singerNames = new List<string>();
+            var selindex = name.SelectedIndex;
             foreach (var pair in DocManager.Inst.Singers)
             {
                 if (pair.Value == null) continue;
                 singerNames.Add(pair.Value.Name);
             }
+            this.name.ItemsSource = singerNames;
             if (singerNames.Count > 0)
             {
-                this.name.SelectedIndex = 0;
-                SetSinger(singerNames[0]);
+                this.name.SelectedIndex = Math.Max(0, selindex);
+                SetSinger(singerNames[name.SelectedIndex]);
             }
-            this.name.ItemsSource = singerNames;
         }
         USinger SelectedSinger;
         public void SetSinger(string singerName)
@@ -496,6 +497,18 @@ namespace OpenUtau.UI.Dialogs
             SingerCVTableDialog dialog = new SingerCVTableDialog();
             dialog.LoadSinger(SelectedSinger);
             dialog.ShowDialog();
+        }
+
+        private void comboEncoding_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (string.IsNullOrEmpty((string)comboEncoding.SelectedItem)) return;
+            var selIndex = name.SelectedIndex;
+            var selsing = SelectedSinger;
+            DocManager.Inst.Singers.Remove(selsing.Path);
+            var nes = OpenUtau.Core.Formats.UtauSoundbank.LoadSinger(selsing.Path, Encoding.GetEncoding((string)comboEncoding.SelectedItem), Encoding.GetEncoding((string)comboEncoding.SelectedItem));
+            DocManager.Inst.Singers.Add(nes.Path, nes);
+            UpdateSingers();
+            name.SelectedIndex = selIndex;
         }
 
         private void TextBoxLyrics_GotFocus(object sender, RoutedEventArgs e)

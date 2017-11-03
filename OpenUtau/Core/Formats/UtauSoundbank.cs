@@ -89,14 +89,12 @@ namespace OpenUtau.Core.Formats
         public static USinger LoadSinger(string path)
         {
             if (!Directory.Exists(path) ||
-                !File.Exists(Path.Combine(path, "character.txt")) ||
-                !File.Exists(Path.Combine(path, "oto.ini"))) return null;
-
-            USinger singer = new USinger();
-            singer.Path = path;
-            singer.FileEncoding = EncodingUtil.DetectFileEncoding(Path.Combine(singer.Path, "oto.ini"), Encoding.Default);
-            singer.PathEncoding = Encoding.Default;
-            string[] lines = File.ReadAllLines(Path.Combine(singer.Path, "oto.ini"), singer.FileEncoding);
+    !File.Exists(Path.Combine(path, "character.txt")) ||
+    !File.Exists(Path.Combine(path, "oto.ini"))) return null;
+            
+            var FileEncoding = EncodingUtil.DetectFileEncoding(Path.Combine(path, "oto.ini"), Encoding.Default);
+            var PathEncoding = Encoding.Default;
+            string[] lines = File.ReadAllLines(Path.Combine(path, "oto.ini"), FileEncoding);
 
             int i = 0;
             while (i < 16 && i < lines.Count())
@@ -104,12 +102,27 @@ namespace OpenUtau.Core.Formats
                 if (lines[i].Contains("="))
                 {
                     string filename = lines[i].Split(new[] { '=' })[0];
-                    var detected = DetectPathEncoding(filename, singer.Path, singer.FileEncoding);
-                    if (singer.PathEncoding == Encoding.Default) singer.PathEncoding = detected;
+                    var detected = DetectPathEncoding(filename, path, FileEncoding);
+                    if (PathEncoding == Encoding.Default) PathEncoding = detected;
                 }
                 i++;
             }
-            if (singer.PathEncoding == null) return null;
+            if (PathEncoding == null) return null;
+            return LoadSinger(path, FileEncoding, PathEncoding);
+        }
+            public static USinger LoadSinger(string path, Encoding fileE, Encoding pathE)
+        {
+            if (!Directory.Exists(path) ||
+                !File.Exists(Path.Combine(path, "character.txt")) ||
+                !File.Exists(Path.Combine(path, "oto.ini"))) return null;
+
+            USinger singer = new USinger
+            {
+                Path = path,
+                FileEncoding = fileE,
+                PathEncoding = pathE
+            };
+            string[] lines;
 
             LoadOtos(singer);
 

@@ -66,6 +66,10 @@ namespace OpenUtau.Core.Render
             List<TrackSampleProvider> trackSources = Enumerable.Repeat((TrackSampleProvider)null, project.Tracks.Count).ToList();
             var parts = project.Parts.GroupBy(part => part.TrackNo).ToDictionary(group => group.Key);
             var schedule = new List<Task>();
+            foreach (var item in project.Tracks.Select(track=>track.Singer).Distinct())
+            {
+                SoundbankCache.MakeSingerCache(item);
+            }
             foreach (UTrack track in project.Tracks)
             {
                 schedule.Add(Task.Run(async() =>
@@ -146,6 +150,7 @@ namespace OpenUtau.Core.Render
             }
             await Task.WhenAll(schedule);
             trackSources.Clear();
+            SoundbankCache.FlushCachedSingers();
             DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, ""));
             return masterMix;
         }
@@ -158,6 +163,10 @@ namespace OpenUtau.Core.Render
             List<TrackSampleProvider> trackSources = Enumerable.Repeat((TrackSampleProvider)null, project.Tracks.Count).ToList();
             var parts = project.Parts.GroupBy(part => part.TrackNo).SkipWhile(group => skippedTracks.Contains(group.Key)).ToDictionary(group => group.Key);
             var schedule = new List<Task>();
+            foreach (var item in project.Tracks.Select(track => track.Singer).Distinct())
+            {
+                SoundbankCache.MakeSingerCache(item);
+            }
             foreach (UTrack track in project.Tracks.SkipWhile(track=>skippedTracks.Contains(track.TrackNo)))
             {
                 schedule.Add(Task.Run(async() => {
@@ -200,6 +209,7 @@ namespace OpenUtau.Core.Render
                 token.ThrowIfCancellationRequested();
             }
             await Task.WhenAll(schedule);
+            SoundbankCache.FlushCachedSingers();
             return masterMix;
         }
         private ISampleProvider BuildWavePartAudio(UWavePart part, UProject project)

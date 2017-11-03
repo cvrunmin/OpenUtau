@@ -79,7 +79,6 @@ namespace OpenUtau.Core.Render
         }
         private List<RenderItem> RenderAsync(UVoicePart part, UProject project, IResamplerDriver engine, System.Threading.CancellationToken cancel)
         {
-            SoundbankCache.MakeSingerCache(project.Tracks[part.TrackNo].Singer);
             List<RenderItem> renderItems = new List<RenderItem>();
             Debug.Assert(engine != null, "Engine is not provided");
             System.Diagnostics.Stopwatch watch = new Stopwatch();

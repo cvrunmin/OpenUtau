@@ -1,5 +1,8 @@
-﻿using System;
+﻿using OpenUtau.Core;
+using OpenUtau.Core.Render;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +13,6 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace OpenUtau.UI.Dialogs
 {
@@ -31,6 +33,18 @@ namespace OpenUtau.UI.Dialogs
 
         private void butOk_Click(object sender, RoutedEventArgs e)
         {
+            if (chkboxRamCache.IsChecked.Value) {
+                RenderCache.Inst.Clear();
+                RenderDispatcher.Inst.trackCache.Clear();
+            }
+            if (chkboxdiskCache.IsChecked.Value) {
+                if (!string.IsNullOrEmpty(DocManager.Inst.Project.FilePath)) {
+                    Directory.Delete(Path.Combine(Path.GetDirectoryName(DocManager.Inst.Project.FilePath), "UCache"), true);
+                }
+            }
+            if (chkboxVbCache.IsChecked.Value) {
+                Directory.Delete(SoundbankCache.CachePath, true);
+            }
             DialogResult = true;
         }
     }

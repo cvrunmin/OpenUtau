@@ -41,6 +41,31 @@ namespace OpenUtau.Core.USTx
         public override UExpression Split(UNote newParent, int postick) { var exp = Clone(newParent); return exp; }
     }
 
+    public class FlagIntExpression : IntExpression
+    {
+        public virtual string Flag { set; get; }
+        public FlagIntExpression(UNote parent, string name, string abbr) : base(parent, name, abbr)
+        {
+        }
+
+        public FlagIntExpression(UNote parent, string name, string abbr, string flag) : base(parent, name, abbr)
+        {
+            Flag = flag;
+        }
+
+        public override string Type => "flag_int";
+
+        public override UExpression Clone(UNote newParent)
+        {
+            return new FlagIntExpression(newParent, Name, Abbr, Flag) { Min = Min, Max = Max, Data = Data};
+        }
+
+        public override UExpression Split(UNote newParent, int postick)
+        {
+            return Clone(newParent);
+        }
+    }
+
     public class FloatExpression : UExpression
     {
         public FloatExpression(UNote parent, string name, string abbr) : base(parent, name, abbr) { }
@@ -53,6 +78,31 @@ namespace OpenUtau.Core.USTx
         public override object Data { set { _data = Math.Min(Max, Math.Max(Min, (float)value)); } get { return _data; } }
         public override UExpression Clone(UNote newParent) { return new FloatExpression(newParent, Name, Abbr) { Min = Min, Max = Max, Data = Data }; }
         public override UExpression Split(UNote newParent, int postick) { var exp = Clone(newParent); return exp; }
+    }
+
+    public class FlagFloatExpression : FloatExpression
+    {
+        public virtual string Flag { set; get; }
+        public FlagFloatExpression(UNote parent, string name, string abbr) : base(parent, name, abbr)
+        {
+        }
+
+        public FlagFloatExpression(UNote parent, string name, string abbr, string flag) : base(parent, name, abbr)
+        {
+            Flag = flag;
+        }
+
+        public override string Type => "flag_float";
+
+        public override UExpression Clone(UNote newParent)
+        {
+            return new FlagFloatExpression(newParent, Name, Abbr, Flag) { Min = Min, Max = Max, Data = Data };
+        }
+
+        public override UExpression Split(UNote newParent, int postick)
+        {
+            return Clone(newParent);
+        }
     }
 
     public class ExpPoint : IComparable<ExpPoint>

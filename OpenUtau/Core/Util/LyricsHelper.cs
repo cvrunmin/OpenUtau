@@ -268,13 +268,21 @@ namespace OpenUtau.Core.Util
 
         public static string GetCorrespondingPhoneme(string original, UNote former, UNote lator, Style dest) {
             Style style = GetStyle(original);
+            if (original.Equals("-")) return original;
             if (style == Style.CV)
             {
                 if (dest == Style.VCV)
                 {
                     if (former != null)
                     {
-                        string mainPho = former.Lyric.Split(' ')[1];
+                        string mainPho;
+                        if (former.Lyric.Equals("-")) {
+                            mainPho = former.Phonemes[0].Phoneme;
+                        }
+                        else
+                        {
+                            mainPho = former.Lyric.Split(' ')[1];
+                        }
                         if (HiraganaRomajiHelper.IsSupportedHiragana(mainPho))
                         {
                             return HiraganaRomajiHelper.GetVowel(mainPho) + " " + original;
@@ -286,7 +294,7 @@ namespace OpenUtau.Core.Util
                         else
                         {
                             int startIndex = mainPho.IndexOfAny(new char[] { 'a', 'e', 'i', 'o', 'u' });
-                            var wildGuessVowel = mainPho.Substring(Math.Min(0, startIndex));
+                            var wildGuessVowel = mainPho.Substring(Math.Max(0, startIndex));
                             return wildGuessVowel + " " + original;
                         }
                     }

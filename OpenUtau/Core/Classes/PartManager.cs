@@ -199,6 +199,11 @@ namespace OpenUtau.Core
                         try
                         {
                             phoneme.Phoneme = Util.LyricsHelper.GetVowel(oldpho.Phoneme);
+                            if (!singer.AliasMap.ContainsKey(phoneme.PhonemeRemapped) && Util.HiraganaRomajiHelper.IsSupportedRomaji(phoneme.Phoneme))
+                            {
+                                if(singer.AliasMap.ContainsKey(Util.HiraganaRomajiHelper.ToHiragana(phoneme.Phoneme) + phoneme.RemappedBank))
+                                phoneme.Phoneme = Util.HiraganaRomajiHelper.ToHiragana(phoneme.Phoneme);
+                            }
                         }
                         catch (Exception)
                         {
@@ -331,7 +336,8 @@ namespace OpenUtau.Core
             //UNote lastNote = null;
             foreach (UNote note in part.Notes)
             {
-                var li = part.Notes.SkipWhile(note1=>note1.PosTick < note.PosTick && note1.EndTick <= note.PosTick).TakeWhile(note1 => note1.PosTick < note.EndTick);
+                var li = part.Notes.SkipWhile(note1=> (note1.PosTick <= note.PosTick && note1.EndTick <= note.PosTick) || (note1.PosTick >= note.EndTick));
+                li = li.TakeWhile(note1 => note1.PosTick < note.EndTick);
                 if (li.Count() > 1) {
                     note.Error = true;
                     li.ToList().ForEach(note1 => note1.Error = true);

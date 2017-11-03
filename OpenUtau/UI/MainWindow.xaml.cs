@@ -456,8 +456,7 @@ namespace OpenUtau.UI
         }
         private void MenuClearCache_Click(object sender, RoutedEventArgs e)
         {
-            RenderCache.Inst.Clear();
-            RenderDispatcher.Inst.trackCache.Clear();
+            new ClearCacheDialog().ShowDialog();
         }
         private void MenuExit_Click(object sender, RoutedEventArgs e) { CmdExit(); }
         private void MenuUndo_Click(object sender, RoutedEventArgs e) { DocManager.Inst.Undo(); }

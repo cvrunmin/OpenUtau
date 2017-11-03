@@ -430,12 +430,44 @@ namespace OpenUtau.Core.Formats
         {
             public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
             {
-                if (type == typeof(IntExpression))
+                if (type == typeof(FlagIntExpression))
+                {
+                    var result = new FlagIntExpression(null, "", dictionary["abbr"] as string)
+                    {
+                        Min = Convert.ToInt32(dictionary["min"]),
+                        Max = Convert.ToInt32(dictionary["max"]),
+                        Data = dictionary["data"],
+                        Flag = Convert.ToString(dictionary["flag"])
+                    };
+                    return result;
+                }
+                else if (type == typeof(IntExpression))
                 {
                     IntExpression result = new IntExpression(null, "", dictionary["abbr"] as string)
                     {
                         Min = Convert.ToInt32(dictionary["min"]),
                         Max = Convert.ToInt32(dictionary["max"]),
+                        Data = dictionary["data"]
+                    };
+                    return result;
+                }
+                else if (type == typeof(FlagFloatExpression))
+                {
+                    var result = new FlagFloatExpression(null, "", dictionary["abbr"] as string)
+                    {
+                        Min = (float)Convert.ToDouble(dictionary["min"]),
+                        Max = (float)Convert.ToDouble(dictionary["max"]),
+                        Data = dictionary["data"],
+                        Flag = Convert.ToString(dictionary["flag"])
+                    };
+                    return result;
+                }
+                else if (type == typeof(FloatExpression))
+                {
+                    var result = new FloatExpression(null, "", dictionary["abbr"] as string)
+                    {
+                        Min = (float)Convert.ToDouble(dictionary["min"]),
+                        Max = (float)Convert.ToDouble(dictionary["max"]),
                         Data = dictionary["data"]
                     };
                     return result;
@@ -507,9 +539,40 @@ namespace OpenUtau.Core.Formats
                         result.Add("path", _obj.Path);
                     }
                 }
+                else if (obj is FlagIntExpression)
+                {
+                    var _obj = obj as FlagIntExpression;
+                    result.Add("abbr", _obj.Abbr);
+                    result.Add("type", _obj.Type);
+                    result.Add("min", _obj.Min);
+                    result.Add("max", _obj.Max);
+                    result.Add("data", _obj.Data);
+                    result.Add("flag", _obj.Flag);
+                }
                 else if (obj is IntExpression)
                 {
                     if (obj is IntExpression _obj)
+                    {
+                        result.Add("abbr", _obj.Abbr);
+                        result.Add("type", _obj.Type);
+                        result.Add("min", _obj.Min);
+                        result.Add("max", _obj.Max);
+                        result.Add("data", _obj.Data);
+                    }
+                }
+                else if (obj is FlagFloatExpression)
+                {
+                    var _obj = obj as FlagFloatExpression;
+                    result.Add("abbr", _obj.Abbr);
+                    result.Add("type", _obj.Type);
+                    result.Add("min", _obj.Min);
+                    result.Add("max", _obj.Max);
+                    result.Add("data", _obj.Data);
+                    result.Add("flag", _obj.Flag);
+                }
+                else if (obj is FloatExpression)
+                {
+                    if (obj is FloatExpression _obj)
                     {
                         result.Add("abbr", _obj.Abbr);
                         result.Add("type", _obj.Type);
@@ -526,6 +589,9 @@ namespace OpenUtau.Core.Formats
                 get {
                     return new List<Type>(new Type[] {
                         typeof(IntExpression),
+                        typeof(FloatExpression),
+                        typeof(FlagIntExpression),
+                        typeof(FlagFloatExpression),
                         typeof(UTrack),
                         typeof(USinger)
                     });
@@ -538,9 +604,9 @@ namespace OpenUtau.Core.Formats
             UProject project = new UProject() { Saved = false };
             project.RegisterExpression(new IntExpression(null, "velocity", "VEL") { Data = 100, Min = 0, Max = 200 });
             project.RegisterExpression(new IntExpression(null, "volume", "VOL") { Data = 100, Min = 0, Max = 200 });
-            project.RegisterExpression(new IntExpression(null, "breathiness", "BRE") { Data = 0, Min = 0, Max = 100 });
-            project.RegisterExpression(new IntExpression(null, "gender", "GEN") { Data = 0, Min = -100, Max = 100 });
-            project.RegisterExpression(new IntExpression(null, "lowpass", "LPF") { Data = 0, Min = 0, Max = 100 });
+            project.RegisterExpression(new FlagIntExpression(null, "breathiness", "BRE", "Y") { Data = 0, Min = 0, Max = 100 });
+            project.RegisterExpression(new FlagIntExpression(null, "gender", "GEN", "g") { Data = 0, Min = -100, Max = 100 });
+            project.RegisterExpression(new FlagIntExpression(null, "lowpass", "LPF", "H") { Data = 0, Min = 0, Max = 100 });
             project.RegisterExpression(new IntExpression(null, "highpass", "HPF") { Data = 0, Min = 0, Max = 100 });
             project.RegisterExpression(new IntExpression(null, "accent", "ACC") { Data = 100, Min = 0, Max = 200 });
             project.RegisterExpression(new IntExpression(null, "decay", "DEC") { Data = 0, Min = 0, Max = 100 });
