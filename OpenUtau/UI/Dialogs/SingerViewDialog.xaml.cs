@@ -67,7 +67,7 @@ namespace OpenUtau.UI.Dialogs
 
             if (singer == null) return;
             SelectedSinger = singer;
-            this.name.Text = singer.Name;
+            //this.name.Text = singer.Name;
             this.avatar.Source = singer.Avatar;
             this.info.Text = "Author: " + singer.Author + "\nWebsite: " + singer.Website + "\nPath: " + singer.Path + "\n\n" + singer.Detail;
             RefreshOtoView(true);
@@ -129,7 +129,7 @@ namespace OpenUtau.UI.Dialogs
                     }
                 }
             }
-
+            if(name.SelectedIndex >= 0)
             SetSinger(singerNames[this.name.SelectedIndex]);
         }
 

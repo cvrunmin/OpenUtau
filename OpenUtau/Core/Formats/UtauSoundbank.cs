@@ -180,19 +180,24 @@ namespace OpenUtau.Core.Formats
                 if (pho.ContainsAny(singer.PitchMap.Values, out var mat)) {
                     pho = pho.Replace(mat, "");
                 }
-                list.Add(SamplingStyleHelper.GetStyle(pho));
-                var consonent = LyricsHelper.GetConsonant(pho);
-                var vowel = LyricsHelper.GetVowel(pho);
-                if (!singer.ConsonentMap.ContainsKey(consonent))
+                SamplingStyleHelper.Style style = SamplingStyleHelper.GetStyle(pho);
+                list.Add(style);
+                if (style == SamplingStyleHelper.Style.CV || style == SamplingStyleHelper.Style.VCV)
                 {
-                    singer.ConsonentMap.Add(consonent, new SortedSet<UOto>());
+                    var consonent = LyricsHelper.GetConsonant(pho);
+                    var vowel = LyricsHelper.GetVowel(pho);
+                    var pho1 = consonent + vowel;
+                    if (!singer.ConsonentMap.ContainsKey(consonent))
+                    {
+                        singer.ConsonentMap.Add(consonent, new SortedSet<string>());
+                    }
+                    if (!singer.VowelMap.ContainsKey(vowel))
+                    {
+                        singer.VowelMap.Add(vowel, new SortedSet<string>());
+                    }
+                    if (!singer.ConsonentMap[consonent].Contains(pho1)) singer.ConsonentMap[consonent].Add(pho1);
+                    if (!singer.VowelMap[vowel].Contains(pho1)) singer.VowelMap[vowel].Add(pho1);
                 }
-                if (!singer.VowelMap.ContainsKey(vowel))
-                {
-                    singer.VowelMap.Add(vowel, new SortedSet<UOto>());
-                }
-                if(!singer.ConsonentMap[consonent].Contains(item))singer.ConsonentMap[consonent].Add(item);
-                if(!singer.VowelMap[vowel].Contains(item))singer.VowelMap[vowel].Add(item);
             }
             double avg = list.Average(style => style == Util.SamplingStyleHelper.Style.CV ? 1 : style == Util.SamplingStyleHelper.Style.VCV ? 3 : style == Util.SamplingStyleHelper.Style.VC ? 2 : 0);
             double v = Math.Round(avg);

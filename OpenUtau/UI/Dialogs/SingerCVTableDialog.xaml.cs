@@ -40,9 +40,8 @@ namespace OpenUtau.UI.Dialogs
                 var row = table.NewRow();
                 row.SetField("Vowels", vowel.Key);
                 var map = new Dictionary<string, SortedSet<string>>();
-                foreach (var item in vowel.Value)
+                foreach (var pho in vowel.Value)
                 {
-                    string pho = !string.IsNullOrWhiteSpace(item.Alias) ? item.Alias : Path.GetFileNameWithoutExtension(item.File);
                     string consonant = Core.Util.LyricsHelper.GetConsonant(pho);
                     consonant = string.IsNullOrEmpty(consonant) ? "-" : consonant;
                     if (!map.ContainsKey(consonant)) map.Add(consonant, new SortedSet<string>());

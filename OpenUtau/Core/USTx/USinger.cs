@@ -100,8 +100,8 @@ namespace OpenUtau.Core.USTx
 
         public Dictionary<string, string> PitchMap = new Dictionary<string, string>();
         public SortedDictionary<string, UOto> AliasMap = new SortedDictionary<string, UOto>();
-        public SortedDictionary<string, SortedSet<UOto>> ConsonentMap = new SortedDictionary<string, SortedSet<UOto>>();
-        public SortedDictionary<string, SortedSet<UOto>> VowelMap = new SortedDictionary<string, SortedSet<UOto>>();
+        public SortedDictionary<string, SortedSet<string>> ConsonentMap = new SortedDictionary<string, SortedSet<string>>();
+        public SortedDictionary<string, SortedSet<string>> VowelMap = new SortedDictionary<string, SortedSet<string>>();
         public SortedDictionary<string, UDictionaryNote> PresetLyricsMap = new SortedDictionary<string, UDictionaryNote>();
     }
 }
