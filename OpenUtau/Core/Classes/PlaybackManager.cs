@@ -55,7 +55,7 @@ namespace OpenUtau.Core
             }
         }
 
-        protected IWavePlayer CreatePlayer() {
+        public IWavePlayer CreatePlayer() {
             switch (Core.Util.Preferences.Default.WavePlayer)
             {
                 case "WASAPI":

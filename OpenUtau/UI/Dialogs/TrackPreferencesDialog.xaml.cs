@@ -14,6 +14,7 @@ using System.Windows.Shapes;
 
 using OpenUtau.Core;
 using OpenUtau.Core.USTx;
+using OpenUtau.Core.Util;
 
 namespace OpenUtau.UI.Dialogs
 {
@@ -116,6 +117,13 @@ namespace OpenUtau.UI.Dialogs
             DocManager.Inst.StartUndoGroup();
             DocManager.Inst.ExecuteCmd(new TrackChangeSingerCommand(DocManager.Inst.Project, Track, comboSinger.SelectedIndex == 0 ? null : comboSinger.SelectedItem as USinger));
             DocManager.Inst.EndUndoGroup();
+        }
+
+        private void butTrackColor_Click(object sender, RoutedEventArgs e)
+        {
+            var color = new System.Windows.Forms.ColorDialog();
+            color.ShowDialog();
+            Track.Color = color.Color.ToMediaColor();
         }
     }
 }

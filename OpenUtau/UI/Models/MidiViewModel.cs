@@ -290,7 +290,7 @@ namespace OpenUtau.UI.Models
             return Math.Round(quater / snapUnit) * snapUnit;
         }
         public int CanvasToSnappedTick(double X) { return (int)(CanvasToSnappedQuarter(X) * Project.Resolution / BeatPerBar); }
-        public double TickToCanvas(int tick) { return (int)(QuarterToCanvas((double)tick / Project.Resolution * BeatPerBar)); }
+        public double TickToCanvas(int tick) { return (QuarterToCanvas((double)tick / Project.Resolution * BeatPerBar)); }
 
         public int CanvasToNoteNum(double Y) { return UIConstants.MaxNoteNum - 1 - (int)((Y + OffsetY) / TrackHeight); }
         public double CanvasToPitch(double Y) { return UIConstants.MaxNoteNum - 1 - (Y + OffsetY) / TrackHeight + 0.5; }

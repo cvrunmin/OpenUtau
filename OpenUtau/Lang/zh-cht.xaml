@@ -60,6 +60,9 @@
     <s:String x:Key="New">新增</s:String>
     <s:String x:Key="Remove">移除</s:String>
     <s:String x:Key="RemoveTrack">移除音軌</s:String>
+    <s:String x:Key="DeleteNote">刪除音符</s:String>
+    <s:String x:Key="VibratoEn">開啟顫音</s:String>
+    <s:String x:Key="VibratoDis">關閉顫音</s:String>
     <s:String x:Key="OutputDevice">輸出裝置</s:String>
     <s:String x:Key="ResamplingTitle">Resampler</s:String>
     <s:String x:Key="ResamplingPreviewTitle">預覽用Resampler</s:String>
@@ -76,8 +79,8 @@
     <s:String x:Key="Replace">取代</s:String>
     <s:String x:Key="Duplicate">建立複本</s:String>
     <s:String x:Key="LyricsPreset">歌詞預設</s:String>
-    <s:String x:Key="TogglePho">切換顯示音素 (I)</s:String>
-    <s:String x:Key="TogglePitch">切換顯示音高 (O)</s:String>
+    <s:String x:Key="TogglePho">切換顯示音素 (O)</s:String>
+    <s:String x:Key="TogglePitch">切換顯示音高 (I)</s:String>
     <s:String x:Key="Snap">貼齊 (P)</s:String>
     <s:String x:Key="InstantRender">即時渲染</s:String>
     <s:String x:Key="RenderManager">回放管理器</s:String>

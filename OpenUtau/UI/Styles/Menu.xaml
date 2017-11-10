@@ -131,6 +131,7 @@
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
+    <PathGeometry x:Key="Checkmark" Figures="M0,2 L0,4.8 L2.5,7.4 L7.1,2.8 L7.1,0 L2.5,4.6 z" />
 
     <!-- SubmenuItem -->
     <ControlTemplate x:Key="{x:Static MenuItem.SubmenuItemTemplateKey}" TargetType="MenuItem">
@@ -144,6 +145,7 @@
                     <ColumnDefinition Width="13" SharedSizeGroup="MenuMarkColumnGroup"/>
                 </Grid.ColumnDefinitions>
                 <ContentPresenter Grid.Column="0" Name="Icon" Margin="6,0,6,0" VerticalAlignment="Center" ContentSource="Icon" />
+                <Path x:Name="GlyphPanel" Data="{StaticResource Checkmark}" Fill="{TemplateBinding Foreground}" FlowDirection="LeftToRight" Margin="4,0,6,0" Visibility="Hidden" VerticalAlignment="Center"/>
                 <ContentPresenter Grid.Column="1" Name="HeaderHost" ContentSource="Header" VerticalAlignment="Center" RecognizesAccessKey="True"/>
                 <TextBlock Grid.Column="3" x:Name="InputGestureText" Text="{TemplateBinding InputGestureText}" Margin="5,2,0,2" TextAlignment="Left"/>
             </Grid>
@@ -155,9 +157,13 @@
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Foreground" Value="Gray"/>
             </Trigger>
+            <Trigger Property="IsChecked" Value="True">
+                <Setter Property="Visibility" TargetName="GlyphPanel" Value="Visible"/>
+                <Setter Property="Visibility" TargetName="Icon" Value="Collapsed"/>
+            </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
-    
+
     <PopupAnimation x:Key="{x:Static SystemParameters.MenuPopupAnimationKey}">None</PopupAnimation>
     
     <!--ContextMenu-->

@@ -1,4 +1,4 @@
-﻿<local:BorderlessWindow x:Class="OpenUtau.UI.MidiWindow"
+﻿<local:BorderlessWindow x:Name="borderlessWindow" x:Class="OpenUtau.UI.MidiWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:OpenUtau.UI.Controls"
@@ -106,7 +106,8 @@
                         <MenuItem Header="End" Tag="End" Click="MenuSeek_Click"/>
                     </MenuItem>
                     <Separator/>
-                    <MenuItem Header="Preview Mode" Click="MenuSwitchPreview_Click" IsCheckable="True"/>
+                    <MenuItem Header="Preview Mode" IsCheckable="True" IsChecked="{Binding ViewOnly, ElementName=borderlessWindow}"/>
+                    <MenuItem Header="Show All Parts" IsCheckable="True" IsChecked="{Binding MultiView, ElementName=borderlessWindow}"/>
                 </MenuItem>
             </Menu>
             <Grid x:Name="toolGrid" HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Width="250" Grid.Column="5">

@@ -20,6 +20,7 @@ using OpenUtau.UI.Models;
 using OpenUtau.UI.Controls;
 using OpenUtau.Core;
 using OpenUtau.Core.USTx;
+using NAudio.Wave;
 
 namespace OpenUtau.UI
 {
@@ -79,12 +80,21 @@ namespace OpenUtau.UI
         }
 
         private bool _viewOnly;
+        private bool _multiview;
         public bool ViewOnly { get {
                 return _viewOnly;
             } set {
                 _viewOnly = value;
                 menuEdit.IsEnabled = !value;
+                MultiView = value;
+            }
+        }
+        public bool MultiView {
+            get => _multiview;
+            set {
+                _multiview = value;
                 MidiVM.ToggleViewMode(value);
+                if (!value) _viewOnly = false;
             }
         }
 
@@ -822,9 +832,13 @@ namespace OpenUtau.UI
                 {
                     if (noteHit != null)
                     {
+                        if (!MidiVM.SelectedNotes.Contains(noteHit)) {
+                            MidiVM.DeselectAll();
+                            MidiVM.SelectNote(noteHit);
+                        }
                         bool vibratoenabled = noteHit.Vibrato.IsEnabled;
                         var menu = new ContextMenu();
-                        var i0 = new MenuItem() { Header = "Delete note" };
+                        var i0 = new MenuItem() { Header = Lang.LanguageManager.GetLocalized("DeleteNote") };
                         i0.Click += (_o, _e) =>
                         {
                             if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
@@ -834,7 +848,7 @@ namespace OpenUtau.UI
                         menu.Items.Add(i0);
                         var i1 = new MenuItem()
                         {
-                            Header = vibratoenabled ? "Disable Vibrato" : "Enable Vibrato"
+                            Header = Lang.LanguageManager.GetLocalized("Vibrato" + (vibratoenabled ? "Dis" : "En"))
                         };
                         i1.Click += (_o, _e) =>
                         {
@@ -848,11 +862,56 @@ namespace OpenUtau.UI
                             }
                         };
                         menu.Items.Add(i1);
+                        var i2 = new MenuItem() { Header = "Play selection"};
+                        i2.Click += (_o, _e) => {
+                            Task.Run(() =>
+                            {
+                                var player = PlaybackManager.GetActiveManager().CreatePlayer();
+                                var Sampler = new List<Core.Render.RenderItemSampleProvider>();
+                                int c = 0;
+                                var sel = new List<UNote>(MidiVM.SelectedNotes).Where(note=>!note.Error).OrderBy(note=>note.PosTick).ToList();
+                                var firstN = sel.FirstOrDefault();
+                                foreach (var note in sel)
+                                {
+                                    var cl = note.Clone();
+                                    cl.PosTick -= firstN.PosTick;
+                                    DocManager.Inst.ExecuteCmd(new ProgressBarNotification((int)Math.Round((double)c / sel.Count), $"Rendering note {cl.Lyric} {c}/{sel.Count}"));
+                                    Core.Render.ResamplerInterface.RenderNote(MidiVM.Project, MidiVM.Part, cl).ToList().ForEach(ri => Sampler.Add(new Core.Render.RenderItemSampleProvider(ri)));
+                                    ++c;
+                                }
+                                DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, ""));
+                                var ss = new Core.Render.SequencingSampleProvider(Sampler);
+                                player.Init(ss);
+                                player.PlaybackStopped += (_o1, _e1) =>
+                                {
+                                    player.Dispose();
+                                };
+                                player.Play();
+                            });
+                        };
+                        menu.Items.Add(i2);
                         menu.IsOpen = true;
                         menu.PlacementTarget = this.notesCanvas;
                     }
                     else
                     {
+                        void SwitchPart(object _o, RoutedEventArgs _e) {
+                            if (_o is MenuItem item) {
+                                DocManager.Inst.ExecuteCmd(new LoadPartNotification(MidiVM.Project.Parts[(int)item.Tag], MidiVM.Project));
+                            }
+                        }
+                        var tick = MidiVM.CanvasToSnappedTick(mousePos.X);
+                        var menu = new ContextMenu();
+                        var i0 = new MenuItem() { Header = "Switch Part" };
+                        foreach (var item in MidiVM.Project.Parts.Where(part=>part.PosTick <= tick && part.EndTick >= tick))
+                        {
+                            var i1 = new MenuItem() { Header = $"[{item.TrackNo}]{{{item.PartNo}}} {item.Name}", Tag = item.PartNo};
+                            i1.Click += SwitchPart;
+                            i0.Items.Add(i1);
+                        }
+                        menu.Items.Add(i0);
+                        menu.IsOpen = true;
+                        menu.PlacementTarget = this.notesCanvas;
                         MidiVM.DeselectAll();
                     }
                 }
@@ -1261,11 +1320,6 @@ namespace OpenUtau.UI
                 default:
                     break;
             }
-        }
-
-        private void MenuSwitchPreview_Click(object sender, RoutedEventArgs e)
-        {
-            ViewOnly = (sender as MenuItem).IsChecked;
         }
 
         private void MenuConvertStyle_Click(object sender, RoutedEventArgs e)

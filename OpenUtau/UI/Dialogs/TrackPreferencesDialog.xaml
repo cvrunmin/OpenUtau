@@ -13,7 +13,7 @@
                 <TreeViewItem x:Name="renderingItem" Header="{DynamicResource Rendering}" Margin="-12,0,0,0"/>
             </TreeViewItem>
         </TreeView>
-        <Grid x:Name="generalGrid" Margin="170,2,10,10" Visibility="Collapsed">
+        <Grid x:Name="generalGrid" Margin="170,2,10,10" Visibility="Visible">
             <Label Content="{DynamicResource ResourceKey=Name}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
             <TextBox x:Name="txtTrackName" HorizontalAlignment="Left" Height="23" Margin="59,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="175" Text="{Binding Track.Name, ElementName=window, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
             <Label Content="{DynamicResource Singer}" HorizontalAlignment="Left" Margin="10,57,0,0" VerticalAlignment="Top"/>
@@ -33,6 +33,12 @@
             </ComboBox>
             <Label Content="{DynamicResource Comment}" HorizontalAlignment="Left" Margin="10,105,0,0" VerticalAlignment="Top"/>
             <TextBox x:Name="txtboxComment" HorizontalAlignment="Left" Height="90" Margin="81,105,0,0" Text="{Binding Track.Comment, ElementName=window}" VerticalAlignment="Top" Width="255" AcceptsReturn="True" AutoWordSelection="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+            <Label Content="Track Color" HorizontalAlignment="Left" Margin="10,204,0,0" VerticalAlignment="Top"/>
+            <Button x:Name="butTrackColor" Content="" HorizontalAlignment="Left" Margin="84,204,0,0" VerticalAlignment="Top" Width="25" BorderThickness="0" Height="25" Click="butTrackColor_Click">
+                <Button.Background>
+                    <SolidColorBrush Color="{Binding Track.Color, ElementName=window}"/>
+                </Button.Background>
+            </Button>
         </Grid>
         <Grid x:Name="renderingGrid" Margin="170,2,10,10" Visibility="Collapsed">
             <ScrollViewer>
