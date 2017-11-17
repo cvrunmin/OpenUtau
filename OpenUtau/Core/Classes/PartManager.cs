@@ -42,6 +42,21 @@ namespace OpenUtau.Core
             UpdatePart(part, singer);
         }
 
+        public static void RenewPartNo() {
+            int pno = 0;
+            foreach (var part in DocManager.Inst.Project.Parts.OrderBy(part=>part.TrackNo).ThenBy(part=>part.PosTick))
+            {
+                part.PartNo = pno;
+                if (part is UVoicePart voice) {
+                    foreach (var note in voice.Notes)
+                    {
+                        note.PartNo = pno;
+                    }
+                }
+                pno++;
+            }
+        }
+
         public static void UpdatePart(UVoicePart part, USinger singer, bool shouldRedraw = true)
         {
             lock (part)

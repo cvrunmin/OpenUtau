@@ -26,7 +26,7 @@ namespace OpenUtau.Core.USTx
         public bool Amended { get; set; }
         public string OverrideRenderEngine { get; set; }
 
-        public Color Color { get; set; }
+        public Color Color { get; set; } = Colors.Transparent;
 
         public UTrack() { }
     }

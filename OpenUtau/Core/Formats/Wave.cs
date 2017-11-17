@@ -37,7 +37,7 @@ namespace OpenUtau.Core.Formats
             {
                 stream = new AudioFileReader(filepath);
             }
-            catch
+            catch(Exception e)
             {
                 return new UWavePart() {
                     FilePath = filepath,

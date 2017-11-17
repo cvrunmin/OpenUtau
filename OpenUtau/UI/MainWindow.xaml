@@ -59,6 +59,8 @@
                 <Separator/>
                 <MenuItem Header="{DynamicResource SplitSelectedParts}" Click="MenuSplitSParts_Click"/>
                 <MenuItem Header="{DynamicResource MergeSelectedParts}" Click="MenuMergeSParts_Click"/>
+                <Separator/>
+                <MenuItem Header="Renew Part No." Click="MenuRenewPartNo_Click"/>
             </MenuItem>
             <MenuItem Header="{DynamicResource MenuTools}">
                 <MenuItem Header="{DynamicResource MenuSingers}" Click="MenuSingers_Click"/>

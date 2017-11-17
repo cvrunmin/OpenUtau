@@ -84,11 +84,16 @@ namespace OpenUtau.UI.Models
             var xDrift = xIn + note.DurTick * (note.Vibrato.Length / 100) * (1 - (note.Vibrato.In + note.Vibrato.Out) / 100) * 0.5;
             var depth = midiVM.TrackHeight * note.Vibrato.Depth / 100;
             var yCenter = midiVM.NoteNumToCanvas(note.NoteNum) + midiVM.TrackHeight / 2;
+            var yTC = yCenter;
             yCenter += depth * (note.Vibrato.Drift / 100);
             var yDepth1 = yCenter - depth;
             var yDepth2 = yCenter + depth;
 
-            if (xIn + margin >= tick && xIn - margin <= tick)
+            if (xLength + margin >= tick && xLength - margin <= tick && Math.Abs(mousePos.Y - yTC) <= margin)
+            {
+                result.OnPoint = VibratoHitTestResult.VibratoPart.Length;
+            }
+            else if (xIn + margin >= tick && xIn - margin <= tick)
             {
                 result.OnPoint = VibratoHitTestResult.VibratoPart.In;
             }

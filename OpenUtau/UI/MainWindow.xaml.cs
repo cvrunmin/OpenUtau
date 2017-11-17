@@ -24,6 +24,7 @@ using System.Windows.Forms;
 using OpenUtau.Core.Render;
 using OpenUtau.UI.Dialogs;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using OpenUtau.Core.Util;
 
 namespace OpenUtau.UI
 {
@@ -35,7 +36,21 @@ namespace OpenUtau.UI
         MidiWindow midiWindow;
         TracksViewModel trackVM;
         ProgressBarViewModel progVM;
-
+        EnumTool ToolUsing
+        {
+            get
+            {
+                if (radioToolCursor.IsChecked.Value)
+                {
+                    return EnumTool.Cursor;
+                }
+                if (radioToolPaint.IsChecked.Value)
+                {
+                    return EnumTool.Brush;
+                }
+                return EnumTool.Cursor;
+            }
+        }
         public MainWindow()
         {
             InitializeComponent();
@@ -291,7 +306,8 @@ namespace OpenUtau.UI
                     {
                         PosTick = trackVM.CanvasToSnappedTick(mousePos.X),
                         TrackNo = trackVM.CanvasToTrack(mousePos.Y),
-                        DurTick = trackVM.Project.Resolution / trackVM.Project.BeatUnit * trackVM.Project.BeatPerBar
+                        DurTick = trackVM.Project.Resolution / trackVM.Project.BeatUnit * trackVM.Project.BeatPerBar,
+                        PartNo = trackVM.Project.Parts.Count
                     };
                     DocManager.Inst.StartUndoGroup();
                     DocManager.Inst.ExecuteCmd(new AddPartCommand(trackVM.Project, part));
@@ -386,12 +402,15 @@ namespace OpenUtau.UI
             else if (Mouse.RightButton == MouseButtonState.Pressed) // Remove
             {
                 HitTestResult result = VisualTreeHelper.HitTest(trackCanvas, mousePos);
-                if (result == null) return;
-                var hit = result.VisualHit;
-                if (hit is DrawingVisual)
+                if (ToolUsing == EnumTool.Brush)
                 {
-                    PartElement partEl = ((DrawingVisual)hit).Parent as PartElement;
-                    if (partEl != null) DocManager.Inst.ExecuteCmd(new RemovePartCommand(trackVM.Project, partEl.Part));
+                    if (result == null) return;
+                    var hit = result.VisualHit;
+                    if (hit is DrawingVisual)
+                    {
+                        PartElement partEl = ((DrawingVisual)hit).Parent as PartElement;
+                        if (partEl != null) DocManager.Inst.ExecuteCmd(new RemovePartCommand(trackVM.Project, partEl.Part));
+                    }
                 }
             }
             else if (Mouse.LeftButton == MouseButtonState.Released && Mouse.RightButton == MouseButtonState.Released)
@@ -418,21 +437,48 @@ namespace OpenUtau.UI
             DocManager.Inst.StartUndoGroup();
             Point mousePos = e.GetPosition((Canvas)sender);
             HitTestResult result = VisualTreeHelper.HitTest(trackCanvas, mousePos);
-            if (result == null) return;
-            var hit = result.VisualHit;
-            if (hit is DrawingVisual)
+            if (ToolUsing == EnumTool.Brush)
             {
-                PartElement partEl = ((DrawingVisual)hit).Parent as PartElement;
-                if (partEl != null && trackVM.SelectedParts.Contains(partEl.Part))
-                    DocManager.Inst.ExecuteCmd(new RemovePartCommand(trackVM.Project, partEl.Part));
-                else trackVM.DeselectAll();
+                if (result == null) return;
+                var hit = result.VisualHit;
+                if (hit is DrawingVisual)
+                {
+                    PartElement partEl = ((DrawingVisual)hit).Parent as PartElement;
+                    if (partEl != null && trackVM.SelectedParts.Contains(partEl.Part))
+                        DocManager.Inst.ExecuteCmd(new RemovePartCommand(trackVM.Project, partEl.Part));
+                    else trackVM.DeselectAll();
+                }
+                else
+                {
+                    trackVM.DeselectAll();
+                }
+                ((UIElement)sender).CaptureMouse();
+                Mouse.OverrideCursor = System.Windows.Input.Cursors.No;
             }
-            else
+            else if (ToolUsing == EnumTool.Cursor)
             {
-                trackVM.DeselectAll();
+                if (result == null || !(result.VisualHit is DrawingVisual) || ((DrawingVisual)result.VisualHit).Parent as PartElement == null) trackVM.DeselectAll();
+                var menu = new System.Windows.Controls.ContextMenu();
+                if (result != null && result.VisualHit is DrawingVisual hit)
+                {
+                    PartElement partEl = ((DrawingVisual)hit).Parent as PartElement;
+                    if (partEl != null)
+                    {
+                        var i1 = new System.Windows.Controls.MenuItem() { Header = "Remove Part" };
+                        i1.Click += (_s, _e) =>
+                        {
+                            DocManager.Inst.ExecuteCmd(new RemovePartCommand(trackVM.Project, partEl.Part));
+                        };
+                        menu.Items.Add(i1);
+                        var i2 = new System.Windows.Controls.MenuItem() { Header = "Part Properties" };
+                        menu.Items.Add(i2);
+                    }
+                }
+                var i3 = new System.Windows.Controls.MenuItem() { Header = "Project Properties" };
+                menu.Items.Add(i3);
+                menu.IsOpen = true;
+                menu.PlacementTarget = this.trackCanvas;
             }
-            ((UIElement)sender).CaptureMouse();
-            Mouse.OverrideCursor = System.Windows.Input.Cursors.No;
         }
 
         private void trackCanvas_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
@@ -483,10 +529,10 @@ namespace OpenUtau.UI
                 EnsureFileExists = true,
                 Multiselect = false
             };
-            dialog.Filters.Add(new CommonFileDialogFilter("Audio Files", "*.wav; *.mp3; *.aiff; *.wma"));
+            dialog.Filters.Add(new CommonFileDialogFilter("Audio Files", "*.wav; *.mp3; *.aiff; *.aif; *.wma"));
             dialog.Filters.Add(new CommonFileDialogFilter("Wave", "*.wav"));
             dialog.Filters.Add(new CommonFileDialogFilter("MP3", "*.mp3"));
-            dialog.Filters.Add(new CommonFileDialogFilter("AIFF", "*.aiff"));
+            dialog.Filters.Add(new CommonFileDialogFilter("AIFF", "*.aiff; *.aif"));
             dialog.Filters.Add(new CommonFileDialogFilter("Windows Media Audio", "*.wma"));
             var chkboxRel = new Microsoft.WindowsAPICodePack.Dialogs.Controls.CommonFileDialogCheckBox("Use relative path");
             dialog.Controls.Add(chkboxRel);
@@ -516,6 +562,7 @@ namespace OpenUtau.UI
                         Color = Colors.Transparent
                     };
                     part.TrackNo = track.TrackNo;
+                    part.PartNo = project.Parts.Count;
                     DocManager.Inst.ExecuteCmd(new AddTrackCommand(project, track));
                     DocManager.Inst.ExecuteCmd(new AddPartCommand(project, part));
                 }
@@ -577,6 +624,7 @@ namespace OpenUtau.UI
             {
                 var copied = part.UClone();
                 copied.PosTick = DocManager.Inst.playPosTick + part.PosTick - basedelta;
+                copied.PartNo = trackVM.Project.Parts.Count;
                 DocManager.Inst.ExecuteCmd(new AddPartCommand(DocManager.Inst.Project, copied));
                 trackVM.SelectPart(copied);
             }
@@ -649,6 +697,10 @@ namespace OpenUtau.UI
             trackVM.MarkUpdate();
         }
 
+        private void MenuRenewPartNo_Click(object sender, RoutedEventArgs e)
+        {
+            PartManager.RenewPartNo();
+        }
         # endregion
 
         // Disable system menu and main menu
@@ -743,7 +795,14 @@ namespace OpenUtau.UI
             DocManager.Inst.StartUndoGroup();
             foreach (var file in files)
             {
-                OpenUtau.Core.Formats.Formats.LoadProject(file, true);
+                if (Core.Formats.Formats.DetectProjectFormat(file) == Core.Formats.ProjectFormats.Unknown)
+                {
+                    CmdImportAudio(file, false, true);
+                }
+                else
+                {
+                    OpenUtau.Core.Formats.Formats.LoadProject(file, DocManager.Inst.Project.Tracks.Count != 0);
+                }
             }
             DocManager.Inst.EndUndoGroup();
         }
@@ -764,17 +823,17 @@ namespace OpenUtau.UI
             }
         }
 
-        private void CmdImportAudio(string file, bool relative)
+        private void CmdImportAudio(string file, bool relative, bool drop = false)
         {
             UWavePart part = Core.Formats.Wave.CreatePart(file);
             if (part == null) return;
             part.UseRelativePath = relative;
             int trackNo = trackVM.Project.Tracks.Count;
             part.TrackNo = trackNo;
-            DocManager.Inst.StartUndoGroup();
+            if(!drop)DocManager.Inst.StartUndoGroup();
             DocManager.Inst.ExecuteCmd(new AddTrackCommand(trackVM.Project, new UTrack() { TrackNo = trackNo, Color = Colors.Transparent }));
             DocManager.Inst.ExecuteCmd(new AddPartCommand(trackVM.Project, part));
-            DocManager.Inst.EndUndoGroup();
+            if(!drop)DocManager.Inst.EndUndoGroup();
         }
 
         private void CmdExit()
@@ -803,7 +862,7 @@ namespace OpenUtau.UI
         private void trackCanvas_Drop(object sender, System.Windows.DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(System.Windows.DataFormats.FileDrop);
-            CmdOpenFile(files);
+            CmdImportFile(files);
         }
 
         private void trackCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -891,5 +950,6 @@ namespace OpenUtau.UI
                 trackVM.OffsetX = Math.Max(0, Math.Min(trackVM.TotalWidth, zoomCenter * trackVM.QuarterWidth - trackVM.ViewWidth / 2));
             }
         }
+
     }
 }

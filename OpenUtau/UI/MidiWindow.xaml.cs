@@ -389,7 +389,7 @@ namespace OpenUtau.UI
                             }
                             else
                             {
-                                if (noteHit.Vibrato.IsEnabled && MidiVM.ShowPitch)
+                                if (MidiVM.ShowPitch && noteHit.Vibrato.IsEnabled)
                                 {
                                     if (vbrResult.Success && vbrResult.Note == noteHit && vbrResult.OnPoint != VibratoHitTestResult.VibratoPart.No)
                                     {
@@ -903,7 +903,7 @@ namespace OpenUtau.UI
                         var tick = MidiVM.CanvasToSnappedTick(mousePos.X);
                         var menu = new ContextMenu();
                         var i0 = new MenuItem() { Header = "Switch Part" };
-                        foreach (var item in MidiVM.Project.Parts.Where(part=>part.PosTick <= tick && part.EndTick >= tick))
+                        foreach (var item in MidiVM.Project.Parts.OfType<UVoicePart>().Where(part=>part.PosTick <= tick && part.EndTick >= tick).OrderBy(part=>part.TrackNo))
                         {
                             var i1 = new MenuItem() { Header = $"[{item.TrackNo}]{{{item.PartNo}}} {item.Name}", Tag = item.PartNo};
                             i1.Click += SwitchPart;

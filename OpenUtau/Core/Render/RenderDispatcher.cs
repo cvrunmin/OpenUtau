@@ -216,11 +216,17 @@ namespace OpenUtau.Core.Render
         {
             WaveStream stream;
             try { stream = new AudioFileReader(part.FilePath); }
-            catch { return null; }
-            if (stream.WaveFormat.SampleRate != 44100) {
-                stream = new WaveFormatConversionStream(new WaveFormat(44100, stream.WaveFormat.BitsPerSample, stream.WaveFormat.Channels), stream);
+            catch { return new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(); }
+            ISampleProvider sample;
+            if (stream.WaveFormat.SampleRate != 44100)
+            {
+                //stream = new WaveFormatConversionStream(new WaveFormat(44100, stream.WaveFormat.BitsPerSample, stream.WaveFormat.Channels), stream);
+                sample = new WdlResamplingSampleProvider(stream.ToSampleProvider(), 44100);
             }
-            ISampleProvider sample = new WaveToSampleProvider(stream);
+            else
+            {
+                sample = stream.ToSampleProvider();
+            }
             var offseted = new UOffsetSampleProvider(sample) { SkipOver = new TimeSpan(0,0,0,0,(int)project.TickToMillisecond(part.HeadTrimTick, part.PosTick - part.HeadTrimTick)), Take = new TimeSpan(0,0,0,0,(int)project.TickToMillisecond(part.DurTick, part.PosTick))};
             return offseted;
         }
