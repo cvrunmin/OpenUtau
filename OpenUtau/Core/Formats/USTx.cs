@@ -229,16 +229,10 @@ namespace OpenUtau.Core.Formats
                     }
                     foreach (var pair in (Dictionary<string, object>)(dictionary["expression"]))
                     {
-                        var exp = serializer.ConvertToType(pair.Value, typeof(IntExpression)) as IntExpression;
-                        var _exp = new IntExpression(null, pair.Key, exp.Abbr)
-                        {
-                            Min = exp.Min,
-                            Max = exp.Max,
-                            Data = exp.Data
-                        };
+                        var exp = ResolveExpression(pair.Key, pair.Value,serializer);
                         if (!_result.Expressions.ContainsKey(pair.Key))
-                            _result.Expressions.Add(pair.Key, _exp);
-                        else _result.Expressions[pair.Key] = _exp;
+                            _result.Expressions.Add(pair.Key, exp);
+                        else _result.Expressions[pair.Key] = exp;
                     }
                 }
                 else if (dictionary.ContainsKey("path"))
@@ -350,16 +344,10 @@ namespace OpenUtau.Core.Formats
 
                 foreach (var pair in (Dictionary<string, object>)(dictionary["exptable"]))
                 {
-                    var exp = serializer.ConvertToType(pair.Value, typeof(IntExpression)) as IntExpression;
-                    var _exp = new IntExpression(null, pair.Key, exp.Abbr)
-                    {
-                        Min = exp.Min,
-                        Max = exp.Max,
-                        Data = exp.Data
-                    };
+                    var exp = ResolveExpression(pair.Key, pair.Value, serializer);
                     if (!result.ExpressionTable.ContainsKey(pair.Key))
-                        result.ExpressionTable.Add(pair.Key, _exp);
-                    else result.ExpressionTable[pair.Key] = _exp;
+                        result.ExpressionTable.Add(pair.Key, exp);
+                    else result.ExpressionTable[pair.Key] = exp;
                 }
 
                 var singers = dictionary["singers"] as ArrayList;
@@ -439,6 +427,7 @@ namespace OpenUtau.Core.Formats
                         Data = dictionary["data"],
                         Flag = Convert.ToString(dictionary["flag"])
                     };
+                    if (dictionary.ContainsKey("default")) result.Default = Convert.ToInt32(dictionary["default"]);
                     return result;
                 }
                 else if (type == typeof(IntExpression))
@@ -449,6 +438,7 @@ namespace OpenUtau.Core.Formats
                         Max = Convert.ToInt32(dictionary["max"]),
                         Data = dictionary["data"]
                     };
+                    if (dictionary.ContainsKey("default")) result.Default = Convert.ToInt32(dictionary["default"]);
                     return result;
                 }
                 else if (type == typeof(FlagFloatExpression))
@@ -460,6 +450,7 @@ namespace OpenUtau.Core.Formats
                         Data = dictionary["data"],
                         Flag = Convert.ToString(dictionary["flag"])
                     };
+                    if (dictionary.ContainsKey("default")) result.Default = (float)Convert.ToDouble(dictionary["default"]);
                     return result;
                 }
                 else if (type == typeof(FloatExpression))
@@ -470,6 +461,26 @@ namespace OpenUtau.Core.Formats
                         Max = (float)Convert.ToDouble(dictionary["max"]),
                         Data = dictionary["data"]
                     };
+                    if (dictionary.ContainsKey("default")) result.Default = (float)Convert.ToDouble(dictionary["default"]);
+                    return result;
+                }
+                else if (type == typeof(FlagBoolExpression))
+                {
+                    var result = new FlagBoolExpression(null, "", dictionary["abbr"] as string)
+                    {
+                        Data = Convert.ToBoolean(dictionary["data"]),
+                        Flag = Convert.ToString(dictionary["flag"])
+                    };
+                    if (dictionary.ContainsKey("default")) result.Default = Convert.ToBoolean(dictionary["default"]);
+                    return result;
+                }
+                else if (type == typeof(BoolExpression))
+                {
+                    var result = new BoolExpression(null, "", dictionary["abbr"] as string)
+                    {
+                        Data = Convert.ToBoolean(dictionary["data"])
+                    };
+                    if (dictionary.ContainsKey("default")) result.Default = Convert.ToBoolean(dictionary["default"]);
                     return result;
                 }
                 else if (type == typeof(UTrack))
@@ -548,6 +559,7 @@ namespace OpenUtau.Core.Formats
                     result.Add("max", _obj.Max);
                     result.Add("data", _obj.Data);
                     result.Add("flag", _obj.Flag);
+                    result.Add("default", _obj.Default);
                 }
                 else if (obj is IntExpression)
                 {
@@ -558,6 +570,7 @@ namespace OpenUtau.Core.Formats
                         result.Add("min", _obj.Min);
                         result.Add("max", _obj.Max);
                         result.Add("data", _obj.Data);
+                        result.Add("default", _obj.Default);
                     }
                 }
                 else if (obj is FlagFloatExpression)
@@ -569,6 +582,7 @@ namespace OpenUtau.Core.Formats
                     result.Add("max", _obj.Max);
                     result.Add("data", _obj.Data);
                     result.Add("flag", _obj.Flag);
+                    result.Add("default", _obj.Default);
                 }
                 else if (obj is FloatExpression)
                 {
@@ -579,6 +593,26 @@ namespace OpenUtau.Core.Formats
                         result.Add("min", _obj.Min);
                         result.Add("max", _obj.Max);
                         result.Add("data", _obj.Data);
+                        result.Add("default", _obj.Default);
+                    }
+                }
+                else if (obj is FlagBoolExpression)
+                {
+                    var _obj = obj as FlagBoolExpression;
+                    result.Add("abbr", _obj.Abbr);
+                    result.Add("type", _obj.Type);
+                    result.Add("data", _obj.Data);
+                    result.Add("flag", _obj.Flag);
+                    result.Add("default", _obj.Default);
+                }
+                else if (obj is BoolExpression)
+                {
+                    if (obj is BoolExpression _obj)
+                    {
+                        result.Add("abbr", _obj.Abbr);
+                        result.Add("type", _obj.Type);
+                        result.Add("data", _obj.Data);
+                        result.Add("default", _obj.Default);
                     }
                 }
                 return result;
@@ -592,25 +626,63 @@ namespace OpenUtau.Core.Formats
                         typeof(FloatExpression),
                         typeof(FlagIntExpression),
                         typeof(FlagFloatExpression),
+                        typeof(BoolExpression),
+                        typeof(FlagBoolExpression),
                         typeof(UTrack),
                         typeof(USinger)
                     });
                 }
             }
         }
+        private static UExpression ResolveExpression(string key, object value, JavaScriptSerializer serializer)
+        {
+            if (((IDictionary<string, object>)value).TryGetValue("type", out var re))
+            {
+                switch (Convert.ToString(re))
+                {
+                    case "int":
+                        var exp = serializer.ConvertToType<IntExpression>(value);
+                        exp = new IntExpression(exp.Parent, key, exp.Abbr) { Data = exp.Data, Default = exp.Default, Max = exp.Max, Min = exp.Min };
+                        return exp;
+                    case "flag_int":
+                        var exp1 = serializer.ConvertToType<FlagIntExpression>(value);
+                        exp1 = new FlagIntExpression(exp1.Parent, key, exp1.Abbr) { Data = exp1.Data, Default = exp1.Default, Max = exp1.Max, Min = exp1.Min };
+                        return exp1;
+                    case "float":
+                        var exp2 = serializer.ConvertToType<FloatExpression>(value);
+                        exp2 = new FloatExpression(exp2.Parent, key, exp2.Abbr) { Data = exp2.Data, Default = exp2.Default, Max = exp2.Max, Min = exp2.Min };
+                        return exp2;
+                    case "flag_float":
+                        var exp3 = serializer.ConvertToType<FlagFloatExpression>(value);
+                        exp3 = new FlagFloatExpression(exp3.Parent, key, exp3.Abbr) { Data = exp3.Data, Default = exp3.Default, Max = exp3.Max, Min = exp3.Min };
+                        return exp3;
+                    case "bool":
+                        var exp4 = serializer.ConvertToType<BoolExpression>(value);
+                        exp4 = new BoolExpression(exp4.Parent, key, exp4.Abbr) { Data = exp4.Data, Default = exp4.Default };
+                        return exp4;
+                    case "flag_bool":
+                        var exp5 = serializer.ConvertToType<BoolExpression>(value);
+                        exp5 = new BoolExpression(exp5.Parent, key, exp5.Abbr) { Data = exp5.Data, Default = exp5.Default };
+                        return exp5;
+                    default:
+                        break;
+                }
+            }
+            return null;
+        }
 
         public static UProject Create()
         {
             UProject project = new UProject() { Saved = false };
-            project.RegisterExpression(new IntExpression(null, "velocity", "VEL") { Data = 100, Min = 0, Max = 200 });
-            project.RegisterExpression(new IntExpression(null, "volume", "VOL") { Data = 100, Min = 0, Max = 200 });
-            project.RegisterExpression(new FlagIntExpression(null, "breathiness", "BRE", "Y") { Data = 0, Min = 0, Max = 100 });
-            project.RegisterExpression(new FlagIntExpression(null, "gender", "GEN", "g") { Data = 0, Min = -100, Max = 100 });
-            project.RegisterExpression(new FlagIntExpression(null, "lowpass", "LPF", "H") { Data = 0, Min = 0, Max = 100 });
-            project.RegisterExpression(new IntExpression(null, "highpass", "HPF") { Data = 0, Min = 0, Max = 100 });
-            project.RegisterExpression(new IntExpression(null, "accent", "ACC") { Data = 100, Min = 0, Max = 200 });
-            project.RegisterExpression(new IntExpression(null, "decay", "DEC") { Data = 0, Min = 0, Max = 100 });
-            project.RegisterExpression(new IntExpression(null, "release", "REL") { Data = 0, Min = 0, Max = 100 });
+            project.RegisterExpression(new IntExpression(null, "velocity", "VEL") { Data = 100, Min = 0, Max = 200, Default = 100 });
+            project.RegisterExpression(new IntExpression(null, "volume", "VOL") { Data = 100, Min = 0, Max = 200,Default = 100 });
+            project.RegisterExpression(new FlagIntExpression(null, "breathiness", "BRE", "Y") { Data = 0, Min = 0, Max = 100, Default = 100 });
+            project.RegisterExpression(new FlagIntExpression(null, "gender", "GEN", "g") { Data = 0, Min = -100, Max = 100, Default = 0 });
+            project.RegisterExpression(new FlagIntExpression(null, "lowpass", "LPF", "H") { Data = 0, Min = 0, Max = 100, Default = 0 });
+            project.RegisterExpression(new IntExpression(null, "highpass", "HPF") { Data = 0, Min = 0, Max = 100,Default = 0 });
+            project.RegisterExpression(new IntExpression(null, "accent", "ACC") { Data = 100, Min = 0, Max = 200,Default = 100 });
+            project.RegisterExpression(new IntExpression(null, "decay", "DEC") { Data = 0, Min = 0, Max = 100, Default = 0 });
+            project.RegisterExpression(new IntExpression(null, "release", "REL") { Data = 0, Min = 0, Max = 100, Default = 0 });
             return project;
         }
 

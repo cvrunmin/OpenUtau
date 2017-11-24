@@ -1,0 +1,38 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" x:Name="window" mc:Ignorable="d" x:Class="OpenUtau.UI.Dialogs.ProjectPreferencesDialog"
+    xmlns:ustx="clr-namespace:OpenUtau.Core.USTx"    
+    Title="Preferences" Height="400" Width="600" ResizeMode="NoResize">
+    <Grid>
+        <TreeView x:Name="treeView" HorizontalAlignment="Left" Margin="10" VerticalAlignment="Stretch" Width="150"
+                  SelectedItemChanged="treeView_SelectedItemChanged">
+            <TreeViewItem x:Name="generalItem" Header="{DynamicResource General}"/>
+
+            <TreeViewItem x:Name="bpmItem" Header="BPM"/>
+            <TreeViewItem x:Name="expItem" Header="Expreesion"/>
+        </TreeView>
+        <Grid x:Name="generalGrid" Margin="170,2,10,10" Visibility="Collapsed">
+            <Label Content="{DynamicResource ResourceKey=Name}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+            <TextBox x:Name="txtProjectName" HorizontalAlignment="Left" Height="23" Margin="59,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="175" Text="{Binding Project.Name, ElementName=window, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Content="{DynamicResource Comment}" HorizontalAlignment="Left" Margin="10,38,0,0" VerticalAlignment="Top"/>
+            <TextBox x:Name="txtboxComment" HorizontalAlignment="Left" Height="90" Margin="81,38,0,0" Text="{Binding Project.Comment, ElementName=window}" VerticalAlignment="Top" Width="255" AcceptsReturn="True" AutoWordSelection="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+        </Grid>
+        <Grid x:Name="bpmGrid" Margin="170,2,10,10" Visibility="Collapsed"></Grid>
+        <Grid x:Name="expGrid" Margin="170,2,10,10" Visibility="Visible">
+            <Label Content="Expressions" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+            <ListView x:Name="listExp" Margin="10,40" SelectionChanged="listExp_SelectionChanged">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Abbr" DisplayMemberBinding="{Binding Abbr}"/>
+                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" Width="100"/>
+                        <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Type}"/>
+                        <GridViewColumn Header="" DisplayMemberBinding="{Binding Other}" Width="200"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <Button x:Name="butAddExp" Content="{DynamicResource Add}" HorizontalAlignment="Left" Margin="11,324,0,0" VerticalAlignment="Top" Width="75" Click="butAddExp_Click"/>
+            <Button x:Name="butRemove" Content="{DynamicResource Remove}" HorizontalAlignment="Left" Margin="91,324,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False" Click="butRemove_Click"/>
+        </Grid>
+    </Grid>
+</Window>

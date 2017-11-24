@@ -475,6 +475,9 @@ namespace OpenUtau.UI
                     }
                 }
                 var i3 = new System.Windows.Controls.MenuItem() { Header = "Project Properties" };
+                i3.Click += (_o, _e) => {
+                    new ProjectPreferencesDialog().ShowDialog();
+                };
                 menu.Items.Add(i3);
                 menu.IsOpen = true;
                 menu.PlacementTarget = this.trackCanvas;

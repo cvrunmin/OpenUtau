@@ -33,11 +33,13 @@ namespace OpenUtau.Core.USTx
         protected int _data;
         protected int _min = 0;
         protected int _max = 100;
+        protected int _default = 0;
+        public virtual int Default { set { _default = value; } get { return _default; } }
         public virtual int Min { set { _min = value; } get { return _min; } }
         public virtual int Max { set { _max = value; } get { return _max; } }
         public override string Type { get { return "int"; } }
         public override object Data { set { _data = Math.Min(Max, Math.Max(Min, (int)value)); } get { return _data; } }
-        public override UExpression Clone(UNote newParent) { return new IntExpression(newParent, Name, Abbr) { Min = Min, Max = Max, Data = Data }; }
+        public override UExpression Clone(UNote newParent) { return new IntExpression(newParent, Name, Abbr) { Min = Min, Max = Max, Data = Data, Default = Default }; }
         public override UExpression Split(UNote newParent, int postick) { var exp = Clone(newParent); return exp; }
     }
 
@@ -57,7 +59,7 @@ namespace OpenUtau.Core.USTx
 
         public override UExpression Clone(UNote newParent)
         {
-            return new FlagIntExpression(newParent, Name, Abbr, Flag) { Min = Min, Max = Max, Data = Data};
+            return new FlagIntExpression(newParent, Name, Abbr, Flag) { Min = Min, Max = Max, Data = Data, Default = Default};
         }
 
         public override UExpression Split(UNote newParent, int postick)
@@ -72,11 +74,13 @@ namespace OpenUtau.Core.USTx
         protected float _data;
         protected float _min = 0;
         protected float _max = 100;
+        protected float _default = 0;
+        public virtual float Default { set { _default = value; } get { return _default; } }
         public virtual float Min { set { _min = value; } get { return _min; } }
         public virtual float Max { set { _max = value; } get { return _max; } }
         public override string Type { get { return "float"; } }
         public override object Data { set { _data = Math.Min(Max, Math.Max(Min, (float)value)); } get { return _data; } }
-        public override UExpression Clone(UNote newParent) { return new FloatExpression(newParent, Name, Abbr) { Min = Min, Max = Max, Data = Data }; }
+        public override UExpression Clone(UNote newParent) { return new FloatExpression(newParent, Name, Abbr) { Min = Min, Max = Max, Data = Data, Default =Default }; }
         public override UExpression Split(UNote newParent, int postick) { var exp = Clone(newParent); return exp; }
     }
 
@@ -96,7 +100,44 @@ namespace OpenUtau.Core.USTx
 
         public override UExpression Clone(UNote newParent)
         {
-            return new FlagFloatExpression(newParent, Name, Abbr, Flag) { Min = Min, Max = Max, Data = Data };
+            return new FlagFloatExpression(newParent, Name, Abbr, Flag) { Min = Min, Max = Max, Data = Data,Default = Default };
+        }
+
+        public override UExpression Split(UNote newParent, int postick)
+        {
+            return Clone(newParent);
+        }
+    }
+
+    public class BoolExpression : UExpression
+    {
+        public BoolExpression(UNote parent, string name, string abbr) : base(parent, name, abbr) { }
+        protected bool _data;
+        protected bool _default = false;
+        public virtual bool Default { set { _default = value; } get { return _default; } }
+        public override string Type => "bool";
+        public override object Data { set { _data = (bool)value; } get { return _data; } }
+        public override UExpression Clone(UNote newParent) { return new BoolExpression(newParent, Name, Abbr) { Data = Data, Default = Default }; }
+        public override UExpression Split(UNote newParent, int postick) { var exp = Clone(newParent); return exp; }
+    }
+
+    public class FlagBoolExpression : BoolExpression
+    {
+        public virtual string Flag { set; get; }
+        public FlagBoolExpression(UNote parent, string name, string abbr) : base(parent, name, abbr)
+        {
+        }
+
+        public FlagBoolExpression(UNote parent, string name, string abbr, string flag) : base(parent, name, abbr)
+        {
+            Flag = flag;
+        }
+
+        public override string Type => "flag_bool";
+
+        public override UExpression Clone(UNote newParent)
+        {
+            return new FlagBoolExpression(newParent, Name, Abbr, Flag) { Data = Data,Default = Default };
         }
 
         public override UExpression Split(UNote newParent, int postick)

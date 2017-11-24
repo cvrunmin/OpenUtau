@@ -11,7 +11,7 @@
     </UserControl.Resources>
     <Grid Background="Transparent" MouseDown="Grid_MouseDown">
         <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="1" Stroke="LightGray"/>
-        <Rectangle HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4" Width="20" Height="16">
+        <Rectangle x:Name="rectTrackColor" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4" Width="20" Height="16">
             <Rectangle.Fill>
                 <SolidColorBrush Color="{Binding Path=Color, FallbackValue=LightGray}"/>
             </Rectangle.Fill>

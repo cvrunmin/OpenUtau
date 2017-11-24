@@ -127,6 +127,7 @@ namespace OpenUtau.UI.Controls
 
         public void UpdateDisplayTrackNo() {
             txtTrackNo.GetBindingExpression(TextBlock.TextProperty).UpdateTarget();
+            rectTrackColor.Fill.InvalidateProperty(SolidColorBrush.ColorProperty);
         }
 
         ContextMenu headerMenu;

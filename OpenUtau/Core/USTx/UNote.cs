@@ -30,7 +30,8 @@ namespace OpenUtau.Core.USTx
 
         public bool IsLyricBoxActive { get; internal set; }
 
-        private UNote() {
+        private UNote()
+        {
             PitchBend = new PitchBendExpression(this);
             Vibrato = new VibratoExpression(this);
             Phonemes.Add(new UPhoneme() { Parent = this, PosTick = 0 });
@@ -38,7 +39,8 @@ namespace OpenUtau.Core.USTx
 
         public static UNote Create() { return new UNote(); }
 
-        public UNote Clone() {
+        public UNote Clone()
+        {
             UNote _note = new UNote()
             {
                 PosTick = PosTick,
@@ -56,27 +58,42 @@ namespace OpenUtau.Core.USTx
             return _note;
         }
 
-        public string GetResamplerFlags() {
+        public string GetResamplerFlags()
+        {
             StringBuilder flags = new StringBuilder();
             foreach (var item in Expressions)
             {
-                switch (item.Key)
+                if (item.Value is FlagIntExpression fi && fi.Default != (int)fi.Data) {
+                    flags.Append(fi.Flag).Append(((int)fi.Data).ToString("+###;-###"));
+                }
+                else if (item.Value is FlagFloatExpression ff && ff.Default != (float)ff.Data)
                 {
-                    case "gender":
-                        if (((int)item.Value.Data) != 0)
-                            flags.Append("g").Append(((int)item.Value.Data).ToString("+###;-###"));
-                        break;
-                    case "breathiness":
-                        if (((int)item.Value.Data) != 100)
-                            flags.Append("Y").Append((int)item.Value.Data);
-                        break;
-                    case "lowpass":
-                        if (((int)item.Value.Data) != 0)
-                            flags.Append("H").Append((int)item.Value.Data);
-                        break;
-                    case "highpass":
-                    default:
-                        break;
+                    flags.Append(ff.Flag).Append(((float)ff.Data).ToString("+###.#####;-###.#####"));
+                }
+                else if (item.Value is FlagBoolExpression fb && fb.Default != (bool)fb.Data)
+                {
+                    flags.Append(fb.Flag);
+                }
+                else
+                {
+                    switch (item.Key)
+                    {
+                        case "gender":
+                            if (((int)item.Value.Data) != 0)
+                                flags.Append("g").Append(((int)item.Value.Data).ToString("+###;-###"));
+                            break;
+                        case "breathiness":
+                            if (((int)item.Value.Data) != 100)
+                                flags.Append("Y").Append((int)item.Value.Data);
+                            break;
+                        case "lowpass":
+                            if (((int)item.Value.Data) != 0)
+                                flags.Append("H").Append((int)item.Value.Data);
+                            break;
+                        case "highpass":
+                        default:
+                            break;
+                    }
                 }
             }
             var flag = flags.ToString();
@@ -111,15 +128,18 @@ namespace OpenUtau.Core.USTx
         }
     }
 
-    public class UDictionaryNote {
+    public class UDictionaryNote
+    {
         public SortedList<int, UNote> Notes { get; private set; }
         public Dictionary<int, ExpressionProcessing> NotesProcessing { get; private set; }
-        public UDictionaryNote() {
+        public UDictionaryNote()
+        {
             Notes = new SortedList<int, UNote>();
             NotesProcessing = new Dictionary<int, ExpressionProcessing>();
         }
 
-        public UDictionaryNote Clone() {
+        public UDictionaryNote Clone()
+        {
             var a = new UDictionaryNote();
             foreach (var note in Notes)
             {
@@ -132,7 +152,8 @@ namespace OpenUtau.Core.USTx
             return a;
         }
 
-        public static void ApplyPreset(UNote applyee, UDictionaryNote preset) {
+        public static void ApplyPreset(UNote applyee, UDictionaryNote preset)
+        {
             int totallen = preset.Notes.Sum(pair => pair.Value.DurTick);
             int pos = 0;
             applyee.Phonemes.Clear();
@@ -150,7 +171,8 @@ namespace OpenUtau.Core.USTx
             applyee.ApplyingPreset = true;
         }
 
-        public bool MatchNotes(List<UNote> notes) {
+        public bool MatchNotes(List<UNote> notes)
+        {
             return Notes.Values.SequenceEqual(notes, new LyricsComparer());
         }
 

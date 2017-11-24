@@ -259,6 +259,9 @@
     <Compile Include="UI\Dialogs\SingerCVTableDialog.xaml.cs">
       <DependentUpon>SingerCVTableDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Dialogs\ProjectPreferencesDialog.xaml.cs">
+      <DependentUpon>ProjectPreferencesDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Dialogs\TrackPreferencesDialog.xaml.cs">
       <DependentUpon>TrackPreferencesDialog.xaml</DependentUpon>
     </Compile>
@@ -335,6 +338,10 @@
     <Page Include="UI\Dialogs\SingerCVTableDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\Dialogs\ProjectPreferencesDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Dialogs\TrackPreferencesDialog.xaml">
       <Generator>MSBuild:Compile</Generator>

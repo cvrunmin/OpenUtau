@@ -13,7 +13,7 @@
                 <TreeViewItem x:Name="renderingItem" Header="{DynamicResource Rendering}" Margin="-12,0,0,0"/>
             </TreeViewItem>
         </TreeView>
-        <Grid x:Name="generalGrid" Margin="170,2,10,10" Visibility="Visible">
+        <Grid x:Name="generalGrid" Margin="170,2,10,10" Visibility="Collapsed">
             <Label Content="{DynamicResource ResourceKey=Name}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
             <TextBox x:Name="txtTrackName" HorizontalAlignment="Left" Height="23" Margin="59,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="175" Text="{Binding Track.Name, ElementName=window, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
             <Label Content="{DynamicResource Singer}" HorizontalAlignment="Left" Margin="10,57,0,0" VerticalAlignment="Top"/>
