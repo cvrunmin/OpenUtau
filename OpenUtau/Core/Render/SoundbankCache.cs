@@ -47,7 +47,7 @@ namespace OpenUtau.Core.Render
 
         public static string GetSoundCachePath(string file, USinger singer)
         {
-            if (singer == null || !singer.Loaded || !File.Exists(file)) return file;
+            if (singer == null || !singer.Loaded || !File.Exists(file) || !SoundMap.ContainsKey(file)) return file;
             if (!SingerMap.ContainsKey(singer.Path)) MakeSingerCache(singer);
             string root = Path.Combine(CachePath, SingerMap[singer.Path]);
             string enname = SoundMap[file];

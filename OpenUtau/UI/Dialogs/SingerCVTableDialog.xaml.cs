@@ -56,5 +56,10 @@ namespace OpenUtau.UI.Dialogs
             }
             dataGridCV.DataContext = table.DefaultView;
         }
+
+        private void dataGridCV_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e)
+        {
+
+        }
     }
 }
