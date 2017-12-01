@@ -25,8 +25,9 @@ namespace OpenUtau.UI.Dialogs
         {
             InitializeComponent();
         }
-
+        USinger Singer;
         public void LoadSinger(USinger singer) {
+            Singer = singer;
             DataTable table = new DataTable();
             table.Columns.Add(new DataColumn() { Caption = "Vowels", ColumnName = "Vowels" });
             table.Columns.Add(new DataColumn() { Caption = "-", ColumnName = "-" });
@@ -59,7 +60,26 @@ namespace OpenUtau.UI.Dialogs
 
         private void dataGridCV_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e)
         {
+            if (e.EditAction == DataGridEditAction.Commit)
+            {
 
+            }
+        }
+
+        private void dataGridCV_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            if (e.EditAction == DataGridEditAction.Commit)
+            {
+                DataRow row = ((DataRowView)e.Row.Item).Row;
+                if (row.Table.Rows.IndexOf(row) > 0)
+                {
+                    var post = ((TextBox)e.EditingElement).Text;
+                    var pre = row.Field<string>(e.Column.Header as string);
+                    if (row.Table.Columns.IndexOf(e.Column.Header as string) == 0) {
+                        
+                    }
+                }
+            }
         }
     }
 }

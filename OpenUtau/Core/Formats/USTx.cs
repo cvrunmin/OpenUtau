@@ -424,7 +424,7 @@ namespace OpenUtau.Core.Formats
                     {
                         Min = Convert.ToInt32(dictionary["min"]),
                         Max = Convert.ToInt32(dictionary["max"]),
-                        Data = dictionary["data"],
+                        Data = Convert.ToInt32(dictionary["data"]),
                         Flag = Convert.ToString(dictionary["flag"])
                     };
                     if (dictionary.ContainsKey("default")) result.Default = Convert.ToInt32(dictionary["default"]);
@@ -436,7 +436,7 @@ namespace OpenUtau.Core.Formats
                     {
                         Min = Convert.ToInt32(dictionary["min"]),
                         Max = Convert.ToInt32(dictionary["max"]),
-                        Data = dictionary["data"]
+                        Data = Convert.ToInt32(dictionary["data"])
                     };
                     if (dictionary.ContainsKey("default")) result.Default = Convert.ToInt32(dictionary["default"]);
                     return result;
@@ -447,7 +447,7 @@ namespace OpenUtau.Core.Formats
                     {
                         Min = (float)Convert.ToDouble(dictionary["min"]),
                         Max = (float)Convert.ToDouble(dictionary["max"]),
-                        Data = dictionary["data"],
+                        Data = (float)Convert.ToDouble(dictionary["data"]),
                         Flag = Convert.ToString(dictionary["flag"])
                     };
                     if (dictionary.ContainsKey("default")) result.Default = (float)Convert.ToDouble(dictionary["default"]);
@@ -459,7 +459,7 @@ namespace OpenUtau.Core.Formats
                     {
                         Min = (float)Convert.ToDouble(dictionary["min"]),
                         Max = (float)Convert.ToDouble(dictionary["max"]),
-                        Data = dictionary["data"]
+                        Data = (float)Convert.ToDouble(dictionary["data"])
                     };
                     if (dictionary.ContainsKey("default")) result.Default = (float)Convert.ToDouble(dictionary["default"]);
                     return result;
@@ -642,28 +642,22 @@ namespace OpenUtau.Core.Formats
                 {
                     case "int":
                         var exp = serializer.ConvertToType<IntExpression>(value);
-                        exp = new IntExpression(exp.Parent, key, exp.Abbr) { Data = exp.Data, Default = exp.Default, Max = exp.Max, Min = exp.Min };
-                        return exp;
+                        return new IntExpression(exp.Parent, key, exp.Abbr) { Max = exp.Max, Min = exp.Min, Data = (int)exp.Data, Default = exp.Default };
                     case "flag_int":
                         var exp1 = serializer.ConvertToType<FlagIntExpression>(value);
-                        exp1 = new FlagIntExpression(exp1.Parent, key, exp1.Abbr) { Data = exp1.Data, Default = exp1.Default, Max = exp1.Max, Min = exp1.Min };
-                        return exp1;
+                        return new FlagIntExpression(exp1.Parent, key, exp1.Abbr, exp1.Flag) { Max = exp1.Max, Min = exp1.Min,Data = (int)exp1.Data, Default = exp1.Default };
                     case "float":
                         var exp2 = serializer.ConvertToType<FloatExpression>(value);
-                        exp2 = new FloatExpression(exp2.Parent, key, exp2.Abbr) { Data = exp2.Data, Default = exp2.Default, Max = exp2.Max, Min = exp2.Min };
-                        return exp2;
+                        return new FloatExpression(exp2.Parent, key, exp2.Abbr) { Max = exp2.Max, Min = exp2.Min,Data = (float)exp2.Data, Default = exp2.Default };
                     case "flag_float":
                         var exp3 = serializer.ConvertToType<FlagFloatExpression>(value);
-                        exp3 = new FlagFloatExpression(exp3.Parent, key, exp3.Abbr) { Data = exp3.Data, Default = exp3.Default, Max = exp3.Max, Min = exp3.Min };
-                        return exp3;
+                        return new FlagFloatExpression(exp3.Parent, key, exp3.Abbr, exp3.Flag) { Max = exp3.Max, Min = exp3.Min, Data = (float)exp3.Data, Default = exp3.Default, };
                     case "bool":
                         var exp4 = serializer.ConvertToType<BoolExpression>(value);
-                        exp4 = new BoolExpression(exp4.Parent, key, exp4.Abbr) { Data = exp4.Data, Default = exp4.Default };
-                        return exp4;
+                        return new BoolExpression(exp4.Parent, key, exp4.Abbr) { Data = (bool)exp4.Data, Default = exp4.Default };
                     case "flag_bool":
-                        var exp5 = serializer.ConvertToType<BoolExpression>(value);
-                        exp5 = new BoolExpression(exp5.Parent, key, exp5.Abbr) { Data = exp5.Data, Default = exp5.Default };
-                        return exp5;
+                        var exp5 = serializer.ConvertToType<FlagBoolExpression>(value);
+                        return new FlagBoolExpression(exp5.Parent, key, exp5.Abbr, exp5.Flag) { Data = (bool)exp5.Data, Default = exp5.Default };
                     default:
                         break;
                 }
@@ -683,6 +677,15 @@ namespace OpenUtau.Core.Formats
             project.RegisterExpression(new IntExpression(null, "accent", "ACC") { Data = 100, Min = 0, Max = 200,Default = 100 });
             project.RegisterExpression(new IntExpression(null, "decay", "DEC") { Data = 0, Min = 0, Max = 100, Default = 0 });
             project.RegisterExpression(new IntExpression(null, "release", "REL") { Data = 0, Min = 0, Max = 100, Default = 0 });
+           /*
+            * Standard Flag
+            project.RegisterExpression(new FlagIntExpression(null, "peak compress", "PKC", "P") { Min = 0, Max = 100, Data = 0, Default = 86 });
+            project.RegisterExpression(new FlagIntExpression(null, "amplitude modulation", "AMD", "A") { Min = -100, Max = 100, Data = 0, Default = 0 });
+            project.RegisterExpression(new FlagIntExpression(null, "unvoiced gain", "UCG", "b") { Data = 0, Min = -20, Max = 100, Default = 0 });
+            project.RegisterExpression(new FlagBoolExpression(null, "stretching", "STR", "e") { Data = false, Default = false });
+            project.RegisterExpression(new FlagBoolExpression(null, "direct", "DIR", "u") { Data = false, Default = false });
+            */
+            project.RegisterExpression(new FlagBoolExpression(null, "looping", "LOP", "Me") { Data = false, Default = false });
             return project;
         }
 
@@ -775,7 +778,20 @@ namespace OpenUtau.Core.Formats
                     {
                         foreach (var note in _part.Notes)
                         {
-                            note.VirtualExpressions[item.Key] = (int)note.Expressions[item.Key].Data - (int)item.Value.Data;
+                            switch (item.Value.Type.Replace("flag_", ""))
+                            {
+                                case "int":
+                                    note.VirtualExpressions[item.Key] = new IntExpression.UExpDiff() { Data = (int)note.Expressions[item.Key].Data - (int)item.Value.Data };
+                                    break;
+                                case "float":
+                                    note.VirtualExpressions[item.Key] = new FloatExpression.UExpDiff() { Data = (float)note.Expressions[item.Key].Data - (float)item.Value.Data };
+                                    break;
+                                case "bool":
+                                    note.VirtualExpressions[item.Key] = new BoolExpression.UExpDiff() { Data = (bool)note.Expressions[item.Key].Data != (bool)item.Value.Data};
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                     }
                 }

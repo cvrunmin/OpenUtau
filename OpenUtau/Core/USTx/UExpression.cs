@@ -25,6 +25,11 @@ namespace OpenUtau.Core.USTx
 
         public abstract UExpression Clone(UNote newParent);
         public abstract UExpression Split(UNote newParent, int offset);
+
+        public abstract class UExpDiff {
+            public abstract string Type { get; }
+            public abstract object Data { get; set; }
+        }
     }
 
     public class IntExpression : UExpression
@@ -41,6 +46,14 @@ namespace OpenUtau.Core.USTx
         public override object Data { set { _data = Math.Min(Max, Math.Max(Min, (int)value)); } get { return _data; } }
         public override UExpression Clone(UNote newParent) { return new IntExpression(newParent, Name, Abbr) { Min = Min, Max = Max, Data = Data, Default = Default }; }
         public override UExpression Split(UNote newParent, int postick) { var exp = Clone(newParent); return exp; }
+        public new class UExpDiff : UExpression.UExpDiff
+        {
+            public override string Type => "int";
+
+            protected int _data;
+
+            public override object Data { get => _data; set => _data = (int)value; }
+        }
     }
 
     public class FlagIntExpression : IntExpression
@@ -82,6 +95,15 @@ namespace OpenUtau.Core.USTx
         public override object Data { set { _data = Math.Min(Max, Math.Max(Min, (float)value)); } get { return _data; } }
         public override UExpression Clone(UNote newParent) { return new FloatExpression(newParent, Name, Abbr) { Min = Min, Max = Max, Data = Data, Default =Default }; }
         public override UExpression Split(UNote newParent, int postick) { var exp = Clone(newParent); return exp; }
+
+        public new class UExpDiff : UExpression.UExpDiff
+        {
+            public override string Type => "float";
+
+            protected float _data;
+
+            public override object Data { get => _data; set => _data = (float)value; }
+        }
     }
 
     public class FlagFloatExpression : FloatExpression
@@ -119,6 +141,15 @@ namespace OpenUtau.Core.USTx
         public override object Data { set { _data = (bool)value; } get { return _data; } }
         public override UExpression Clone(UNote newParent) { return new BoolExpression(newParent, Name, Abbr) { Data = Data, Default = Default }; }
         public override UExpression Split(UNote newParent, int postick) { var exp = Clone(newParent); return exp; }
+
+        public new class UExpDiff : UExpression.UExpDiff
+        {
+            public override string Type => "bool";
+
+            protected bool _data;
+
+            public override object Data { get => _data; set => _data = (bool)value; }
+        }
     }
 
     public class FlagBoolExpression : BoolExpression
@@ -289,7 +320,10 @@ namespace OpenUtau.Core.USTx
                 IsEnabled = IsEnabled
             };
         }
-        public override UExpression Split(UNote newParent, int postick) { var exp = Clone(newParent); return exp; }
+        public override UExpression Split(UNote newParent, int postick) {
+            var exp = Clone(newParent);
+            return exp;
+        }
         public bool IsEnabled { get; private set; }
         public void Disable()
         {

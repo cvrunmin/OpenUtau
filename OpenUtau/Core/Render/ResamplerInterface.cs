@@ -226,6 +226,7 @@ namespace OpenUtau.Core.Render
             double requiredLength = Math.Ceiling(length / 50 + 1) * 50;
             double lengthAdjustment = phoneme.TailIntrude == 0 ? phoneme.Preutter : phoneme.Preutter - phoneme.TailIntrude + phoneme.TailOverlap;
 
+            double tempo = project.SubBPM.FirstOrDefault(pair => part.PosTick >= pair.Key).Value;
             RenderItem item = new RenderItem()
             {
                 Error = err,
@@ -238,11 +239,11 @@ namespace OpenUtau.Core.Render
                 PitchData = BuildPitchData(phoneme, part, project),
                 RequiredLength = (int)requiredLength,
                 Oto = phoneme.Oto,
-                Tempo = project.BPM,
+                Tempo = /*tempo == 0 ? */project.BPM/* : tempo*/,
 
                 // For connector
                 SkipOver = (phoneme.Oto?.Preutter).GetValueOrDefault() * strechRatio - phoneme.Preutter,
-                PosMs = project.TickToMillisecond(part.PosTick + phoneme.Parent.PosTick + phoneme.PosTick) - phoneme.Preutter,
+                PosMs = project.TickToMillisecond(phoneme.Parent.PosTick + phoneme.PosTick, part.PosTick) - phoneme.Preutter,
                 DurMs = project.TickToMillisecond(phoneme.DurTick, part.PosTick + phoneme.Parent.PosTick + phoneme.PosTick) + lengthAdjustment,
                 Envelope = phoneme.Envelope.Points
             };

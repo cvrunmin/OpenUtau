@@ -127,10 +127,10 @@ namespace OpenUtau.UI.Models
 
         # endregion
         public bool AnyNotesEditing { get; set; }
-        Dictionary<string, FloatExpElement> expElements = new Dictionary<string, FloatExpElement>();
+        Dictionary<string, ExpElement> expElements = new Dictionary<string, ExpElement>();
         public NotesElement notesElement;
         public PhonemesElement phonemesElement;
-        public FloatExpElement visibleExpElement, shadowExpElement;
+        public ExpElement visibleExpElement, shadowExpElement;
 
         public MidiViewModel() { }
 
@@ -382,10 +382,11 @@ namespace OpenUtau.UI.Models
             if (toggle) {
                 notesElement = new ViewOnlyNotesElement() { Key = "pitchbend", Part = ViewingPart, midiVM = this};
                 phonemesElement = new ViewOnlyPhonemesElement() { Part = ViewingPart, midiVM = this };
-                foreach (var exp in new Dictionary<string, FloatExpElement>(expElements))
+                foreach (var exp in new Dictionary<string, ExpElement>(expElements))
                 {
                     ExpCanvas.Children.Remove(exp.Value);
-                    expElements[exp.Key] = new ViewOnlyFloatExpElement() { Key = exp.Value.Key, Part = ViewingPart, midiVM = this, DisplayMode = exp.Value.DisplayMode + 1 };
+                    if (expElements[exp.Key] is FloatExpElement) expElements[exp.Key] = new ViewOnlyFloatExpElement() { Key = exp.Value.Key, Part = ViewingPart, midiVM = this, DisplayMode = exp.Value.DisplayMode + 1 };
+                    else if (expElements[exp.Key] is BoolExpElement) expElements[exp.Key] = new ViewOnlyBoolExpElement() { Key = exp.Value.Key, Part = ViewingPart, midiVM = this, DisplayMode = exp.Value.DisplayMode + 1 };
                     expElements[exp.Key].DisplayMode = exp.Value.DisplayMode;
                     ExpCanvas.Children.Add(expElements[exp.Key]);
                     if (exp.Value.DisplayMode == ExpDisMode.Shadow) shadowExpElement = expElements[exp.Key];
@@ -399,10 +400,11 @@ namespace OpenUtau.UI.Models
                 if (ViewingPart != Part) _part = ViewingPart;
                 notesElement = new NotesElement() { Key = "pitchbend", Part = Part, midiVM = this };
                 phonemesElement = new PhonemesElement() { Part = Part, midiVM = this };
-                foreach (var exp in new Dictionary<string, FloatExpElement>(expElements))
+                foreach (var exp in new Dictionary<string, ExpElement>(expElements))
                 {
                     ExpCanvas.Children.Remove(exp.Value);
-                    expElements[exp.Key] = new FloatExpElement() { Key = exp.Value.Key, Part = Part, midiVM = this, DisplayMode = exp.Value.DisplayMode + 1 };
+                    if (expElements[exp.Key] is FloatExpElement) expElements[exp.Key] = new FloatExpElement() { Key = exp.Value.Key, Part = Part, midiVM = this, DisplayMode = exp.Value.DisplayMode + 1 };
+                    if (expElements[exp.Key] is BoolExpElement) expElements[exp.Key] = new BoolExpElement() { Key = exp.Value.Key, Part = Part, midiVM = this, DisplayMode = exp.Value.DisplayMode + 1 };
                     expElements[exp.Key].DisplayMode = exp.Value.DisplayMode;
                     ExpCanvas.Children.Add(expElements[exp.Key]);
                     if (exp.Value.DisplayMode == ExpDisMode.Shadow) shadowExpElement = expElements[exp.Key];
@@ -439,7 +441,11 @@ namespace OpenUtau.UI.Models
             var _cmd = cmd as SelectExpressionNotification;
             if (!expElements.ContainsKey(_cmd.ExpKey))
             {
-                var expEl = new FloatExpElement() { Key = _cmd.ExpKey, Part = this.Part, midiVM = this };
+                ExpElement expEl = new ExpElement();
+                if (Part.Expressions[_cmd.ExpKey] is IntExpression || Part.Expressions[_cmd.ExpKey] is FloatExpression)
+                    expEl = new FloatExpElement() { Key = _cmd.ExpKey, Part = this.Part, midiVM = this };
+                else if (Part.Expressions[_cmd.ExpKey] is BoolExpression)
+                    expEl = new BoolExpElement() { Key = _cmd.ExpKey, Part = this.Part, midiVM = this };
                 expElements.Add(_cmd.ExpKey, expEl);
                 ExpCanvas.Children.Add(expEl);
             }
@@ -522,7 +528,7 @@ namespace OpenUtau.UI.Models
             else if (cmd is ExpCommand)
             {
                 var _cmd = cmd as ExpCommand;
-                if (_cmd is SetIntExpCommand || _cmd is GlobelSetIntExpCommand) expElements[_cmd.Key].MarkUpdate();
+                if (_cmd is SetFloatExpCommand || _cmd is GlobelSetFloatExpCommand || _cmd is SetIntExpCommand || _cmd is GlobelSetIntExpCommand || _cmd is SetBoolExpCommand || _cmd is GlobelSetBoolExpCommand) expElements[_cmd.Key].MarkUpdate();
                 else if (_cmd is PitchExpCommand) OnPitchModified();
             }
             else if (cmd is UNotification)

@@ -14,10 +14,37 @@ namespace OpenUtau.Core
 
         public static string GetNoteString(int noteNum, bool isFlatStyle = false) { return noteNum < 0 ? "" : (isFlatStyle ? noteStringsFlatStyle[(noteNum) % 12] : noteStringsSharpStyle[(noteNum) % 12]) + (noteNum / 12 - 1).ToString(); }
 
-        public static int[] BlackNoteNums = { 1, 3, 5, 8, 10 };
-        public static bool IsBlackKey(int noteNum) { return BlackNoteNums.Contains((noteNum) % 12); }
+        public static int[] MajorBlackNoteNums = { 1, 3, 6, 8, 10 };
+        public static int[] MinorBlackNoteNums = { 1, 4, 6, 9, 11 };
 
-        public static bool IsCenterKey(int noteNum) { return (noteNum + 1) % 12 == 0; }
+        public static int ScaleKeyToNoteNum(string key)
+        {
+            key = key.Replace('m', '\0');
+            var offset = noteStringsSharpStyle.ToList().IndexOf(key);
+            if (offset == -1) offset = noteStringsFlatStyle.ToList().IndexOf(key);
+            return offset;
+        }
+
+        public static bool IsBlackKey(int noteNum, string key = "C", bool minor = false)
+        {
+            var offset = ScaleKeyToNoteNum(key);
+            if (offset == -1) return false;
+            if (minor)
+            {
+                return MinorBlackNoteNums.Contains((noteNum + offset) % 12);
+            }
+            else
+            {
+                return MajorBlackNoteNums.Contains((noteNum + offset) % 12);
+            }
+        }
+
+        public static bool IsCenterKey(int noteNum, string key = "C")
+        {
+            var offset = ScaleKeyToNoteNum(key);
+            if (offset == -1) return false;
+            return (noteNum + offset) % 12 == 0;
+        }
 
         public static double[] zoomRatios = { 4.0, 2.0, 1.0, 1.0 / 2, 1.0 / 4, 1.0 / 8, 1.0 / 16, 1.0 / 32, 1.0 / 64 };
 

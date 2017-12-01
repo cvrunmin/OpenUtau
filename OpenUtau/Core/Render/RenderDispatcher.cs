@@ -120,7 +120,7 @@ namespace OpenUtau.Core.Render
 
                                         if (!task.IsCanceled && !task.Result.IsFaulted && !task.Result.IsCanceled && !task.Result.IsFaulted && task.Result.Result != null) {
                                             var s = task.Result.Result;
-                                            trackMixing.AddInputStream(new UWaveOffsetStream(s, TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick) - project.TickToMillisecond(480, part.PosTick) * part.PosTick / project.Resolution), TimeSpan.Zero, s.TotalTime));
+                                            trackMixing.AddInputStream(new UWaveOffsetStream(s, TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)/* - project.TickToMillisecond(480, part.PosTick) * part.PosTick / project.Resolution*/), TimeSpan.Zero, s.TotalTime));
                                         }
 
                                         }

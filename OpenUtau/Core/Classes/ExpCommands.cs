@@ -37,19 +37,77 @@ namespace OpenUtau.Core
             this.NewValue = newValue;
             this.OldValue = (int)Note.Expressions[Key].Data;
             this.NewOffsetValue = NewValue - (int)Part.Expressions[Key].Data;
-            this.OldOffsetValue = Note.VirtualExpressions[Key];
+            this.OldOffsetValue = (int)Note.VirtualExpressions[Key].Data;
         }
-        public override string ToString() { return "Set note expression " + Key; }
+        public override string ToString() { return $"Set note expression {Key} value: {NewValue}"; }
         public override void Execute()
         {
             Note.Expressions[Key].Data = NewValue;
-            Note.VirtualExpressions[Key] = NewOffsetValue;
+            Note.VirtualExpressions[Key].Data = NewOffsetValue;
             base.Execute();
         }
         public override void Unexecute()
         {
             Note.Expressions[Key].Data = OldValue;
-            Note.VirtualExpressions[Key] = OldOffsetValue;
+            Note.VirtualExpressions[Key].Data = OldOffsetValue;
+            base.Unexecute();
+        }
+    }
+
+    public class SetFloatExpCommand : ExpCommand
+    {
+        public float NewValue, OldValue;
+        public float NewOffsetValue, OldOffsetValue;
+        public SetFloatExpCommand(UVoicePart part, UNote note, string key, float newValue)
+        {
+            this.Part = part;
+            this.Note = note;
+            this.Key = key;
+            this.NewValue = newValue;
+            this.OldValue = (float)Note.Expressions[Key].Data;
+            this.NewOffsetValue = NewValue - (float)Part.Expressions[Key].Data;
+            this.OldOffsetValue = (float)Note.VirtualExpressions[Key].Data;
+        }
+        public override string ToString() { return $"Set note expression {Key} value: {NewValue}"; }
+        public override void Execute()
+        {
+            Note.Expressions[Key].Data = NewValue;
+            Note.VirtualExpressions[Key].Data = NewOffsetValue;
+            base.Execute();
+        }
+        public override void Unexecute()
+        {
+            Note.Expressions[Key].Data = OldValue;
+            Note.VirtualExpressions[Key].Data = OldOffsetValue;
+            base.Unexecute();
+        }
+    }
+
+    public class SetBoolExpCommand : ExpCommand
+    {
+        public bool NewValue, OldValue;
+        public bool NewOffsetValue, OldOffsetValue;
+        public SetBoolExpCommand(UVoicePart part, UNote note, string key, bool newValue)
+        {
+            this.Part = part;
+            this.Note = note;
+            this.Key = key;
+            this.NewValue = newValue;
+            this.OldValue = (bool)Note.Expressions[Key].Data;
+            this.NewOffsetValue = NewValue != (bool)Part.Expressions[Key].Data;
+            this.OldOffsetValue = (bool)Note.VirtualExpressions[Key].Data;
+        }
+        public override string ToString() { return $"Set note expression {Key} value: {NewValue}"; }
+        public override void Execute()
+        {
+            Note.Expressions[Key].Data = NewValue;
+            Note.VirtualExpressions[Key].Data = NewOffsetValue;
+            base.Execute();
+        }
+        public override void Unexecute()
+        {
+            Note.Expressions[Key].Data = OldValue;
+            Note.VirtualExpressions[Key].Data = OldOffsetValue;
             base.Unexecute();
         }
     }
@@ -67,7 +125,8 @@ namespace OpenUtau.Core
             LinkedListNode<int> before = null;
             foreach (var note in part.Notes)
             {
-                if (before == null) {
+                if (before == null)
+                {
                     before = OldValues.AddFirst((int)note.Expressions[Key].Data);
                 }
                 else
@@ -76,12 +135,105 @@ namespace OpenUtau.Core
                 }
             }
         }
-        public override string ToString() { return "Set all notes expression " + Key; }
-        public override void Execute() {
+        public override string ToString() { return $"Set all notes expression {Key} value: {NewValue}"; }
+        public override void Execute()
+        {
             Part.Expressions[Key].Data = NewValue;
             foreach (var note in Part.Notes)
             {
-                note.Expressions[Key].Data = NewValue + note.VirtualExpressions[Key];
+                note.Expressions[Key].Data = NewValue + (int)note.VirtualExpressions[Key].Data;
+            }
+            base.Execute();
+        }
+        public override void Unexecute()
+        {
+            Part.Expressions[Key].Data = OldValue;
+            int i = 0;
+            foreach (var note in Part.Notes)
+            {
+                note.Expressions[Key].Data = OldValues.ElementAt(i);
+                i++;
+            }
+            base.Unexecute();
+        }
+    }
+
+    public class GlobelSetFloatExpCommand : ExpCommand
+    {
+        public float NewValue, OldValue;
+        public LinkedList<float> OldValues = new LinkedList<float>();
+        public GlobelSetFloatExpCommand(UVoicePart part, string key, float newValue)
+        {
+            this.Part = part;
+            this.Key = key;
+            this.NewValue = newValue;
+            OldValue = (float)part.Expressions[key].Data;
+            LinkedListNode<float> before = null;
+            foreach (var note in part.Notes)
+            {
+                if (before == null)
+                {
+                    before = OldValues.AddFirst((float)note.Expressions[Key].Data);
+                }
+                else
+                {
+                    before = OldValues.AddAfter(before, (float)note.Expressions[Key].Data);
+                }
+            }
+        }
+        public override string ToString() { return $"Set all notes expression {Key} value: {NewValue}"; }
+        public override void Execute()
+        {
+            Part.Expressions[Key].Data = NewValue;
+            foreach (var note in Part.Notes)
+            {
+                note.Expressions[Key].Data = NewValue + (float)note.VirtualExpressions[Key].Data;
+            }
+            base.Execute();
+        }
+        public override void Unexecute()
+        {
+            Part.Expressions[Key].Data = OldValue;
+            int i = 0;
+            foreach (var note in Part.Notes)
+            {
+                note.Expressions[Key].Data = OldValues.ElementAt(i);
+                i++;
+            }
+            base.Unexecute();
+        }
+    }
+
+    public class GlobelSetBoolExpCommand : ExpCommand
+    {
+        public bool NewValue, OldValue;
+        public LinkedList<bool> OldValues = new LinkedList<bool>();
+        public GlobelSetBoolExpCommand(UVoicePart part, string key, bool newValue)
+        {
+            this.Part = part;
+            this.Key = key;
+            this.NewValue = newValue;
+            OldValue = (bool)part.Expressions[key].Data;
+            LinkedListNode<bool> before = null;
+            foreach (var note in part.Notes)
+            {
+                if (before == null)
+                {
+                    before = OldValues.AddFirst((bool)note.Expressions[Key].Data);
+                }
+                else
+                {
+                    before = OldValues.AddAfter(before, (bool)note.Expressions[Key].Data);
+                }
+            }
+        }
+        public override string ToString() { return $"Set all notes expression {Key} value: {NewValue}"; }
+        public override void Execute()
+        {
+            Part.Expressions[Key].Data = NewValue;
+            foreach (var note in Part.Notes)
+            {
+                note.Expressions[Key].Data = NewValue != (bool)note.VirtualExpressions[Key].Data;
             }
             base.Execute();
         }

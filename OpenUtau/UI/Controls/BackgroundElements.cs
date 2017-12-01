@@ -82,7 +82,7 @@ namespace OpenUtau.UI.Controls
             while (top < _size.Height)
             {
                 drawingContext.DrawRectangle(
-                    MusicMath.IsBlackKey(alt) ? ThemeManager.TrackBackgroundBrushAlt : ThemeManager.TrackBackgroundBrush,
+                    MusicMath.IsBlackKey(11 - alt) ? ThemeManager.TrackBackgroundBrushAlt : ThemeManager.TrackBackgroundBrush,
                     null,
                     new Rect(0, (int)top, _size.Width, TrackHeight));
                 top += TrackHeight;
@@ -97,31 +97,33 @@ namespace OpenUtau.UI.Controls
         {
             int firstTrack = (int)(OffsetY / TrackHeight);
             int alt = firstTrack;
+            int aalt = UIConstants.MaxNoteNum - alt - 1;
             double top = TrackHeight * firstTrack - OffsetY;
 
             while (top < _size.Height)
             {
                 drawingContext.DrawRectangle(
-                    MusicMath.IsBlackKey(alt) ? ThemeManager.BlackKeyBrushNormal : 
-                    MusicMath.IsCenterKey(alt) ? ThemeManager.CenterKeyBrushNormal : ThemeManager.WhiteKeyBrushNormal,
+                    MusicMath.IsBlackKey(aalt) ? ThemeManager.BlackKeyBrushNormal : 
+                    MusicMath.IsCenterKey(aalt) ? ThemeManager.CenterKeyBrushNormal : ThemeManager.WhiteKeyBrushNormal,
                     null,
                     new Rect(0, (int)top, _size.Width, TrackHeight));
 
                 if (TrackHeight >= 12)
                 {
                     FormattedText text = new FormattedText(
-                        MusicMath.GetNoteString(UIConstants.MaxNoteNum - alt - 1),
+                        MusicMath.GetNoteString(aalt),
                         System.Threading.Thread.CurrentThread.CurrentUICulture,
                         FlowDirection.LeftToRight,
                         SystemFonts.CaptionFontFamily.GetTypefaces().First(),
                         12,
-                        MusicMath.IsBlackKey(alt) ? ThemeManager.BlackKeyNameBrushNormal :
-                        MusicMath.IsCenterKey(alt) ? ThemeManager.CenterKeyNameBrushNormal : ThemeManager.WhiteKeyNameBrushNormal
+                        MusicMath.IsBlackKey(aalt) ? ThemeManager.BlackKeyNameBrushNormal :
+                        MusicMath.IsCenterKey(aalt) ? ThemeManager.CenterKeyNameBrushNormal : ThemeManager.WhiteKeyNameBrushNormal
                     );
                     drawingContext.DrawText(text, new Point(42 - text.Width, (int)(top + (TrackHeight - text.Height) / 2)));
                 }
                 top += TrackHeight;
                 alt ++;
+                aalt--;
             }
         }
     }

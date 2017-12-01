@@ -43,19 +43,8 @@ namespace OpenUtau.Core.Render
         {
             // fresamp.exe <infile> <outfile> <tone> <velocity> <flags> <offset> <length_req>
             // <fixed_length> <endblank> <volume> <modulation> <pitch>
-            return string.Format(
-                "{0} {1:D} {2} {3} {4:D} {5} {6} {7:D} {8:D} {9} {10}",
-                MusicMath.GetNoteString(NoteNum),
-                Velocity,
-                StrFlags,
-                Oto.Offset,
-                RequiredLength,
-                Oto.Consonant,
-                Oto.Cutoff,
-                Volume,
-                Modulation,
-				Tempo,
-                String.Join(",",PitchData));
+            return $"{MusicMath.GetNoteString(NoteNum)} {Velocity:D} {StrFlags} {Oto.Offset} {RequiredLength:D} {Oto.Consonant} {Oto.Cutoff} {Volume:D} {Modulation:D} {(String.Join(",", PitchData))}";
+            //return $"{MusicMath.GetNoteString(NoteNum)} {Velocity:D} {StrFlags} {Oto.Offset} {RequiredLength:D} {Oto.Consonant} {Oto.Cutoff} {Volume:D} {Modulation:D} {Tempo} {(String.Join(",", PitchData))}";
         }
     }
 }

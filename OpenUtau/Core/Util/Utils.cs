@@ -99,7 +99,18 @@ namespace OpenUtau.Core.Util
                     cloned.PosTick += relativePosTick + posCorr;
                     foreach (var item in cloned.Expressions)
                     {
-                        cloned.VirtualExpressions[item.Key] = ((int)dest.Expressions[item.Key].Data) - (int)cloned.Expressions[item.Key].Data;
+                        if (item.Value is IntExpression)
+                        {
+                            cloned.VirtualExpressions[item.Key].Data = ((int)dest.Expressions[item.Key].Data) - (int)cloned.Expressions[item.Key].Data;
+                        }
+                        if (item.Value is FloatExpression)
+                        {
+                            cloned.VirtualExpressions[item.Key].Data = ((float)dest.Expressions[item.Key].Data) - (float)cloned.Expressions[item.Key].Data;
+                        }
+                        if (item.Value is BoolExpression)
+                        {
+                            cloned.VirtualExpressions[item.Key].Data = ((bool)dest.Expressions[item.Key].Data) != (bool)cloned.Expressions[item.Key].Data;
+                        }
                     }
                     dest.Notes.Add(cloned);
                     ++noteNo;

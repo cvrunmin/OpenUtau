@@ -1160,14 +1160,17 @@ namespace OpenUtau.UI
         private void expCanvas_SetExpHelper(Point mousePos)
         {
             if (MidiVM.Part == null) return;
-            int newValue;
             string _key = MidiVM.visibleExpElement.Key;
-            var _expTemplate = DocManager.Inst.Project.ExpressionTable[_key] as IntExpression;
-            if (Keyboard.Modifiers == ModifierKeys.Alt) newValue = (int)_expTemplate.Data;
-            else newValue = (int)Math.Max(_expTemplate.Min, Math.Min(_expTemplate.Max, (1 - mousePos.Y / expCanvas.ActualHeight) * (_expTemplate.Max - _expTemplate.Min) + _expTemplate.Min));
+            var _expTemplate = DocManager.Inst.Project.ExpressionTable[_key];
             UNote note = midiHT.HitTestNoteX(mousePos.X);
-            if (MidiVM.SelectedNotes.Count == 0 || MidiVM.SelectedNotes.Contains(note))
+            var pass = MidiVM.SelectedNotes.Count == 0 || MidiVM.SelectedNotes.Contains(note);
+            if (!pass) return;
+            if (_expTemplate is IntExpression || _expTemplate is FloatExpression)
             {
+                int newValue;
+                    var ie = _expTemplate as IntExpression;
+                    if (Keyboard.Modifiers == ModifierKeys.Alt) newValue = (int)_expTemplate.Data;
+                    else newValue = (int)Math.Max(ie.Min, Math.Min(ie.Max, (1 - mousePos.Y / expCanvas.ActualHeight) * (ie.Max - ie.Min) + ie.Min));
                 if (note != null)
                 {
                     if (Keyboard.Modifiers == ModifierKeys.Alt) newValue = (int)(MidiVM.Part.Expressions[_key] as IntExpression).Data;
@@ -1177,6 +1180,37 @@ namespace OpenUtau.UI
                 {
                     DocManager.Inst.ExecuteCmd(new GlobelSetIntExpCommand(MidiVM.Part, MidiVM.visibleExpElement.Key, newValue));
                 }
+            }
+            else if (_expTemplate is FloatExpression) {
+                float newValue;
+                    var fe = _expTemplate as FloatExpression;
+                    if (Keyboard.Modifiers == ModifierKeys.Alt) newValue = (float)fe.Data;
+                    else newValue = (float)Math.Max(fe.Min, Math.Min(fe.Max, (1 - mousePos.Y / expCanvas.ActualHeight) * (fe.Max - fe.Min) + fe.Min));
+                if (note != null)
+                {
+                    if (Keyboard.Modifiers == ModifierKeys.Alt) newValue = (float)(MidiVM.Part.Expressions[_key] as FloatExpression).Data;
+                    DocManager.Inst.ExecuteCmd(new SetFloatExpCommand(MidiVM.Part, note, MidiVM.visibleExpElement.Key, newValue));
+                }
+                else
+                {
+                    DocManager.Inst.ExecuteCmd(new GlobelSetFloatExpCommand(MidiVM.Part, MidiVM.visibleExpElement.Key, newValue));
+                }
+            }
+            else if (_expTemplate is BoolExpression)
+            {
+                bool newValue;
+                if (Keyboard.Modifiers == ModifierKeys.Alt) newValue = (bool)_expTemplate.Data;
+                else newValue = !(bool)note.Expressions[_expTemplate.Name].Data;
+                if (note != null)
+                {
+                    if (Keyboard.Modifiers == ModifierKeys.Alt) newValue = (bool)(MidiVM.Part.Expressions[_key] as BoolExpression).Data;
+                    DocManager.Inst.ExecuteCmd(new SetBoolExpCommand(MidiVM.Part, note, MidiVM.visibleExpElement.Key, newValue));
+                }
+                else
+                {
+                    DocManager.Inst.ExecuteCmd(new GlobelSetBoolExpCommand(MidiVM.Part, MidiVM.visibleExpElement.Key, newValue));
+                }
+
             }
         }
 
@@ -1342,13 +1376,34 @@ namespace OpenUtau.UI
                         break;
                 }
                 if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
-                foreach (var note in new SortedSet<UNote>(MidiVM.Part.Notes))
+                SortedSet<UNote> notesBak = new SortedSet<UNote>(MidiVM.Part.Notes);
+                var selNote = new List<UNote>(MidiVM.SelectedNotes);
+                if (selNote.Count == 0) selNote.AddRange(notesBak);
+                foreach (var note in selNote)
                 {
-                    UNote former = MidiVM.Part.Notes.FirstOrDefault(note1 => note1 != note && Math.Abs(note.PosTick - note1.EndTick) < DocManager.Inst.Project.Resolution / 64);
-                    UNote lator = MidiVM.Part.Notes.FirstOrDefault(note1 => note1 != note && Math.Abs(note1.PosTick - note.EndTick) < DocManager.Inst.Project.Resolution / 64);
+                    UNote former = notesBak.FirstOrDefault(note1 => note1 != note && Math.Abs(note.PosTick - note1.EndTick) < DocManager.Inst.Project.Resolution / 64);
+                    UNote lator = notesBak.FirstOrDefault(note1 => note1 != note && Math.Abs(note1.PosTick - note.EndTick) < DocManager.Inst.Project.Resolution / 64);
                     var mod = Core.Util.SamplingStyleHelper.GetCorrespondingPhoneme(note.Lyric,former,lator, style);
                     if (style == Core.Util.SamplingStyleHelper.Style.CVVC)
                     {
+                        var pts = mod.Split('\t');
+                        var note1 = note.Clone();
+                        note1.PosTick = note.PosTick;
+                        note1.DurTick = (int)Math.Round(note.DurTick * 0.75);
+                        note1.Vibrato = note.Vibrato.Split(note1, note1.PosTick) as VibratoExpression;
+                        note1.Lyric = pts[0];
+                        var note2 = note.Clone();
+                        if (pts.Length > 1)
+                        {
+                            note2.PosTick = note1.EndTick;
+                            note2.DurTick = (int)Math.Round(note.DurTick * 0.25);
+                            note2.Vibrato = note.Vibrato.Split(note2, note2.PosTick) as VibratoExpression;
+                            note2.Lyric = pts[1];
+                        }
+                        DocManager.Inst.ExecuteCmd(new RemoveNoteCommand(MidiVM.Part, note));
+                        DocManager.Inst.ExecuteCmd(new AddNoteCommand(MidiVM.Part, note1));
+                        if (pts.Length > 1)
+                            DocManager.Inst.ExecuteCmd(new AddNoteCommand(MidiVM.Part, note2));
                     }
                     else
                     {

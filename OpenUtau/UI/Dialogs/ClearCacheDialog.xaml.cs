@@ -39,10 +39,13 @@ namespace OpenUtau.UI.Dialogs
             }
             if (chkboxdiskCache.IsChecked.Value) {
                 if (!string.IsNullOrEmpty(DocManager.Inst.Project.FilePath)) {
-                    Directory.Delete(Path.Combine(Path.GetDirectoryName(DocManager.Inst.Project.FilePath), "UCache"), true);
+                    string path = Path.Combine(Path.GetDirectoryName(DocManager.Inst.Project.FilePath), "UCache");
+                    if(Directory.Exists(path))
+                    Directory.Delete(path, true);
                 }
             }
             if (chkboxVbCache.IsChecked.Value) {
+                if(Directory.Exists(SoundbankCache.CachePath))
                 Directory.Delete(SoundbankCache.CachePath, true);
             }
             DialogResult = true;

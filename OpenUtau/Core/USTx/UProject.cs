@@ -35,7 +35,20 @@ namespace OpenUtau.Core.USTx
             foreach (var pair in ExpressionTable)
             {
                 note.Expressions.Add(pair.Key, pair.Value.Clone(note));
-                note.VirtualExpressions.Add(pair.Key, 0);
+                switch (pair.Value)
+                {
+                    case IntExpression exp:
+                        note.VirtualExpressions.Add(pair.Key,  new IntExpression.UExpDiff() { Data = 0 });
+                        break;
+                    case FloatExpression exp:
+                        note.VirtualExpressions.Add(pair.Key, new FloatExpression.UExpDiff() { Data = 0 });
+                        break;
+                    case BoolExpression exp:
+                        note.VirtualExpressions.Add(pair.Key, new BoolExpression.UExpDiff() { Data = false });
+                        break;
+                    default:
+                        break;
+                }
             }
             note.PitchBend.Points[0].X = -25;
             note.PitchBend.Points[1].X = 25;

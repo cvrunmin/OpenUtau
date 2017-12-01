@@ -19,9 +19,9 @@
             <TextBox x:Name="txtboxComment" HorizontalAlignment="Left" Height="90" Margin="81,38,0,0" Text="{Binding Project.Comment, ElementName=window}" VerticalAlignment="Top" Width="255" AcceptsReturn="True" AutoWordSelection="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
         </Grid>
         <Grid x:Name="bpmGrid" Margin="170,2,10,10" Visibility="Collapsed"></Grid>
-        <Grid x:Name="expGrid" Margin="170,2,10,10" Visibility="Visible">
+        <Grid x:Name="expGrid" Margin="170,2,10,10" Visibility="Collapsed">
             <Label Content="Expressions" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-            <ListView x:Name="listExp" Margin="10,40" SelectionChanged="listExp_SelectionChanged">
+            <ListView x:Name="listExp" Margin="10,40,10,105" SelectionChanged="listExp_SelectionChanged">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Abbr" DisplayMemberBinding="{Binding Abbr}"/>
@@ -31,8 +31,54 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-            <Button x:Name="butAddExp" Content="{DynamicResource Add}" HorizontalAlignment="Left" Margin="11,324,0,0" VerticalAlignment="Top" Width="75" Click="butAddExp_Click"/>
-            <Button x:Name="butRemove" Content="{DynamicResource Remove}" HorizontalAlignment="Left" Margin="91,324,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False" Click="butRemove_Click"/>
+            <Button x:Name="butAddExp" Content="{DynamicResource Add}" HorizontalAlignment="Left" Margin="10,0,0,0" Width="75" Click="butAddExp_Click" Height="19" VerticalAlignment="Bottom"/>
+            <Button x:Name="butRemove" Content="{DynamicResource Remove}" HorizontalAlignment="Left" Margin="170,0,0,0" Width="75" IsEnabled="False" Click="butRemove_Click" Height="19" VerticalAlignment="Bottom"/>
+            <Grid Margin="11,0,10,19" Height="81" VerticalAlignment="Bottom">
+                <Label Content="Type" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,30,0,0"/>
+                <ComboBox x:Name="comboType" HorizontalAlignment="Left" Margin="42,31,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="comboType_SelectionChanged" SelectedValuePath="Tag">
+                    <ComboBoxItem Content="Integer" Tag="flag_int"/>
+                    <ComboBoxItem Content="Decimal" Tag="flag_float"/>
+                    <ComboBoxItem Content="Boolean" Tag="flag_bool"/>
+                    <ComboBoxItem Content="Integer (w/o flag)" Tag="int"/>
+                    <ComboBoxItem Content="decimal (w/o flag)" Tag="float"/>
+                    <ComboBoxItem Content="Boolean (w/o flag)" Tag="bool"/>
+                </ComboBox>
+                <Grid x:Name="gridFlag" HorizontalAlignment="Left" Height="25" Margin="167,27,0,0" VerticalAlignment="Top" Width="140">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Flag" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <TextBox x:Name="txtboxFlag" Height="23" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.Column="1"/>
+                </Grid>
+                <Grid x:Name="gridValues" Margin="0,56,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid x:Name="gridDefault" Height="25" VerticalAlignment="Top" HorizontalAlignment="Left">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Content="Default" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    </Grid>
+                </Grid>
+                <Grid VerticalAlignment="Top" HorizontalAlignment="Left">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="5px"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Abbr" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <TextBox x:Name="txtboxAbbr" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
+                    <Label Content="{DynamicResource Name}" Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <TextBox x:Name="txtboxName" Grid.Column="4" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+                </Grid>
+            </Grid>
+            <Button x:Name="butSet" Content="Set" HorizontalAlignment="Left" Margin="90,0,0,0" Width="75" Height="19" VerticalAlignment="Bottom" IsEnabled="False" Click="butSet_Click"/>
         </Grid>
     </Grid>
 </Window>

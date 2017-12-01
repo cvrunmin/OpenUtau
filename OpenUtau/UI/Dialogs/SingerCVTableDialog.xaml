@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="SingerCVTableDialog" Height="480" Width="650">
     <Grid>
-        <DataGrid x:Name="dataGridCV" Margin="10" ItemsSource="{Binding}" RowEditEnding="dataGridCV_RowEditEnding"/>
+        <DataGrid x:Name="dataGridCV" Margin="10" ItemsSource="{Binding}" RowEditEnding="dataGridCV_RowEditEnding" CellEditEnding="dataGridCV_CellEditEnding"/>
 
     </Grid>
 </Window>

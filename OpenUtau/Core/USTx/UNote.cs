@@ -20,7 +20,7 @@ namespace OpenUtau.Core.USTx
         public bool ApplyingPreset { get; set; }
         public List<UPhoneme> Phonemes = new List<UPhoneme>();
         public Dictionary<string, UExpression> Expressions = new Dictionary<string, UExpression>();
-        public Dictionary<string, int> VirtualExpressions = new Dictionary<string, int>();
+        public Dictionary<string, UExpression.UExpDiff> VirtualExpressions = new Dictionary<string, UExpression.UExpDiff>();
         public PitchBendExpression PitchBend;
         public VibratoExpression Vibrato;
         public bool Error = false;
