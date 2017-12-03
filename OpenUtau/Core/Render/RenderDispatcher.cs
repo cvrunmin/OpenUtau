@@ -196,7 +196,7 @@ namespace OpenUtau.Core.Render
                                 IResamplerDriver engine = ResamplerDriver.ResamplerDriver.LoadEngine(ResamplerFile.FullName);
                                 subschedule.Add(BuildVoicePartAudio(part as UVoicePart, project, engine, token).ContinueWith(task => {
                                     trackSources[part.TrackNo].AddSource(task.Result ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(),
-                                        TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick) - project.TickToMillisecond(480, part.PosTick) * part.PosTick / project.Resolution));
+                                        TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)/* - project.TickToMillisecond(480, part.PosTick) * part.PosTick / project.Resolution*/));
                                 }));
                             }
                         }
