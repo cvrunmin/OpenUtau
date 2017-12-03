@@ -1200,7 +1200,7 @@ namespace OpenUtau.UI
             {
                 bool newValue;
                 if (Keyboard.Modifiers == ModifierKeys.Alt) newValue = (bool)_expTemplate.Data;
-                else newValue = !(bool)note.Expressions[_expTemplate.Name].Data;
+                else newValue = !(bool)MidiVM.Part.Expressions[_expTemplate.Name].Data;
                 if (note != null)
                 {
                     if (Keyboard.Modifiers == ModifierKeys.Alt) newValue = (bool)(MidiVM.Part.Expressions[_key] as BoolExpression).Data;

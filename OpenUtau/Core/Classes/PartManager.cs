@@ -35,11 +35,11 @@ namespace OpenUtau.Core
             UpdatePart(partContainer.Part);
         }
 
-        public static void UpdatePart(UVoicePart part)
+        public static void UpdatePart(UVoicePart part, bool commanded = false)
         {
             if (part == null || part.TrackNo < 0 || part.TrackNo >= DocManager.Inst.Project.Tracks.Count) return;
             var singer = DocManager.Inst.Project.Tracks[part.TrackNo].Singer;
-            UpdatePart(part, singer);
+            UpdatePart(part, singer, commanded: commanded);
         }
 
         public static void RenewPartNo() {
@@ -57,13 +57,13 @@ namespace OpenUtau.Core
             }
         }
 
-        public static void UpdatePart(UVoicePart part, USinger singer, bool shouldRedraw = true)
+        public static void UpdatePart(UVoicePart part, USinger singer, bool shouldRedraw = true, bool commanded = false)
         {
             lock (part)
             {
                 if (part == null) return;
                 CheckOverlappedNotes(part);
-                UpdatePhonemes(part, singer);
+                if(commanded)UpdatePhonemes(part, singer);
                 UpdatePhonemeDurTick(part, singer);
                 UpdatePhonemeOto(part, singer);
                 UpdateOverlapAdjustment(part);
@@ -348,7 +348,6 @@ namespace OpenUtau.Core
 
         private static void CheckOverlappedNotes(UVoicePart part)
         {
-            //UNote lastNote = null;
             foreach (UNote note in part.Notes)
             {
                 var li = part.Notes.SkipWhile(note1=> (note1.PosTick <= note.PosTick && note1.EndTick <= note.PosTick) || (note1.PosTick >= note.EndTick));
@@ -361,14 +360,6 @@ namespace OpenUtau.Core
                 {
                     note.Error = false;
                 }
-                /*
-                if (lastNote != null && lastNote.EndTick > note.PosTick)
-                {
-                    lastNote.Error = true;
-                    note.Error = true;
-                }
-                else note.Error = false;
-                lastNote = note;*/
             }
         }
 

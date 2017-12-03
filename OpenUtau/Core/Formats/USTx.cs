@@ -673,19 +673,31 @@ namespace OpenUtau.Core.Formats
             project.RegisterExpression(new FlagIntExpression(null, "breathiness", "BRE", "Y") { Data = 0, Min = 0, Max = 100, Default = 100 });
             project.RegisterExpression(new FlagIntExpression(null, "gender", "GEN", "g") { Data = 0, Min = -100, Max = 100, Default = 0 });
             project.RegisterExpression(new FlagIntExpression(null, "lowpass", "LPF", "H") { Data = 0, Min = 0, Max = 100, Default = 0 });
-            project.RegisterExpression(new IntExpression(null, "highpass", "HPF") { Data = 0, Min = 0, Max = 100,Default = 0 });
+            project.RegisterExpression(new FlagIntExpression(null, "highpass", "HPF", "C") { Data = 0, Min = 0, Max = 100,Default = 0 });
             project.RegisterExpression(new IntExpression(null, "accent", "ACC") { Data = 100, Min = 0, Max = 200,Default = 100 });
             project.RegisterExpression(new IntExpression(null, "decay", "DEC") { Data = 0, Min = 0, Max = 100, Default = 0 });
             project.RegisterExpression(new IntExpression(null, "release", "REL") { Data = 0, Min = 0, Max = 100, Default = 0 });
-           /*
-            * Standard Flag
-            project.RegisterExpression(new FlagIntExpression(null, "peak compress", "PKC", "P") { Min = 0, Max = 100, Data = 0, Default = 86 });
-            project.RegisterExpression(new FlagIntExpression(null, "amplitude modulation", "AMD", "A") { Min = -100, Max = 100, Data = 0, Default = 0 });
-            project.RegisterExpression(new FlagIntExpression(null, "unvoiced gain", "UCG", "b") { Data = 0, Min = -20, Max = 100, Default = 0 });
-            project.RegisterExpression(new FlagBoolExpression(null, "stretching", "STR", "e") { Data = false, Default = false });
-            project.RegisterExpression(new FlagBoolExpression(null, "direct", "DIR", "u") { Data = false, Default = false });
-            */
+            /*
+             * Standard Flag
+             project.RegisterExpression(new FlagIntExpression(null, "peak compress", "PKC", "P") { Min = 0, Max = 100, Data = 0, Default = 86 });
+             project.RegisterExpression(new FlagIntExpression(null, "amplitude modulation", "AMD", "A") { Min = -100, Max = 100, Data = 0, Default = 0 });
+             project.RegisterExpression(new FlagIntExpression(null, "unvoiced gain", "UCG", "b") { Data = 0, Min = -20, Max = 100, Default = 0 });
+             project.RegisterExpression(new FlagBoolExpression(null, "stretching", "STR", "e") { Data = false, Default = false });
+             project.RegisterExpression(new FlagBoolExpression(null, "direct", "DIR", "u") { Data = false, Default = false });
+             */
+            // Moresampler Flag
             project.RegisterExpression(new FlagBoolExpression(null, "looping", "LOP", "Me") { Data = false, Default = false });
+            project.RegisterExpression(new FlagIntExpression(null, "tenseness", "TNS", "Mt") { Min = -100, Max = 100, Data = 0, Default = 0 });
+            project.RegisterExpression(new FlagIntExpression(null, "Mbreathiness", "MBR", "Mb") { Min = -100, Max = 100, Data = 0, Default = 0 });
+            project.RegisterExpression(new FlagIntExpression(null, "openness", "OPE", "Mo") { Min = -100, Max = 100, Data = 0, Default = 0 });
+            project.RegisterExpression(new FlagIntExpression(null, "resonance", "RES", "Mr") { Min = -100, Max = 100, Data = 0, Default = 0 });
+            project.RegisterExpression(new FlagIntExpression(null, "dryness", "DRY", "Md") { Min = -100, Max = 100, Data = 0, Default = 0 });
+            project.RegisterExpression(new FlagIntExpression(null, "coarseness", "CRS", "MC") { Min = 0, Max = 100, Data = 0, Default = 0 });
+            project.RegisterExpression(new FlagIntExpression(null, "growl", "GRW", "MG") { Min = 0, Max = 100, Data = 0, Default = 0 });
+            project.RegisterExpression(new FlagIntExpression(null, "distort", "DIT", "MD") { Min = 0, Max = 100, Data = 0, Default = 0 });
+            project.RegisterExpression(new FlagIntExpression(null, "stablize", "STB", "Ms") { Min = 0, Max = 10, Data = 0, Default = 0 });
+            project.RegisterExpression(new FlagIntExpression(null, "model intepolate", "MIT", "Mm") { Min = 0, Max = 100, Data = 100, Default = 100 });
+            project.RegisterExpression(new FlagIntExpression(null, "formant emphasis", "FRE", "ME") { Min = -100, Max = 100, Data = 0, Default = 0 });
             return project;
         }
 

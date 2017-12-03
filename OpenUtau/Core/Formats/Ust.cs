@@ -40,16 +40,9 @@ namespace OpenUtau.Core.Formats
             }
 
             double bpm = projects.First().BPM;
-            UProject project = new UProject() { BPM = bpm, Name = "Merged Project", Saved = false };
-            project.RegisterExpression(new IntExpression(null, "velocity", "VEL") { Data = 100, Min = 0, Max = 200 });
-            project.RegisterExpression(new IntExpression(null, "volume", "VOL") { Data = 100, Min = 0, Max = 200 });
-            project.RegisterExpression(new IntExpression(null, "gender", "GEN") { Data = 0, Min = -100, Max = 100 });
-            project.RegisterExpression(new IntExpression(null, "breathiness", "BRE") { Data = 0, Min = 0, Max = 100 });
-            project.RegisterExpression(new IntExpression(null, "lowpass", "LPF") { Data = 0, Min = 0, Max = 100 });
-            project.RegisterExpression(new IntExpression(null, "highpass", "HPF") { Data = 0, Min = 0, Max = 100 });
-            project.RegisterExpression(new IntExpression(null, "accent", "ACC") { Data = 100, Min = 0, Max = 200 });
-            project.RegisterExpression(new IntExpression(null, "decay", "DEC") { Data = 0, Min = 0, Max = 100 });
-            project.RegisterExpression(new IntExpression(null, "release", "REL") { Data = 0, Min = 0, Max = 100 });
+            UProject project = USTx.Create();
+            project.BPM = bpm;
+            project.Name = "Merged Project";
             foreach (UProject p in projects)
             {
                 var _track = p.Tracks[0];
@@ -81,16 +74,8 @@ namespace OpenUtau.Core.Formats
                 return null;
             }
 
-            UProject project = new UProject() { Resolution = 480, FilePath = file, Saved = false };
-            project.RegisterExpression(new IntExpression(null, "velocity","VEL") { Data = 100, Min = 0, Max = 200});
-            project.RegisterExpression(new IntExpression(null, "volume","VOL") { Data = 100, Min = 0, Max = 200});
-            project.RegisterExpression(new IntExpression(null, "gender","GEN") { Data = 0, Min = -100, Max = 100});
-            project.RegisterExpression(new IntExpression(null, "breathiness", "BRE") { Data = 0, Min = 0, Max = 100 });
-            project.RegisterExpression(new IntExpression(null, "lowpass","LPF") { Data = 0, Min = 0, Max = 100});
-            project.RegisterExpression(new IntExpression(null, "highpass", "HPF") { Data = 0, Min = 0, Max = 100 });
-            project.RegisterExpression(new IntExpression(null, "accent", "ACC") { Data = 100, Min = 0, Max = 200 });
-            project.RegisterExpression(new IntExpression(null, "decay", "DEC") { Data = 0, Min = 0, Max = 100 });
-            project.RegisterExpression(new IntExpression(null, "release", "REL") { Data = 0, Min = 0, Max = 100 });
+            UProject project = USTx.Create();
+            project.FilePath = file;
 
             var _track = new UTrack();
             project.Tracks.Add(_track);

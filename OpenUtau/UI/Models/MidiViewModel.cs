@@ -385,8 +385,8 @@ namespace OpenUtau.UI.Models
                 foreach (var exp in new Dictionary<string, ExpElement>(expElements))
                 {
                     ExpCanvas.Children.Remove(exp.Value);
-                    if (expElements[exp.Key] is FloatExpElement) expElements[exp.Key] = new ViewOnlyFloatExpElement() { Key = exp.Value.Key, Part = ViewingPart, midiVM = this, DisplayMode = exp.Value.DisplayMode + 1 };
-                    else if (expElements[exp.Key] is BoolExpElement) expElements[exp.Key] = new ViewOnlyBoolExpElement() { Key = exp.Value.Key, Part = ViewingPart, midiVM = this, DisplayMode = exp.Value.DisplayMode + 1 };
+                    if (expElements[exp.Key] is FloatExpElement) expElements[exp.Key] = new ViewOnlyFloatExpElement() { Key = exp.Value.Key, Part = ViewingPart, midiVM = this, DisplayMode = exp.Value.DisplayMode };
+                    else if (expElements[exp.Key] is BoolExpElement) expElements[exp.Key] = new ViewOnlyBoolExpElement() { Key = exp.Value.Key, Part = ViewingPart, midiVM = this, DisplayMode = exp.Value.DisplayMode };
                     expElements[exp.Key].DisplayMode = exp.Value.DisplayMode;
                     ExpCanvas.Children.Add(expElements[exp.Key]);
                     if (exp.Value.DisplayMode == ExpDisMode.Shadow) shadowExpElement = expElements[exp.Key];
@@ -403,8 +403,8 @@ namespace OpenUtau.UI.Models
                 foreach (var exp in new Dictionary<string, ExpElement>(expElements))
                 {
                     ExpCanvas.Children.Remove(exp.Value);
-                    if (expElements[exp.Key] is FloatExpElement) expElements[exp.Key] = new FloatExpElement() { Key = exp.Value.Key, Part = Part, midiVM = this, DisplayMode = exp.Value.DisplayMode + 1 };
-                    if (expElements[exp.Key] is BoolExpElement) expElements[exp.Key] = new BoolExpElement() { Key = exp.Value.Key, Part = Part, midiVM = this, DisplayMode = exp.Value.DisplayMode + 1 };
+                    if (expElements[exp.Key] is FloatExpElement) expElements[exp.Key] = new FloatExpElement() { Key = exp.Value.Key, Part = Part, midiVM = this, DisplayMode = exp.Value.DisplayMode };
+                    if (expElements[exp.Key] is BoolExpElement) expElements[exp.Key] = new BoolExpElement() { Key = exp.Value.Key, Part = Part, midiVM = this, DisplayMode = exp.Value.DisplayMode };
                     expElements[exp.Key].DisplayMode = exp.Value.DisplayMode;
                     ExpCanvas.Children.Add(expElements[exp.Key]);
                     if (exp.Value.DisplayMode == ExpDisMode.Shadow) shadowExpElement = expElements[exp.Key];
@@ -442,10 +442,21 @@ namespace OpenUtau.UI.Models
             if (!expElements.ContainsKey(_cmd.ExpKey))
             {
                 ExpElement expEl = new ExpElement();
-                if (Part.Expressions[_cmd.ExpKey] is IntExpression || Part.Expressions[_cmd.ExpKey] is FloatExpression)
-                    expEl = new FloatExpElement() { Key = _cmd.ExpKey, Part = this.Part, midiVM = this };
+                if(ViewMode)
+                {
+                    if (Part.Expressions[_cmd.ExpKey] is IntExpression || Part.Expressions[_cmd.ExpKey] is FloatExpression)
+                    expEl = new ViewOnlyFloatExpElement() { Key = _cmd.ExpKey, Part = this.Part, midiVM = this };
                 else if (Part.Expressions[_cmd.ExpKey] is BoolExpression)
-                    expEl = new BoolExpElement() { Key = _cmd.ExpKey, Part = this.Part, midiVM = this };
+                    expEl = new ViewOnlyBoolExpElement() { Key = _cmd.ExpKey, Part = this.Part, midiVM = this };
+                }
+                else
+                {
+                    if (Part.Expressions[_cmd.ExpKey] is IntExpression || Part.Expressions[_cmd.ExpKey] is FloatExpression)
+                        expEl = new FloatExpElement() { Key = _cmd.ExpKey, Part = this.Part, midiVM = this };
+                    else if (Part.Expressions[_cmd.ExpKey] is BoolExpression)
+                        expEl = new BoolExpElement() { Key = _cmd.ExpKey, Part = this.Part, midiVM = this };
+                }
+
                 expElements.Add(_cmd.ExpKey, expEl);
                 ExpCanvas.Children.Add(expEl);
             }

@@ -18,6 +18,19 @@ namespace OpenUtau.Core.Render
 
         public CachedSound(string audioFileName)
         {
+            waiting:
+            try
+            {
+                using (var str = System.IO.File.Open(audioFileName, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.None))
+                {
+
+                }
+            }
+            catch (System.IO.IOException)
+            {
+                Task.Delay(1000);
+                goto waiting;
+            }
             using (var audioFileReader = new AudioFileReader(audioFileName))
             {
                 WaveFormat = audioFileReader.WaveFormat;

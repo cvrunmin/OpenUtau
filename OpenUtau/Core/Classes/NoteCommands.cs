@@ -21,6 +21,7 @@ namespace OpenUtau.Core
                     Render.ResamplerInterface.RenderNote(DocManager.Inst.Project, Part, note);
                 }
             }
+            PartManager.UpdatePart(Part, true);
             if(Part != null && Part.TrackNo >= 0 && Part.TrackNo < DocManager.Inst.Project.Tracks.Count)
                 DocManager.Inst.Project.Tracks[Part.TrackNo].Amended = true;
         }
@@ -28,6 +29,7 @@ namespace OpenUtau.Core
         {
             if (Part != null && Part.TrackNo >= 0 && Part.TrackNo < DocManager.Inst.Project.Tracks.Count)
                 DocManager.Inst.Project.Tracks[Part.TrackNo].Amended = true;
+            PartManager.UpdatePart(Part, true);
         }
     }
 

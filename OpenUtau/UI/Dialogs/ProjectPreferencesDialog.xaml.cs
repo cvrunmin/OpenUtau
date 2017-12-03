@@ -113,10 +113,33 @@ namespace OpenUtau.UI.Dialogs
 
         private void butAddExp_Click(object sender, RoutedEventArgs e)
         {
-            if (Project.ExpressionTable.ContainsKey(txtboxName.Text)) return;
+            string nnew = txtboxName.Text;
+            if (Project.ExpressionTable.ContainsKey(nnew)) return;
             var exp = CreateExpression();
             if (exp == null) return;
-            Project.ExpressionTable.Add(txtboxName.Text, exp);
+            Project.ExpressionTable.Add(nnew, exp);
+            foreach (var part in Project.Parts.OfType<UVoicePart>())
+            {
+                part.Expressions.Add(nnew, exp.Clone(null));
+                foreach (var item in part.Notes)
+                {
+                    item.Expressions.Add(nnew, exp.Clone(item));
+                    switch (exp)
+                    {
+                        case IntExpression exp1:
+                            item.VirtualExpressions.Add(nnew, new IntExpression.UExpDiff());
+                            break;
+                        case FloatExpression exp1:
+                            item.VirtualExpressions.Add(nnew, new FloatExpression.UExpDiff());
+                            break;
+                        case BoolExpression exp1:
+                            item.VirtualExpressions.Add(nnew, new BoolExpression.UExpDiff());
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
             Reload();
         }
 
@@ -167,14 +190,46 @@ namespace OpenUtau.UI.Dialogs
 
         private void butSet_Click(object sender, RoutedEventArgs e)
         {
-            if (txtboxName.Text.Equals((listExp.SelectedItem as DataRowView).Row.Field<string>("Name"))) {
-                Project.ExpressionTable.Remove((listExp.SelectedItem as DataRowView).Row.Field<string>("Name"));
+            string nnew = txtboxName.Text;
+            if (nnew.Equals((listExp.SelectedItem as DataRowView).Row.Field<string>("Name"))) {
+                string old = (listExp.SelectedItem as DataRowView).Row.Field<string>("Name");
+                Project.ExpressionTable.Remove(old);
                 var exp = CreateExpression();
-                Project.ExpressionTable.Add(txtboxName.Text, exp);
+                Project.ExpressionTable.Add(nnew, exp);
+                foreach (var part in Project.Parts.OfType<UVoicePart>())
+                {
+                    var od = part.Expressions[old].Data;
+                    part.Expressions.Remove(old);
+                    part.Expressions.Add(nnew, exp.Clone(null));
+                    part.Expressions[nnew].Data = od;
+                    foreach (var item in part.Notes)
+                    {
+                        var odd = item.Expressions[old].Data;
+                        item.Expressions.Remove(old);
+                        item.Expressions.Add(nnew, exp.Clone(item));
+                        item.Expressions[nnew].Data = odd;
+                        var vo = item.VirtualExpressions[old];
+                        item.VirtualExpressions.Remove(old);
+                        item.VirtualExpressions.Add(nnew, vo);
+                    }
+                }
             }
             else
             {
-                Project.ExpressionTable[txtboxName.Text] = CreateExpression();
+                UExpression exp = CreateExpression();
+                Project.ExpressionTable[nnew] = exp;
+                foreach (var part in Project.Parts.OfType<UVoicePart>())
+                {
+                    var od = part.Expressions[nnew].Data;
+                    part.Expressions[nnew] = exp.Clone(null);
+                    part.Expressions[nnew].Data = od;
+                    foreach (var item in part.Notes)
+                    {
+                        var odd = item.Expressions[nnew].Data;
+                        item.Expressions[nnew]= exp.Clone(item);
+                        item.Expressions[nnew].Data = odd;
+                    }
+                }
             }
             Reload();
         }
