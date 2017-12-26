@@ -45,12 +45,12 @@ namespace OpenUtau.Core.Render
         /// <summary>
         /// Position of first sample
         /// </summary>
-        public int FirstSample { get { return firstSample; } }
+        public int FirstSample => firstSample;
 
         /// <summary>
         /// Position of last sample (not included)
         /// </summary>
-        public int LastSample { get { return lastSample; } }
+        public int LastSample => lastSample;
 
         public RenderItem RenderItem { set; get; }
 
@@ -59,9 +59,6 @@ namespace OpenUtau.Core.Render
             return (signalChain?.Read(buffer, offset, count)).GetValueOrDefault();
         }
 
-        public WaveFormat WaveFormat
-        {
-            get { return signalChain?.WaveFormat; }
-        }
+        public WaveFormat WaveFormat => signalChain?.WaveFormat;
     }
 }

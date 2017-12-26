@@ -67,10 +67,7 @@ namespace OpenUtau.Core.Render
             return volume.Read(buffer, offset, count);
         }
 
-        public WaveFormat WaveFormat
-        {
-            get { return volume.WaveFormat; }
-        }
+        public WaveFormat WaveFormat => volume.WaveFormat;
 
         public void AddSource(ISampleProvider source, TimeSpan delayBy)
         {

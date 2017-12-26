@@ -16,7 +16,7 @@ namespace OpenUtau.Core.Render
     class RenderCache
     {
         public int Capacity { set; get; }
-        public int Count { get { return cache.Count; } }
+        public int Count => cache.Count;
 
         ConcurrentDictionary<uint, RenderCacheItem> cache;
 

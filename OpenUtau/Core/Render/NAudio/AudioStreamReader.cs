@@ -33,19 +33,13 @@ namespace OpenUtau.Core.Render
             }
         }
 
-        public override WaveFormat WaveFormat
-        {
-            get { return sampleChannel?.WaveFormat; }
-        }
+        public override WaveFormat WaveFormat => sampleChannel?.WaveFormat;
 
-        public override long Length
-        {
-            get { return length; }
-        }
+        public override long Length => length;
 
         public override long Position
         {
-            get { return SourceToDest(readerStream.Position); }
+            get => SourceToDest(readerStream.Position);
             set { lock (lockObject) { readerStream.Position = DestToSource(value); } }
         }
 

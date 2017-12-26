@@ -14,9 +14,9 @@ namespace OpenUtau.Core.USTx
         public UNote Parent;
         public int PosTick;
         public int DurTick;
-        public int EndTick { get { return PosTick + DurTick; } }
+        public int EndTick => PosTick + DurTick;
         public string Phoneme = "a";
-        public string PhonemeRemapped { get { return AutoRemapped ? Phoneme + RemappedBank : Phoneme; } }
+        public string PhonemeRemapped => AutoRemapped ? Phoneme + RemappedBank : Phoneme;
         public string RemappedBank = "";
         public bool AutoEnvelope = true;
         public bool AutoRemapped = true;

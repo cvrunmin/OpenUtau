@@ -24,11 +24,21 @@ namespace OpenUtau.UI.Controls
         public event EventHandler Click;
         public event EventHandler SelectionChanged;
 
-        public int SelectedIndex { set { SetValue(SelectedIndexProperty, value); } get { return (int)GetValue(SelectedIndexProperty); } }
-        public ObservableCollection<string> ItemsSource { set { SetValue(ItemsSourceProperty, value); } get { return (ObservableCollection<string>)GetValue(ItemsSourceProperty); } }
-        public Brush TagBrush { set { SetValue(TagBrushProperty, value); } get { return (Brush)GetValue(TagBrushProperty); } }
-        public Brush Highlight { set { SetValue(HighlightProperty, value); } get { return (Brush)GetValue(HighlightProperty); } }
-        public string Text { set { SetValue(TextProperty, value); } get { return (string)GetValue(TextProperty); } }
+        public int SelectedIndex { set => SetValue(SelectedIndexProperty, value);
+            get => (int)GetValue(SelectedIndexProperty);
+        }
+        public ObservableCollection<string> ItemsSource { set => SetValue(ItemsSourceProperty, value);
+            get => (ObservableCollection<string>)GetValue(ItemsSourceProperty);
+        }
+        public Brush TagBrush { set => SetValue(TagBrushProperty, value);
+            get => (Brush)GetValue(TagBrushProperty);
+        }
+        public Brush Highlight { set => SetValue(HighlightProperty, value);
+            get => (Brush)GetValue(HighlightProperty);
+        }
+        public string Text { set => SetValue(TextProperty, value);
+            get => (string)GetValue(TextProperty);
+        }
 
         public static readonly DependencyProperty SelectedIndexProperty = DependencyProperty.Register("SelectedIndex", typeof(int), typeof(ExpComboBox), new PropertyMetadata(0));
         public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register("ItemsSource", typeof(ObservableCollection<string>), typeof(ExpComboBox));

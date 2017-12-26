@@ -55,7 +55,7 @@ namespace OpenUtau.Core.Lib
         }
 
         // Gets the maximum concurrency level supported by this scheduler. 
-        public sealed override int MaximumConcurrencyLevel { get { return _maxDegreeOfParallelism; } }
+        public sealed override int MaximumConcurrencyLevel => _maxDegreeOfParallelism;
 
         protected override void QueueTask(Task task)
         {

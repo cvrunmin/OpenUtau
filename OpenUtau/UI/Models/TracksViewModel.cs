@@ -32,7 +32,7 @@ namespace OpenUtau.UI.Models
             }
         }
 
-        public UProject Project { get { return DocManager.Inst.Project; } }
+        public UProject Project => DocManager.Inst.Project;
         public Canvas TimelineCanvas;
         public TimelineBackground TimelineBG;
         public Canvas TrackCanvas;
@@ -55,10 +55,12 @@ namespace OpenUtau.UI.Models
         int _beatUnit = 4;
 
         public string Title { get { if (Project != null) return "OpenUtau - [" + Project.Name + "]"; else return "OpenUtau"; } }
-        public double TotalHeight { get { return _trackCount * _trackHeight - _viewHeight; } }
-        public double TotalWidth { get { return _quarterCount * _quarterWidth - _viewWidth; } }
-        public double TrackCount { set { if (_trackCount != value) { _trackCount = value; VerticalPropertiesChanged(); } } get { return _trackCount; } }
-        public double QuarterCount { set { if (_quarterCount != value) { _quarterCount = value; HorizontalPropertiesChanged(); } } get { return _quarterCount; } }
+        public double TotalHeight => _trackCount * _trackHeight - _viewHeight;
+        public double TotalWidth => _quarterCount * _quarterWidth - _viewWidth;
+        public double TrackCount { set { if (_trackCount != value) { _trackCount = value; VerticalPropertiesChanged(); } } get => _trackCount;
+        }
+        public double QuarterCount { set { if (_quarterCount != value) { _quarterCount = value; HorizontalPropertiesChanged(); } } get => _quarterCount;
+        }
         public double TrackHeight
         {
             set
@@ -66,7 +68,7 @@ namespace OpenUtau.UI.Models
                 _trackHeight = Math.Max(UIConstants.TrackMinHeight, Math.Min(UIConstants.TrackMaxHeight, value));
                 VerticalPropertiesChanged();
             }
-            get { return _trackHeight; }
+            get => _trackHeight;
         }
         
         public double QuarterWidth
@@ -76,24 +78,32 @@ namespace OpenUtau.UI.Models
                 _quarterWidth = Math.Max(UIConstants.TrackQuarterMinWidth, Math.Min(UIConstants.TrackQuarterMaxWidth, value));
                 HorizontalPropertiesChanged();
             }
-            get { return _quarterWidth; }
+            get => _quarterWidth;
         }
 
-        public double ViewWidth { set { if (_viewWidth != value) { _viewWidth = value; HorizontalPropertiesChanged(); } } get { return _viewWidth; } }
-        public double ViewHeight { set { if (_viewHeight != value) { _viewHeight = value; VerticalPropertiesChanged(); } } get { return _viewHeight; } }
-        public double OffsetX { set { _offsetX = Math.Max(0, value); HorizontalPropertiesChanged(); } get { return _offsetX; } }
-        public double OffsetY { set { _offsetY = Math.Max(0, value); VerticalPropertiesChanged(); } get { return _offsetY; } }
+        public double ViewWidth { set { if (_viewWidth != value) { _viewWidth = value; HorizontalPropertiesChanged(); } } get => _viewWidth;
+        }
+        public double ViewHeight { set { if (_viewHeight != value) { _viewHeight = value; VerticalPropertiesChanged(); } } get => _viewHeight;
+        }
+        public double OffsetX { set { _offsetX = Math.Max(0, value); HorizontalPropertiesChanged(); } get => _offsetX;
+        }
+        public double OffsetY { set { _offsetY = Math.Max(0, value); VerticalPropertiesChanged(); } get => _offsetY;
+        }
         public double ViewportSizeX { get { if (TotalWidth <= 0) return 10000; else return ViewWidth * (TotalWidth + ViewWidth) / TotalWidth; } }
         public double ViewportSizeY { get { if (TotalHeight <= 0) return 10000; else return ViewHeight * (TotalHeight + ViewHeight) / TotalHeight; } }
-        public double SmallChangeX { get { return ViewportSizeX / 10; } }
-        public double SmallChangeY { get { return ViewportSizeY / 10; } }
-        public double QuarterOffset { set { _quarterOffset = value; HorizontalPropertiesChanged(); } get { return _quarterOffset; } }
-        public double MinTickWidth { set { _minTickWidth = value; HorizontalPropertiesChanged(); } get { return _minTickWidth; } }
-        public double BPM { get { return Project.BPM; } }
+        public double SmallChangeX => ViewportSizeX / 10;
+        public double SmallChangeY => ViewportSizeY / 10;
+        public double QuarterOffset { set { _quarterOffset = value; HorizontalPropertiesChanged(); } get => _quarterOffset;
+        }
+        public double MinTickWidth { set { _minTickWidth = value; HorizontalPropertiesChanged(); } get => _minTickWidth;
+        }
+        public double BPM => Project.BPM;
         public int Resolution => Project.Resolution;
-        public int BeatPerBar { set { _beatPerBar = value; HorizontalPropertiesChanged(); } get { return _beatPerBar; } }
-        public int BeatUnit { set { _beatUnit = value; HorizontalPropertiesChanged(); } get { return _beatUnit; } }
-        public TimeSpan PlayPosTime { get { return TimeSpan.FromMilliseconds((int)Project.TickToMillisecond(playPosTick)); } }
+        public int BeatPerBar { set { _beatPerBar = value; HorizontalPropertiesChanged(); } get => _beatPerBar;
+        }
+        public int BeatUnit { set { _beatUnit = value; HorizontalPropertiesChanged(); } get => _beatUnit;
+        }
+        public TimeSpan PlayPosTime => TimeSpan.FromMilliseconds((int)Project.TickToMillisecond(playPosTick));
 
         public void HorizontalPropertiesChanged()
         {

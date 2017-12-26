@@ -1,26 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-
-using OpenUtau.UI.Controls;
 using OpenUtau.Core;
 using OpenUtau.Core.USTx;
-using System.Windows.Forms;
-using System.Collections.ObjectModel;
-using static OpenUtau.Core.Formats.UtauSoundbank;
-using System.Data;
 using OpenUtau.Core.Util;
-using OpenUtau.UI.Models;
+using OpenUtau.Lang;
+using static OpenUtau.Core.Formats.UtauSoundbank;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using MessageBox = System.Windows.Forms.MessageBox;
+using TextBox = System.Windows.Controls.TextBox;
 
 namespace OpenUtau.UI.Dialogs
 {
@@ -45,10 +44,10 @@ namespace OpenUtau.UI.Dialogs
                 if (pair.Value == null) continue;
                 singerNames.Add(pair.Value.Name);
             }
-            this.name.ItemsSource = singerNames;
+            name.ItemsSource = singerNames;
             if (singerNames.Count > 0)
             {
-                this.name.SelectedIndex = Math.Max(0, selindex);
+                name.SelectedIndex = Math.Max(0, selindex);
                 SetSinger(singerNames[name.SelectedIndex]);
             }
         }
@@ -68,8 +67,11 @@ namespace OpenUtau.UI.Dialogs
             if (singer == null) return;
             SelectedSinger = singer;
             //this.name.Text = singer.Name;
-            this.avatar.Source = singer.Avatar;
-            this.info.Text = "Author: " + singer.Author + "\nWebsite: " + singer.Website + "\nPath: " + singer.Path + "\n\n" + singer.Detail;
+            avatar.Source = singer.Avatar;
+            info.Text = "Author: " + singer.Author + "\nWebsite: " + singer.Website + "\nPath: " + singer.Path + "\n\n" + singer.Detail;
+            comboEncoding.SelectionChanged -= comboEncoding_SelectionChanged;
+            comboEncoding.SelectedItem = singer.FileEncoding.WebName;
+            comboEncoding.SelectionChanged += comboEncoding_SelectionChanged;
             RefreshOtoView(true);
             RefreshLyricsView();
             singerAmend = false;
@@ -130,7 +132,7 @@ namespace OpenUtau.UI.Dialogs
                 }
             }
             if(name.SelectedIndex >= 0)
-            SetSinger(singerNames[this.name.SelectedIndex]);
+            SetSinger(singerNames[name.SelectedIndex]);
         }
 
         private void butRefresh_Click(object sender, RoutedEventArgs e)
@@ -138,7 +140,7 @@ namespace OpenUtau.UI.Dialogs
             DocManager.Inst.SearchAllSingers();
             UpdateSingers();
         }
-        bool singerAmend = false;
+        bool singerAmend;
         private void otoview_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (((FrameworkElement)e.OriginalSource).DataContext == null) return;
@@ -175,15 +177,15 @@ namespace OpenUtau.UI.Dialogs
             dialog.ShowDialog();
         }
 
-        private void FixConflictedOto(System.ComponentModel.CancelEventArgs e1, UOto result, string alias)
+        private void FixConflictedOto(CancelEventArgs e1, UOto result, string alias)
         {
             UOto conflictedOto = SelectedSinger.AliasMap[alias];
             if (!otoview.SelectedItem.Equals(conflictedOto) && !conflictedOto.Equals(result))
             {
-                MessageBoxManager.Yes = Lang.LanguageManager.GetLocalized("Replace");
-                MessageBoxManager.No = Lang.LanguageManager.GetLocalized("Duplicate");
+                MessageBoxManager.Yes = LanguageManager.GetLocalized("Replace");
+                MessageBoxManager.No = LanguageManager.GetLocalized("Duplicate");
                 MessageBoxManager.Register();
-                var warningResult = System.Windows.Forms.MessageBox.Show(string.Format("Singer {0} already has alia {1} (old: {2}({3}) , new: {4}({5})), replace or duplicate?", SelectedSinger.Name, result.Alias, conflictedOto.Alias, conflictedOto.File, result.Alias, result.File), "Conflict", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
+                var warningResult = MessageBox.Show(string.Format("Singer {0} already has alia {1} (old: {2}({3}) , new: {4}({5})), replace or duplicate?", SelectedSinger.Name, result.Alias, conflictedOto.Alias, conflictedOto.File, result.Alias, result.File), "Conflict", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
                 MessageBoxManager.Unregister();
                 switch (warningResult)
                 {
@@ -214,10 +216,10 @@ namespace OpenUtau.UI.Dialogs
             UDictionaryNote conflictedOto = SelectedSinger.PresetLyricsMap[newkey];
             if ((lyricsview.SelectedItem == null || !lyricsview.SelectedItem.Equals(conflictedOto)) && !conflictedOto.Equals(result))
             {
-                MessageBoxManager.Yes = Lang.LanguageManager.GetLocalized("Replace");
-                MessageBoxManager.No = Lang.LanguageManager.GetLocalized("Duplicate");
+                MessageBoxManager.Yes = LanguageManager.GetLocalized("Replace");
+                MessageBoxManager.No = LanguageManager.GetLocalized("Duplicate");
                 MessageBoxManager.Register();
-                var warningResult = System.Windows.Forms.MessageBox.Show(string.Format("Singer {0} already has lyrics {1}, replace or duplicate?", SelectedSinger.Name, newkey), "Conflict", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
+                var warningResult = MessageBox.Show(string.Format("Singer {0} already has lyrics {1}, replace or duplicate?", SelectedSinger.Name, newkey), "Conflict", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
                 MessageBoxManager.Unregister();
                 switch (warningResult)
                 {
@@ -241,7 +243,7 @@ namespace OpenUtau.UI.Dialogs
             }
         }
 
-        private void window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void window_Closing(object sender, CancelEventArgs e)
         {
             if (singerAmend)
             {
@@ -260,7 +262,7 @@ namespace OpenUtau.UI.Dialogs
         {
             if (otoview.SelectedItem != null && otoview.SelectedItem is UOto oto)
             {
-                UOto newOto = new UOto() { Alias = oto.Alias, Consonant = oto.Consonant, Cutoff = oto.Cutoff, Duration = oto.Duration, File = oto.File, Offset = oto.Offset, Overlap = oto.Overlap, Preutter = oto.Preutter };
+                UOto newOto = new UOto { Alias = oto.Alias, Consonant = oto.Consonant, Cutoff = oto.Cutoff, Duration = oto.Duration, File = oto.File, Offset = oto.Offset, Overlap = oto.Overlap, Preutter = oto.Preutter };
                 if (string.IsNullOrWhiteSpace(oto.Alias))
                 {
 
@@ -315,12 +317,12 @@ namespace OpenUtau.UI.Dialogs
 
         private void StartEditingLyricsPreset(bool auto = false)
         {
-            var selectedrow = (lyricsview.SelectedItem as DataRowView).Row as DataRow;
+            var selectedrow = (lyricsview.SelectedItem as DataRowView).Row;
             var key = (string)selectedrow.ItemArray[0];
             var lyrics = SelectedSinger.PresetLyricsMap[key];
             var midiWindow = new MidiWindow();
             var project = DocManager.Inst.Project;
-            var track = new UTrack() { TrackNo = project.Tracks.Count(), Singer = SelectedSinger, Name = "Temp", Color = Colors.Black };
+            var track = new UTrack { TrackNo = project.Tracks.Count(), Singer = SelectedSinger, Name = "Temp", Color = Colors.Black };
             //Start preparing
             DocManager.Inst.StartUndoGroup();
             DocManager.Inst.ExecuteCmd(new AddTrackCommand(project, track), true);
@@ -347,7 +349,7 @@ namespace OpenUtau.UI.Dialogs
                 midiWindow.MidiVM.SelectNote(part.Notes.First());
                 for (int i = 0; i < part.Notes.Count * 2; i++)
                 {
-                    midiWindow.RaiseEvent(new System.Windows.Input.KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromDependencyObject(midiWindow), 0, Key.Enter) { RoutedEvent = KeyDownEvent});
+                    midiWindow.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromDependencyObject(midiWindow), 0, Key.Enter) { RoutedEvent = KeyDownEvent});
                 }
                 PartManager.UpdatePart(part);
                 midiWindow.Close();
@@ -387,7 +389,7 @@ namespace OpenUtau.UI.Dialogs
         {
             if (lyricsview.SelectedItem != null)
             {
-                var selectedrow = (lyricsview.SelectedItem as DataRowView).Row as DataRow;
+                var selectedrow = (lyricsview.SelectedItem as DataRowView).Row;
                 var newkey = (string)selectedrow.ItemArray[0];
                 int i = 1;
                 for (; SelectedSinger.PresetLyricsMap.ContainsKey(newkey + " (" + i + ")"); ++i) { }
@@ -402,7 +404,7 @@ namespace OpenUtau.UI.Dialogs
         {
             if (lyricsview.SelectedItem != null)
             {
-                var selectedrow = (lyricsview.SelectedItem as DataRowView).Row as DataRow;
+                var selectedrow = (lyricsview.SelectedItem as DataRowView).Row;
                 SelectedSinger.PresetLyricsMap.Remove((string)selectedrow.ItemArray[0]);
                 RefreshLyricsView();
                 singerAmend = true;
@@ -422,7 +424,7 @@ namespace OpenUtau.UI.Dialogs
             var percents = dialog.txtPercent.Text.Split(',').Select(str =>
             {
                 var pure = new string(str.SkipWhile(ch => !char.IsDigit(ch) && ch != '.').ToArray());
-                return double.Parse((string)pure);
+                return double.Parse(pure);
             }).ToList();
             foreach (var item in SelectedSinger.AliasMap)
             {
@@ -472,7 +474,7 @@ namespace OpenUtau.UI.Dialogs
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.Fail(e.GetType().Name + ": " + ex.Message);
+                Debug.Fail(e.GetType().Name + ": " + ex.Message);
             }
         }
         string editinglyrics, editinglyricsQueue;
@@ -497,6 +499,7 @@ namespace OpenUtau.UI.Dialogs
             SingerCVTableDialog dialog = new SingerCVTableDialog();
             dialog.LoadSinger(SelectedSinger);
             dialog.ShowDialog();
+            singerAmend = true;
         }
 
         private void comboEncoding_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -505,7 +508,7 @@ namespace OpenUtau.UI.Dialogs
             var selIndex = name.SelectedIndex;
             var selsing = SelectedSinger;
             DocManager.Inst.Singers.Remove(selsing.Path);
-            var nes = OpenUtau.Core.Formats.UtauSoundbank.LoadSinger(selsing.Path, Encoding.GetEncoding((string)comboEncoding.SelectedItem), Encoding.GetEncoding((string)comboEncoding.SelectedItem));
+            var nes = LoadSinger(selsing.Path, Encoding.GetEncoding((string)comboEncoding.SelectedItem), Encoding.GetEncoding((string)comboEncoding.SelectedItem));
             DocManager.Inst.Singers.Add(nes.Path, nes);
             UpdateSingers();
             name.SelectedIndex = selIndex;
@@ -513,9 +516,9 @@ namespace OpenUtau.UI.Dialogs
 
         private void TextBoxLyrics_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (e.Source is System.Windows.Controls.TextBox)
+            if (e.Source is TextBox)
             {
-                var _txt = e.Source as System.Windows.Controls.TextBox;
+                var _txt = e.Source as TextBox;
                 if (editing) {
                     editinglyricsQueue = _txt.Text;
                     queue = true;
@@ -531,9 +534,9 @@ namespace OpenUtau.UI.Dialogs
         private void TextBoxLyrics_LostFocus(object sender, RoutedEventArgs e)
         {
 
-            if (e.Source is System.Windows.Controls.TextBox)
+            if (e.Source is TextBox)
             {
-                var _txt = e.Source as System.Windows.Controls.TextBox;
+                var _txt = e.Source as TextBox;
                 if (_txt.Text != editinglyrics)
                 {
                     if (SelectedSinger.PresetLyricsMap.ContainsKey(_txt.Text))

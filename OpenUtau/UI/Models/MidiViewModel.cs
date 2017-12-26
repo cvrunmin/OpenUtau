@@ -26,12 +26,12 @@ namespace OpenUtau.UI.Models
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
-        public UProject Project { get { return DocManager.Inst.Project; } }
-        
+        public UProject Project => DocManager.Inst.Project;
+
         public bool LyricsPresetDedicate { get; set; }
 
         UVoicePart _part;
-        public UVoicePart Part { get { return _part; } }
+        public UVoicePart Part => _part;
 
         public Canvas TimelineCanvas;
         public Canvas MidiCanvas;
@@ -59,10 +59,12 @@ namespace OpenUtau.UI.Models
         bool _showPitch = true;
         bool _snap = true;
 
-        public string Title { set { _title = value; OnPropertyChanged("Title"); } get { return "Midi Editor - " + _title; } }
-        public double TotalHeight { get { return UIConstants.MaxNoteNum * _trackHeight - _viewHeight; } }
-        public double TotalWidth { get { return _quarterCount * _quarterWidth - _viewWidth; } }
-        public double QuarterCount { set { _quarterCount = value; HorizontalPropertiesChanged(); } get { return _quarterCount; } }
+        public string Title { set { _title = value; OnPropertyChanged("Title"); } get => "Midi Editor - " + _title;
+        }
+        public double TotalHeight => UIConstants.MaxNoteNum * _trackHeight - _viewHeight;
+        public double TotalWidth => _quarterCount * _quarterWidth - _viewWidth;
+        public double QuarterCount { set { _quarterCount = value; HorizontalPropertiesChanged(); } get => _quarterCount;
+        }
         public double TrackHeight
         {
             set
@@ -70,7 +72,7 @@ namespace OpenUtau.UI.Models
                 _trackHeight = Math.Max(ViewHeight / UIConstants.MaxNoteNum, Math.Max(UIConstants.NoteMinHeight, Math.Min(UIConstants.NoteMaxHeight, value)));
                 VerticalPropertiesChanged();
             }
-            get { return _trackHeight; }
+            get => _trackHeight;
         }
 
         public double QuarterWidth
@@ -80,25 +82,36 @@ namespace OpenUtau.UI.Models
                 _quarterWidth = Math.Max(ViewWidth / QuarterCount, Math.Max(UIConstants.MidiQuarterMinWidth, Math.Min(UIConstants.MidiQuarterMaxWidth, value)));
                 HorizontalPropertiesChanged();
             }
-            get { return _quarterWidth; }
+            get => _quarterWidth;
         }
 
-        public double ViewWidth { set { _viewWidth = value; HorizontalPropertiesChanged(); QuarterWidth = QuarterWidth; OffsetX = OffsetX; } get { return _viewWidth; } }
-        public double ViewHeight { set { _viewHeight = value; VerticalPropertiesChanged(); TrackHeight = TrackHeight; OffsetY = OffsetY; } get { return _viewHeight; } }
-        public double OffsetX { set { _offsetX = Math.Min(TotalWidth, Math.Max(0, value)); HorizontalPropertiesChanged(); } get { return _offsetX; } }
-        public double OffsetY { set { _offsetY = Math.Min(TotalHeight, Math.Max(0, value)); VerticalPropertiesChanged(); } get { return _offsetY; } }
+        public double ViewWidth { set { _viewWidth = value; HorizontalPropertiesChanged(); QuarterWidth = QuarterWidth; OffsetX = OffsetX; } get => _viewWidth;
+        }
+        public double ViewHeight { set { _viewHeight = value; VerticalPropertiesChanged(); TrackHeight = TrackHeight; OffsetY = OffsetY; } get => _viewHeight;
+        }
+        public double OffsetX { set { _offsetX = Math.Min(TotalWidth, Math.Max(0, value)); HorizontalPropertiesChanged(); } get => _offsetX;
+        }
+        public double OffsetY { set { _offsetY = Math.Min(TotalHeight, Math.Max(0, value)); VerticalPropertiesChanged(); } get => _offsetY;
+        }
         public double ViewportSizeX { get { if (TotalWidth < 1) return 10000; else return ViewWidth * (TotalWidth + ViewWidth) / TotalWidth; } }
         public double ViewportSizeY { get { if (TotalHeight < 1) return 10000; else return ViewHeight * (TotalHeight + ViewHeight) / TotalHeight; } }
-        public double SmallChangeX { get { return ViewportSizeX / 10; } }
-        public double SmallChangeY { get { return ViewportSizeY / 10; } }
-        public double QuarterOffset { set { _quarterOffset = value; HorizontalPropertiesChanged(); } get { return _quarterOffset; } }
-        public double MinTickWidth { set { _minTickWidth = value; HorizontalPropertiesChanged(); } get { return _minTickWidth; } }
-        public int BeatPerBar { set { _beatPerBar = value; HorizontalPropertiesChanged(); } get { return _beatPerBar; } }
-        public int BeatUnit { set { _beatUnit = value; HorizontalPropertiesChanged(); } get { return _beatUnit; } }
-        public bool ShowPitch { set { _showPitch = value; if(notesElement != null)notesElement.ShowPitch = value; OnPropertyChanged("ShowPitch"); } get { return _showPitch; } }
-        public bool ShowPhoneme { set { _showPhoneme = value; OnPropertyChanged("PhonemeVisibility"); OnPropertyChanged("ShowPhoneme"); } get { return _showPhoneme; } }
-        public Visibility PhonemeVisibility { get { return _showPhoneme ? Visibility.Visible : Visibility.Collapsed; } }
-        public bool Snap { set { _snap = value; OnPropertyChanged("Snap"); } get { return _snap; } }
+        public double SmallChangeX => ViewportSizeX / 10;
+        public double SmallChangeY => ViewportSizeY / 10;
+        public double QuarterOffset { set { _quarterOffset = value; HorizontalPropertiesChanged(); } get => _quarterOffset;
+        }
+        public double MinTickWidth { set { _minTickWidth = value; HorizontalPropertiesChanged(); } get => _minTickWidth;
+        }
+        public int BeatPerBar { set { _beatPerBar = value; HorizontalPropertiesChanged(); } get => _beatPerBar;
+        }
+        public int BeatUnit { set { _beatUnit = value; HorizontalPropertiesChanged(); } get => _beatUnit;
+        }
+        public bool ShowPitch { set { _showPitch = value; if(notesElement != null)notesElement.ShowPitch = value; OnPropertyChanged("ShowPitch"); } get => _showPitch;
+        }
+        public bool ShowPhoneme { set { _showPhoneme = value; OnPropertyChanged("PhonemeVisibility"); OnPropertyChanged("ShowPhoneme"); } get => _showPhoneme;
+        }
+        public Visibility PhonemeVisibility => _showPhoneme ? Visibility.Visible : Visibility.Collapsed;
+        public bool Snap { set { _snap = value; OnPropertyChanged("Snap"); } get => _snap;
+        }
 
         public void HorizontalPropertiesChanged()
         {
@@ -362,9 +375,8 @@ namespace OpenUtau.UI.Models
         }
 
         private bool _viewOnly;
-        public bool ViewMode { get {
-                return _viewOnly;
-            } set {
+        public bool ViewMode { get => _viewOnly;
+            set {
                 _viewOnly = value;
                 MarkUpdate();
             }

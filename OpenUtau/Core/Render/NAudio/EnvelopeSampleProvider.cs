@@ -55,10 +55,7 @@ namespace OpenUtau.Core.Render
             }
         }
 
-        public WaveFormat WaveFormat
-        {
-            get { return source.WaveFormat; }
-        }
+        public WaveFormat WaveFormat => source.WaveFormat;
 
         private int x0, x1;
         private float y0, y1;

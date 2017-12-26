@@ -10,7 +10,7 @@ namespace OpenUtau.Core.Render
 {
     public class CachedSound
     {
-        public int MemSize { get { return AudioData.Length * sizeof(float); } }
+        public int MemSize => AudioData.Length * sizeof(float);
         public float[] AudioData { get; private set; }
         public WaveFormat WaveFormat { get; private set; }
 

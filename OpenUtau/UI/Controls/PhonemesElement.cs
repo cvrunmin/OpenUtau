@@ -18,7 +18,8 @@ namespace OpenUtau.UI.Controls
         public new double Y { set { } get { return 0; } }
 
         bool _hidePhoneme = false;
-        public bool HidePhoneme { set { if (_hidePhoneme != value) { _hidePhoneme = value; MarkUpdate(); } } get { return _hidePhoneme; } }
+        public bool HidePhoneme { set { if (_hidePhoneme != value) { _hidePhoneme = value; MarkUpdate(); } } get => _hidePhoneme;
+        }
 
         protected Pen penEnv;
         protected Pen penEnvSel;

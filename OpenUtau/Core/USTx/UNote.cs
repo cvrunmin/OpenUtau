@@ -26,7 +26,7 @@ namespace OpenUtau.Core.USTx
         public bool Error = false;
         public bool Selected = false;
 
-        public int EndTick { get { return PosTick + DurTick; } }
+        public int EndTick => PosTick + DurTick;
 
         public bool IsLyricBoxActive { get; internal set; }
 

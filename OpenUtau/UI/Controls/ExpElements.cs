@@ -19,19 +19,22 @@ namespace OpenUtau.UI.Controls
     {
         protected DrawingVisual visual;
 
-        protected override int VisualChildrenCount { get { return 1; } }
+        protected override int VisualChildrenCount => 1;
         protected override Visual GetVisualChild(int index) { return visual; }
 
         protected UVoicePart _part;
-        public virtual UVoicePart Part { set { _part = value; MarkUpdate(); } get { return _part; } }
+        public virtual UVoicePart Part { set { _part = value; MarkUpdate(); } get => _part;
+        }
 
         public string Key;
         protected TranslateTransform tTrans;
 
         protected double _visualHeight;
-        public double VisualHeight { set { if (_visualHeight != value) { _visualHeight = value; MarkUpdate(); } } get { return _visualHeight; } }
+        public double VisualHeight { set { if (_visualHeight != value) { _visualHeight = value; MarkUpdate(); } } get => _visualHeight;
+        }
         protected double _scaleX;
-        public double ScaleX { set { if (_scaleX != value) { _scaleX = value; MarkUpdate(); } } get { return _scaleX; } }
+        public double ScaleX { set { if (_scaleX != value) { _scaleX = value; MarkUpdate(); } } get => _scaleX;
+        }
 
         public ExpElement()
         {
@@ -42,7 +45,8 @@ namespace OpenUtau.UI.Controls
             this.AddVisualChild(visual);
         }
 
-        public double X { set { if (tTrans.X != Math.Round(value)) { tTrans.X = Math.Round(value); } } get { return tTrans.X; } }
+        public double X { set { if (tTrans.X != Math.Round(value)) { tTrans.X = Math.Round(value); } } get => tTrans.X;
+        }
 
         ExpDisMode displayMode;
 
@@ -63,7 +67,7 @@ namespace OpenUtau.UI.Controls
                     }
                 }
             }
-            get { return displayMode; }
+            get => displayMode;
         }
 
         protected bool _updated = false;

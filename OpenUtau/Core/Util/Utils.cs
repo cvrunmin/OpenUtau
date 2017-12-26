@@ -257,4 +257,17 @@ namespace OpenUtau.Core.Util
             }
         }
     }
+
+    public class CVMapCompare : IEqualityComparer<KeyValuePair<string, SortedSet<string>>>
+    {
+        public bool Equals(KeyValuePair<string, SortedSet<string>> x, KeyValuePair<string, SortedSet<string>> y)
+        {
+            return x.Key.Equals(y.Key);
+        }
+
+        public int GetHashCode(KeyValuePair<string, SortedSet<string>> obj)
+        {
+            return obj.Key.GetHashCode();
+        }
+    }
 }

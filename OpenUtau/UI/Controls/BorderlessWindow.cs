@@ -46,13 +46,13 @@ namespace OpenUtau.UI.Controls
         
         public FrameworkElement MenuContent
         {
-            set { SetValue(MenuContentProperty, value); }
-            get { return (FrameworkElement)GetValue(MenuContentProperty); }
+            set => SetValue(MenuContentProperty, value);
+            get => (FrameworkElement)GetValue(MenuContentProperty);
         }
         public bool Resizable
         {
-            set { SetValue(ResizableProperty, value); }
-            get { return (bool)GetValue(ResizableProperty); }
+            set => SetValue(ResizableProperty, value);
+            get => (bool)GetValue(ResizableProperty);
         }
 
         private WindowChrome windowChrome;

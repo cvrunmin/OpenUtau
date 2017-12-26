@@ -19,13 +19,7 @@ namespace OpenUtau.UI.Dialogs
     /// </summary>
     public partial class ExportUstDialog : Window
     {
-        public bool ExportTrack
-        {
-            get
-            {
-                return comboExportU.SelectedIndex == 1;
-            }
-        }
+        public bool ExportTrack => comboExportU.SelectedIndex == 1;
 
         public ExportUstDialog()
         {

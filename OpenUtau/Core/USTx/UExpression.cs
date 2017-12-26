@@ -16,9 +16,9 @@ namespace OpenUtau.Core.USTx
         protected string _name;
         protected string _abbr;
 
-        public UNote Parent { get { return _parent; } }
-        public virtual string Name { get { return _name; } }
-        public virtual string Abbr { get { return _abbr; } }
+        public UNote Parent => _parent;
+        public virtual string Name => _name;
+        public virtual string Abbr => _abbr;
 
         public abstract string Type { get; }
         public abstract object Data { set; get; }
@@ -39,11 +39,19 @@ namespace OpenUtau.Core.USTx
         protected int _min = 0;
         protected int _max = 100;
         protected int _default = 0;
-        public virtual int Default { set { _default = value; } get { return _default; } }
-        public virtual int Min { set { _min = value; } get { return _min; } }
-        public virtual int Max { set { _max = value; } get { return _max; } }
-        public override string Type { get { return "int"; } }
-        public override object Data { set { _data = Math.Min(Max, Math.Max(Min, (int)value)); } get { return _data; } }
+        public virtual int Default { set => _default = value;
+            get => _default;
+        }
+        public virtual int Min { set => _min = value;
+            get => _min;
+        }
+        public virtual int Max { set => _max = value;
+            get => _max;
+        }
+        public override string Type => "int";
+        public override object Data { set => _data = Math.Min(Max, Math.Max(Min, (int)value));
+            get => _data;
+        }
         public override UExpression Clone(UNote newParent) { return new IntExpression(newParent, Name, Abbr) { Min = Min, Max = Max, Data = Data, Default = Default }; }
         public override UExpression Split(UNote newParent, int postick) { var exp = Clone(newParent); return exp; }
         public new class UExpDiff : UExpression.UExpDiff
@@ -88,11 +96,19 @@ namespace OpenUtau.Core.USTx
         protected float _min = 0;
         protected float _max = 100;
         protected float _default = 0;
-        public virtual float Default { set { _default = value; } get { return _default; } }
-        public virtual float Min { set { _min = value; } get { return _min; } }
-        public virtual float Max { set { _max = value; } get { return _max; } }
-        public override string Type { get { return "float"; } }
-        public override object Data { set { _data = Math.Min(Max, Math.Max(Min, (float)value)); } get { return _data; } }
+        public virtual float Default { set => _default = value;
+            get => _default;
+        }
+        public virtual float Min { set => _min = value;
+            get => _min;
+        }
+        public virtual float Max { set => _max = value;
+            get => _max;
+        }
+        public override string Type => "float";
+        public override object Data { set => _data = Math.Min(Max, Math.Max(Min, (float)value));
+            get => _data;
+        }
         public override UExpression Clone(UNote newParent) { return new FloatExpression(newParent, Name, Abbr) { Min = Min, Max = Max, Data = Data, Default =Default }; }
         public override UExpression Split(UNote newParent, int postick) { var exp = Clone(newParent); return exp; }
 
@@ -136,9 +152,13 @@ namespace OpenUtau.Core.USTx
         public BoolExpression(UNote parent, string name, string abbr) : base(parent, name, abbr) { }
         protected bool _data;
         protected bool _default = false;
-        public virtual bool Default { set { _default = value; } get { return _default; } }
+        public virtual bool Default { set => _default = value;
+            get => _default;
+        }
         public override string Type => "bool";
-        public override object Data { set { _data = (bool)value; } get { return _data; } }
+        public override object Data { set => _data = (bool)value;
+            get => _data;
+        }
         public override UExpression Clone(UNote newParent) { return new BoolExpression(newParent, Name, Abbr) { Data = Data, Default = Default }; }
         public override UExpression Split(UNote newParent, int postick) { var exp = Clone(newParent); return exp; }
 
@@ -226,10 +246,15 @@ namespace OpenUtau.Core.USTx
         }
         protected List<PitchPoint> _data = new List<PitchPoint>();
         protected bool _snapFirst = true;
-        public override string Type { get { return "pitch"; } }
-        public override object Data { set { _data = (List<PitchPoint>)value; } get { return _data; } }
-        public List<PitchPoint> Points { get { return _data; } }
-        public bool SnapFirst { set { _snapFirst = value; } get { return _snapFirst; } }
+        public override string Type => "pitch";
+        public override object Data { set => _data = (List<PitchPoint>)value;
+            get => _data;
+        }
+        public List<PitchPoint> Points => _data;
+
+        public bool SnapFirst { set => _snapFirst = value;
+            get => _snapFirst;
+        }
         public void AddPoint(PitchPoint p) { _data.Add(p); _data.Sort(); }
         public void RemovePoint(PitchPoint p) { _data.Remove(p); }
         public override UExpression Clone(UNote newParent)
@@ -269,9 +294,12 @@ namespace OpenUtau.Core.USTx
             _data.Add(new ExpPoint(0, 0));
         }
         protected List<ExpPoint> _data = new List<ExpPoint>();
-        public override string Type { get { return "envelope"; } }
-        public override object Data { set { _data = (List<ExpPoint>)value; } get { return _data; } }
-        public List<ExpPoint> Points { get { return _data; } }
+        public override string Type => "envelope";
+
+        public override object Data { set => _data = (List<ExpPoint>)value;
+            get => _data;
+        }
+        public List<ExpPoint> Points => _data;
         public UPhoneme ParentPhoneme;
         public override UExpression Clone(UNote newParent)
         {
@@ -297,14 +325,26 @@ namespace OpenUtau.Core.USTx
         double _out;
         double _shift;
         double _drift;
-        public double Length { set { _length = Math.Max(0, Math.Min(100, value)); } get { return _length; } }
-        public double Period { set { _period = Math.Max(64, Math.Min(512, value)); } get { return _period; } }
-        public double Depth { set { _depth = Math.Max(5, Math.Min(200, value)); } get { return _depth; } }
-        public double In { set { _in = Math.Max(0, Math.Min(100, value)); _out = Math.Max(0, Math.Min(_out, 100 - value)); } get { return _in; } }
-        public double Out { set { _out = Math.Max(0, Math.Min(100, value)); _in = Math.Max(0, Math.Min(_in, 100 - value)); } get { return _out; } }
-        public double Shift { set { _shift = Math.Max(0, Math.Min(100, value)); } get { return _shift; } }
-        public double Drift { set { _drift = Math.Max(-100, Math.Min(100, value)); } get { return _drift; } }
-        public override string Type { get { return "pitch"; } }
+        public double Length { set => _length = Math.Max(0, Math.Min(100, value));
+            get => _length;
+        }
+        public double Period { set => _period = Math.Max(64, Math.Min(512, value));
+            get => _period;
+        }
+        public double Depth { set => _depth = Math.Max(5, Math.Min(200, value));
+            get => _depth;
+        }
+        public double In { set { _in = Math.Max(0, Math.Min(100, value)); _out = Math.Max(0, Math.Min(_out, 100 - value)); } get => _in;
+        }
+        public double Out { set { _out = Math.Max(0, Math.Min(100, value)); _in = Math.Max(0, Math.Min(_in, 100 - value)); } get => _out;
+        }
+        public double Shift { set => _shift = Math.Max(0, Math.Min(100, value));
+            get => _shift;
+        }
+        public double Drift { set => _drift = Math.Max(-100, Math.Min(100, value));
+            get => _drift;
+        }
+        public override string Type => "pitch";
         public override object Data { set; get; }
         public override UExpression Clone(UNote newParent)
         {

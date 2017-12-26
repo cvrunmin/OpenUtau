@@ -33,14 +33,14 @@ namespace OpenUtau.UI.Controls
     {
         public double TrackHeight
         {
-            set { SetValue(TrackHeightProperty, value); }
-            get { return (double)GetValue(TrackHeightProperty); }
+            set => SetValue(TrackHeightProperty, value);
+            get => (double)GetValue(TrackHeightProperty);
         }
 
         public double OffsetY
         {
-            set { SetValue(OffsetYProperty, value); }
-            get { return (double)GetValue(OffsetYProperty); }
+            set => SetValue(OffsetYProperty, value);
+            get => (double)GetValue(OffsetYProperty);
         }
 
         public static readonly DependencyProperty TrackHeightProperty = DependencyProperty.Register("TrackHeight", typeof(double), typeof(TrackBackground), new PropertyMetadata(0.0, MarkUpdateCallback));
@@ -132,49 +132,49 @@ namespace OpenUtau.UI.Controls
     {
         public double QuarterWidth
         {
-            set { SetValue(QuarterWidthProperty, value); }
-            get { return (double)GetValue(QuarterWidthProperty); }
+            set => SetValue(QuarterWidthProperty, value);
+            get => (double)GetValue(QuarterWidthProperty);
         }
 
         public double MinTickWidth
         {
-            set { SetValue(MinTickWidthProperty, value); }
-            get { return (double)GetValue(MinTickWidthProperty); }
+            set => SetValue(MinTickWidthProperty, value);
+            get => (double)GetValue(MinTickWidthProperty);
         }
 
         public double OffsetX
         {
-            set { SetValue(OffsetXProperty, value); }
-            get { return (double)GetValue(OffsetXProperty); }
+            set => SetValue(OffsetXProperty, value);
+            get => (double)GetValue(OffsetXProperty);
         }
 
         public double QuarterOffset
         {
-            set { SetValue(QuarterOffsetProperty, value); }
-            get { return (double)GetValue(QuarterOffsetProperty); }
+            set => SetValue(QuarterOffsetProperty, value);
+            get => (double)GetValue(QuarterOffsetProperty);
         }
 
         public int BeatPerBar 
         {
-            set { SetValue(BeatPerBarProperty, value); }
-            get { return (int)GetValue(BeatPerBarProperty); }
+            set => SetValue(BeatPerBarProperty, value);
+            get => (int)GetValue(BeatPerBarProperty);
         }
 
         public int BeatUnit
         {
-            set { SetValue(BeatUnitProperty, value); }
-            get { return (int)GetValue(BeatUnitProperty); }
+            set => SetValue(BeatUnitProperty, value);
+            get => (int)GetValue(BeatUnitProperty);
         }
 
         public int TickMode
         {
-            set { SetValue(TickModeProperty, value); }
-            get { return (int)GetValue(TickModeProperty); }
+            set => SetValue(TickModeProperty, value);
+            get => (int)GetValue(TickModeProperty);
         }
 
         public int Resolution {
-            set { SetValue(ResolutionProperty, value); }
-            get { return (int)GetValue(ResolutionProperty); }
+            set => SetValue(ResolutionProperty, value);
+            get => (int)GetValue(ResolutionProperty);
         }
 
         public static readonly DependencyProperty QuarterWidthProperty = DependencyProperty.Register("QuarterWidth", typeof(double), typeof(TickBackground), new PropertyMetadata(0.0, MarkUpdateCallback));

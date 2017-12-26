@@ -38,11 +38,21 @@ namespace OpenUtau.UI.Controls
         double dragLastX;
         double dragLastY;
 
-        public double Min { set { SetValue(MinProperty, value); } get { return (double)GetValue(MinProperty); } }
-        public double Max { set { SetValue(MaxProperty, value); } get { return (double)GetValue(MaxProperty); } }
-        public double Value { set { SetValue(ValueProperty, value); } get { return (double)GetValue(ValueProperty); } }
-        public Geometry PathData { set { SetValue(PathDataProperty, value); } get { return (Geometry)GetValue(PathDataProperty); } }
-        public bool HorizontallyScaled { set { SetValue(HorizontallyScaledProperty, value); } get { return (bool)GetValue(HorizontallyScaledProperty); } }
+        public double Min { set => SetValue(MinProperty, value);
+            get => (double)GetValue(MinProperty);
+        }
+        public double Max { set => SetValue(MaxProperty, value);
+            get => (double)GetValue(MaxProperty);
+        }
+        public double Value { set => SetValue(ValueProperty, value);
+            get => (double)GetValue(ValueProperty);
+        }
+        public Geometry PathData { set => SetValue(PathDataProperty, value);
+            get => (Geometry)GetValue(PathDataProperty);
+        }
+        public bool HorizontallyScaled { set => SetValue(HorizontallyScaledProperty, value);
+            get => (bool)GetValue(HorizontallyScaledProperty);
+        }
 
         public static readonly DependencyProperty MinProperty = DependencyProperty.Register("Min", typeof(double), typeof(ViewScaler), new PropertyMetadata(0.0, UpdatePathCallBack));
         public static readonly DependencyProperty MaxProperty = DependencyProperty.Register("Max", typeof(double), typeof(ViewScaler), new PropertyMetadata(0.0, UpdatePathCallBack));

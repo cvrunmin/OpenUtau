@@ -34,36 +34,37 @@ namespace OpenUtau.UI.Controls
 
         public virtual double X
         {
-            set { tTransPost.X = value; }
-            get { return tTransPost.X; }
+            set => tTransPost.X = value;
+            get => tTransPost.X;
         }
 
         public virtual double Y
         {
-            set { tTransPost.Y = value; }
-            get { return tTransPost.Y; }
+            set => tTransPost.Y = value;
+            get => tTransPost.Y;
         }
 
         public virtual double ScaleX
         {
             set { sTransPost.ScaleX = value; RedrawFrame(); }
-            get { return sTransPost.ScaleX; }
+            get => sTransPost.ScaleX;
         }
 
         protected double _height;
         public double VisualHeight
         {
             set { if (value != _height) { _height = value; FitHeight(value); } }
-            get { return _height; }
+            get => _height;
         }
         protected virtual void FitHeight(double height)
         { sTransPost.ScaleY = height / partVisual.ContentBounds.Height; RedrawFrame(); }
         public virtual double CanvasWidth { set; get; }
 
-        public double VisualWidth { get { return Part.DurTick * ScaleX; } }
+        public double VisualWidth => Part.DurTick * ScaleX;
 
         protected bool _selected = false;
-        public bool Selected { set { if (_selected != value) { _selected = value; RedrawFrame(); } } get { return _selected; } }
+        public bool Selected { set { if (_selected != value) { _selected = value; RedrawFrame(); } } get => _selected;
+        }
 
         public PartElement()
         {
@@ -148,9 +149,11 @@ namespace OpenUtau.UI.Controls
         }
 
         protected bool _modified = false;
-        public virtual bool Modified { set { _modified = value; } get { return _modified; } }
+        public virtual bool Modified { set => _modified = value;
+            get => _modified;
+        }
 
-        protected override int VisualChildrenCount { get { return 4; } }
+        protected override int VisualChildrenCount => 4;
 
         protected override Visual GetVisualChild(int index)
         {
@@ -206,25 +209,25 @@ namespace OpenUtau.UI.Controls
         public override double CanvasWidth
         {
             set { if (_canvasWidth != value) { _canvasWidth = value; RedrawPart(); } }
-            get { return _canvasWidth; }
+            get => _canvasWidth;
         }
 
         public override double Y
         {
             set { tTransPost.Y = value; partImageTrans.Y = value; }
-            get { return tTransPost.Y; }
+            get => tTransPost.Y;
         }
 
         public override double X
         {
             set { tTransPost.X = value; RedrawPart(); }
-            get { return tTransPost.X; }
+            get => tTransPost.X;
         }
 
         public override double ScaleX
         {
             set { sTransPost.ScaleX = value; RedrawFrame(); RedrawPart(); }
-            get { return sTransPost.ScaleX; }
+            get => sTransPost.ScaleX;
         }
 
         protected override void FitHeight(double height)

@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 using OpenUtau.Core.USTx;
 using OpenUtau.Core.Lib;
 using NAudio.Wave;
 using System.Web.Script.Serialization;
+using JsonFx.Json;
+using JsonFx.Serialization;
+using JsonFx.Serialization.Resolvers;
 using static OpenUtau.Core.Formats.USTx;
 using OpenUtau.Core.Util;
 
@@ -34,7 +39,10 @@ namespace OpenUtau.Core.Formats
                             singer = LoadSinger(dirpath);
                             singers.Add(singer.Path, singer);
                         }
-                        catch { }
+                        catch (Exception e)
+                        {
+                            Debug.WriteLine(e.Message);
+                        }
                     }
                 }
             }
@@ -48,7 +56,7 @@ namespace OpenUtau.Core.Formats
             else if (loadedSingers.ContainsKey(absPath))
             {
                 if (loadedSingers[absPath] == null) return null;
-                if(loadedSingers[absPath].Loaded)
+                if (loadedSingers[absPath].Loaded)
                 {
                     return loadedSingers[absPath];
                 }
@@ -73,7 +81,8 @@ namespace OpenUtau.Core.Formats
             if (pathEncoding == null) return "";
             return PathManager.Inst.GetSingerAbsPath(EncodingUtil.ConvertEncoding(ustEncoding, pathEncoding, path));
         }
-        public static void SaveSinger(USinger singer) {
+        public static void SaveSinger(USinger singer)
+        {
             SaveOtos(singer);
             /*using (var writer = new StreamWriter(Path.Combine(singer.Path, "character.txt"), false, Encoding.UTF8))
             {
@@ -85,13 +94,14 @@ namespace OpenUtau.Core.Formats
             }*/
             SavePrefixMap(singer);
             SaveLyricPreset(singer);
+            ExtractCVMod(singer);
         }
         public static USinger LoadSinger(string path)
         {
             if (!Directory.Exists(path) ||
     !File.Exists(Path.Combine(path, "character.txt")) ||
     !File.Exists(Path.Combine(path, "oto.ini"))) return null;
-            
+
             var FileEncoding = EncodingUtil.DetectFileEncoding(Path.Combine(path, "oto.ini"), Encoding.Default);
             var PathEncoding = Encoding.Default;
             string[] lines = File.ReadAllLines(Path.Combine(path, "oto.ini"), FileEncoding);
@@ -110,7 +120,7 @@ namespace OpenUtau.Core.Formats
             if (PathEncoding == null) return null;
             return LoadSinger(path, FileEncoding, PathEncoding);
         }
-            public static USinger LoadSinger(string path, Encoding fileE, Encoding pathE)
+        public static USinger LoadSinger(string path, Encoding fileE, Encoding pathE)
         {
             if (!Directory.Exists(path) ||
                 !File.Exists(Path.Combine(path, "character.txt")) ||
@@ -177,7 +187,8 @@ namespace OpenUtau.Core.Formats
             foreach (var item in singer.AliasMap.Values)
             {
                 string pho = !string.IsNullOrWhiteSpace(item.Alias) ? item.Alias : Path.GetFileNameWithoutExtension(item.File);
-                if (pho.ContainsAny(singer.PitchMap.Values, out var mat)) {
+                if (pho.ContainsAny(singer.PitchMap.Values, out var mat))
+                {
                     pho = pho.Replace(mat, "");
                 }
                 SamplingStyleHelper.Style style = SamplingStyleHelper.GetStyle(pho);
@@ -187,25 +198,171 @@ namespace OpenUtau.Core.Formats
                     var consonent = LyricsHelper.GetConsonant(pho);
                     var vowel = LyricsHelper.GetVowel(pho);
                     var pho1 = consonent + vowel;
-                    if (!singer.ConsonentMap.ContainsKey(consonent))
+                    if (!singer.ConsonentRawMap.ContainsKey(consonent))
                     {
-                        singer.ConsonentMap.Add(consonent, new SortedSet<string>());
+                        singer.ConsonentRawMap.Add(consonent, new SortedSet<string>());
                     }
-                    if (!singer.VowelMap.ContainsKey(vowel))
+                    if (!singer.VowelRawMap.ContainsKey(vowel))
                     {
-                        singer.VowelMap.Add(vowel, new SortedSet<string>());
+                        singer.VowelRawMap.Add(vowel, new SortedSet<string>());
                     }
-                    if (!singer.ConsonentMap[consonent].Contains(pho1)) singer.ConsonentMap[consonent].Add(pho1);
-                    if (!singer.VowelMap[vowel].Contains(pho1)) singer.VowelMap[vowel].Add(pho1);
+                    if (!singer.ConsonentRawMap[consonent].Contains(pho1)) singer.ConsonentRawMap[consonent].Add(pho1);
+                    if (!singer.VowelRawMap[vowel].Contains(pho1)) singer.VowelRawMap[vowel].Add(pho1);
                 }
             }
-            double avg = list.Average(style => style == Util.SamplingStyleHelper.Style.CV ? 1 : style == Util.SamplingStyleHelper.Style.VCV ? 3 : style == Util.SamplingStyleHelper.Style.VC ? 2 : 0);
-            double v = Math.Round(avg);
-            if (v == 1) singer.Style = Util.SamplingStyleHelper.Style.CV;
-            else if (v == 3) singer.Style = Util.SamplingStyleHelper.Style.VCV;
-            else if (v == 2) singer.Style = Util.SamplingStyleHelper.Style.CVVC;
-            else singer.Style = Util.SamplingStyleHelper.Style.Others;
+            InjectCVMod(singer);
+            var avg = list.Average(style => style == Util.SamplingStyleHelper.Style.CV ? 1 : style == Util.SamplingStyleHelper.Style.VCV ? 3 : style == Util.SamplingStyleHelper.Style.VC ? 2 : 0);
+            var v = Math.Round(avg);
+            switch (v)
+            {
+                case 1:
+                    singer.Style = Util.SamplingStyleHelper.Style.CV;
+                    break;
+                case 3:
+                    singer.Style = Util.SamplingStyleHelper.Style.VCV;
+                    break;
+                case 2:
+                    singer.Style = Util.SamplingStyleHelper.Style.CVVC;
+                    break;
+                default:
+                    singer.Style = Util.SamplingStyleHelper.Style.Others;
+                    break;
+            }
             singer.Detail += $"\n\n Style: {singer.Style.ToString()}";
+        }
+
+        private static void InjectCVMod(USinger singer)
+        {
+            var path = Path.Combine(singer.Path, "cvmap.json");
+            if (File.Exists(path))
+            {
+                var reader = new JsonReader(new DataReaderSettings(new DataContractResolverStrategy()));
+                using (var read = File.OpenText(path))
+                {
+                    var map = reader.Read<CVMap>(read);
+                    foreach (var pair in singer.VowelRawMap)
+                    {
+                        if (!map.Vowels.Removal.Contains(pair.Key))
+                        {
+                            singer.VowelMap.Add(pair.Key, new SortedSet<string>(pair.Value));
+                        }
+                    }
+                    foreach (var pair in singer.ConsonentRawMap)
+                    {
+                        if (!map.Consonents.Removal.Contains(pair.Key))
+                        {
+                            singer.ConsonentMap.Add(pair.Key, new SortedSet<string>(pair.Value));
+                        }
+                    }
+                    foreach (var a in map.Vowels.Addition)
+                    {
+                        singer.VowelMap.Add(a.Key, a.Value);
+                    }
+                    foreach (var a in map.Consonents.Addition)
+                    {
+                        singer.ConsonentMap.Add(a.Key, a.Value);
+                    }
+                    foreach (var mod in map.Vowels.Modification)
+                    {
+                        var raw = singer.VowelMap[mod.Key];
+                        mod.Value.Remove.ForEach(remove => raw.Remove(remove));
+                        mod.Value.Add.ForEach(add => raw.Add(add));
+                        singer.VowelMap[mod.Key] = raw;
+                    }
+                    foreach (var mod in map.Consonents.Modification)
+                    {
+                        var raw = singer.ConsonentMap[mod.Key];
+                        mod.Value.Remove.ForEach(remove => raw.Remove(remove));
+                        mod.Value.Add.ForEach(add => raw.Add(add));
+                        singer.ConsonentMap[mod.Key] = raw;
+                    }
+                }
+            }
+            else
+            {
+                singer.VowelMap = new SortedDictionary<string,SortedSet<string>>();
+                foreach (var pair in singer.VowelRawMap)
+                {
+                    singer.VowelMap.Add(pair.Key, new SortedSet<string>(pair.Value));
+                }
+                singer.ConsonentMap = new SortedDictionary<string, SortedSet<string>>();
+                foreach (var pair in singer.ConsonentRawMap)
+                {
+                    singer.ConsonentMap.Add(pair.Key, new SortedSet<string>(pair.Value));
+                }
+            }
+        }
+
+        private static void ExtractCVMod(USinger singer)
+        {
+            var path = Path.Combine(singer.Path, "cvmap.json");
+            var map = new CVMap
+            {
+                Consonents = new CVMap.CVMapPart()
+                {
+                    Addition = new Dictionary<string, SortedSet<string>>(),
+                    Removal = new List<string>(),
+                    Modification = new Dictionary<string, CVMap.CVMapPart.Mod>()
+                },
+                Vowels = new CVMap.CVMapPart()
+                {
+                    Addition = new Dictionary<string, SortedSet<string>>(),
+                    Removal = new List<string>(),
+                    Modification = new Dictionary<string, CVMap.CVMapPart.Mod>()
+                }
+            };
+            
+            var keep = singer.VowelMap.Intersect(singer.VowelRawMap, new CVMapCompare()).ToList();
+            var add = singer.VowelMap.Except(keep, new CVMapCompare());
+            var rem = singer.VowelRawMap.Except(keep, new CVMapCompare());
+            map.Vowels.Removal.AddRange(rem.Select(pair => pair.Key));
+            foreach (var pair in add)
+            {
+                map.Vowels.Addition.Add(pair.Key, pair.Value);
+            }
+            foreach (var pair in keep)
+            {
+                var k1 = singer.VowelMap[pair.Key].Intersect(singer.VowelRawMap[pair.Key]).ToList();
+                var a1 = singer.VowelMap[pair.Key].Except(k1);
+                var r1 = singer.VowelRawMap[pair.Key].Except(k1);
+                if (a1.Any() || r1.Any())
+                {
+                    var mod = new CVMap.CVMapPart.Mod
+                    {
+                        Add = a1.ToList(),
+                        Remove = r1.ToList()
+                    };
+                    map.Vowels.Modification.Add(pair.Key, mod);
+                }
+            }
+            keep = singer.ConsonentMap.Intersect(singer.ConsonentRawMap, new CVMapCompare()).ToList();
+            add = singer.ConsonentMap.Except(keep, new CVMapCompare());
+            rem = singer.ConsonentRawMap.Except(keep, new CVMapCompare());
+            map.Consonents.Removal.AddRange(rem.Select(pair => pair.Key));
+            foreach (var pair in add)
+            {
+                map.Consonents.Addition.Add(pair.Key, pair.Value);
+            }
+            foreach (var pair in keep)
+            {
+                var k1 = singer.ConsonentMap[pair.Key].Intersect(singer.ConsonentRawMap[pair.Key]).ToList();
+                var a1 = singer.ConsonentMap[pair.Key].Except(k1);
+                var r1 = singer.ConsonentRawMap[pair.Key].Except(k1);
+                if (a1.Any() || r1.Any())
+                {
+                    var mod = new CVMap.CVMapPart.Mod
+                    {
+                        Add = a1.ToList(),
+                        Remove = r1.ToList()
+                    };
+                    map.Consonents.Modification.Add(pair.Key, mod);
+                }
+            }
+            using (var writer = File.CreateText(path))
+            {
+                var jw = new JsonWriter(new DataWriterSettings(new DataContractResolverStrategy()));
+                jw.Write(map, writer);
+            }
         }
 
         static Encoding DetectSingerPathEncoding(string singerPath, Encoding ustEncoding)
@@ -218,7 +375,7 @@ namespace OpenUtau.Core.Formats
             }
             return null;
         }
-        
+
         static Encoding DetectPathEncoding(string path, string basePath, Encoding encoding)
         {
             string[] encodings = new string[] { "shift_jis", "gbk", "utf-8" };
@@ -250,10 +407,11 @@ namespace OpenUtau.Core.Formats
             string file = Path.Combine(dirpath, "oto.ini");
             string relativeDir = dirpath.Replace(path, "");
             while (relativeDir.StartsWith("\\")) relativeDir = relativeDir.Substring(1);
-            var groupedAlias = singer.AliasMap.Values.GroupBy((oto) => {
+            var groupedAlias = singer.AliasMap.Values.GroupBy((oto) =>
+            {
                 return Path.GetDirectoryName(oto.File);
             });
-            if (groupedAlias.Any(grouping=>grouping.Key.Equals(relativeDir)))
+            if (groupedAlias.Any(grouping => grouping.Key.Equals(relativeDir)))
             {
                 var locatedAlias = groupedAlias.First(grouping => grouping.Key.Equals(relativeDir));
                 using (var writer = new StreamWriter(file, false, new UTF8Encoding(false)))
@@ -265,7 +423,7 @@ namespace OpenUtau.Core.Formats
                     }
                 }
             }
-            
+
         }
         static void LoadOto(string dirpath, string path, USinger singer)
         {
@@ -305,21 +463,21 @@ namespace OpenUtau.Core.Formats
                 }
             }
             if (errorLines.Count > 0)
-                System.Diagnostics.Debug.WriteLine(string.Format(
-                    "Oto file {0} has following errors:\n{1}", file, string.Join("\n", errorLines.ToArray())));
+                System.Diagnostics.Debug.WriteLine(
+                    $"Oto file {file} has following errors:\n{string.Join("\n", errorLines.ToArray())}");
         }
 
         static void LoadPrefixMap(USinger singer)
         {
             string path = singer.Path;
-            if (File.Exists(Path.Combine(path, "prefix.map"))) 
+            if (File.Exists(Path.Combine(path, "prefix.map")))
             {
                 string[] lines;
                 try
                 {
                     lines = File.ReadAllLines(Path.Combine(path, "prefix.map"));
                 }
-                catch(IOException e)
+                catch (IOException e)
                 {
                     throw new IOException("Prefix map exists but cannot be opened for read.", e);
                 }
@@ -340,10 +498,10 @@ namespace OpenUtau.Core.Formats
         static void SavePrefixMap(USinger singer)
         {
             string path = singer.Path;
-                /*using (var map = File.CreateText(Path.Combine(path, "prefix.map")))
-                {
+            /*using (var map = File.CreateText(Path.Combine(path, "prefix.map")))
+            {
 
-                }*/
+            }*/
         }
 
         static void SaveLyricPreset(USinger singer)
@@ -411,7 +569,7 @@ namespace OpenUtau.Core.Formats
             {
                 UNote uNote = serializer.ConvertToType<UNote>(note);
                 uNote.NoteNo = prenote.Notes.Count;
-                prenote.Notes.Add(uNote.NoteNo,uNote);
+                prenote.Notes.Add(uNote.NoteNo, uNote);
             }
             foreach (var item in (Dictionary<string, object>)(dictionary["expression-processing"]))
             {
@@ -427,6 +585,39 @@ namespace OpenUtau.Core.Formats
             dict.Add("notes", realobj.Notes.Values);
             dict.Add("expression-processing", realobj.NotesProcessing);
             return dict;
+        }
+    }
+
+    [DataContract]
+    public class CVMap
+    {
+        [DataMember(Name = "consonents")]
+        public CVMapPart Consonents { get; set; }
+        [DataMember(Name = "vowels")]
+        public CVMapPart Vowels { get; set; }
+
+        [DataContract]
+        public class CVMapPart
+        {
+            [DataMember(Name = "remove")]
+            public List<string> Removal { get; set; }
+
+            [DataMember(Name = "add")]
+            public Dictionary<string, SortedSet<string>> Addition { get; set; }
+
+            [DataMember(Name = "mod")]
+            public Dictionary<string, Mod> Modification { get; set; }
+
+            [DataContract]
+            public class Mod
+            {
+                [DataMember(Name = "add")]
+                public List<string> Add { get; set; }
+
+
+                [DataMember(Name = "del")]
+                public List<string> Remove { get; set; }
+            }
         }
     }
 }

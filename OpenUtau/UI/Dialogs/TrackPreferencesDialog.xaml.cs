@@ -33,10 +33,7 @@ namespace OpenUtau.UI.Dialogs
                 _selectedGrid = value;
                 if (_selectedGrid != null) _selectedGrid.Visibility = System.Windows.Visibility.Visible;
             }
-            get
-            {
-                return _selectedGrid;
-            }
+            get => _selectedGrid;
         }
         public UTrack Track { get; set; }
         List<string> singerPaths;

@@ -104,10 +104,7 @@ namespace OpenUtau.Core.Render.NAudio
         /// </summary>
         public override long Position
         {
-            get
-            {
-                return position;
-            }
+            get => position;
             set
             {
                 lock (lockObject)
@@ -210,9 +207,7 @@ namespace OpenUtau.Core.Render.NAudio
         private float plainVolume;
 
         public float PlainVolume {
-            get {
-                return plainVolume;
-            }
+            get => plainVolume;
             set {
                 plainVolume = value;
                 volume = Muted ? 0f : plainVolume;
@@ -229,8 +224,8 @@ namespace OpenUtau.Core.Render.NAudio
         /// </summary>
         public float Pan
         {
-            get { return pan; }
-            set { pan = value; }
+            get => pan;
+            set => pan = value;
         }
 
         /// <summary>

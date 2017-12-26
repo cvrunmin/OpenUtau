@@ -1,9 +1,7 @@
-﻿using OpenUtau.Core.USTx;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
+using OpenUtau.Core.USTx;
 
 namespace OpenUtau.Core.Util
 {
@@ -38,8 +36,10 @@ namespace OpenUtau.Core.Util
             }
         }
 
-        public static string GetVowel(string lyrics, USinger singer) {
-            return GetVowel(lyrics);
+        public static string GetVowel(string lyrics, USinger singer)
+        {
+            var vowel = singer.VowelMap?.FirstOrDefault(pair => pair.Value.Contains(lyrics)).Key;
+            return string.IsNullOrEmpty(vowel) ? GetVowel(lyrics) : vowel;
         }
 
         public static string GetConsonant(string lyrics)
@@ -73,8 +73,10 @@ namespace OpenUtau.Core.Util
             }
         }
 
-        public static string GetConsonant(string lyrics, USinger singer) {
-            return GetConsonant(lyrics);
+        public static string GetConsonant(string lyrics, USinger singer)
+        {
+            var consonant = singer.ConsonentMap?.FirstOrDefault(pair => pair.Value.Contains(lyrics)).Key;
+            return string.IsNullOrEmpty(consonant) ? GetConsonant(lyrics) : consonant;
         }
     }
 
@@ -198,8 +200,8 @@ namespace OpenUtau.Core.Util
                 return "o";
             }
             if (lyrics.Equals("ん")) return "n";
-            if (lyrics.All(ch => char.IsLetter(ch))) return LyricsHelper.GetVowel(lyrics, true);
-            throw new ArgumentException($"Unsupported parameter: {lyrics}", nameof(lyrics));
+            if (lyrics.All(char.IsLetter)) return LyricsHelper.GetVowel(lyrics, true);
+            throw new ArgumentException($@"Unsupported parameter: {lyrics}", nameof(lyrics));
         }
 
         public static string ToRomaji(string hiragana)
@@ -219,7 +221,7 @@ namespace OpenUtau.Core.Util
                 case "n":
                     return "n";
                 default:
-                    throw new ArgumentException($"Unsupported parameter: {hiragana}", nameof(hiragana));
+                    throw new ArgumentException($@"Unsupported parameter: {hiragana}", nameof(hiragana));
             }
         }
         public static string ToHiragana(string romaji) {
@@ -238,7 +240,7 @@ namespace OpenUtau.Core.Util
                 case 'n':
                     return "ん";
                 default:
-                    throw new ArgumentException($"Unsupported parameter: {romaji}", nameof(romaji));
+                    throw new ArgumentException($@"Unsupported parameter: {romaji}", nameof(romaji));
             }
         }
 
@@ -266,7 +268,7 @@ namespace OpenUtau.Core.Util
             Others = 0
         }
 
-        public static string GetCorrespondingPhoneme(string original, UNote former, UNote lator, Style dest) {
+        public static string GetCorrespondingPhoneme(string original, UNote former, UNote lator, Style dest, USinger singer = null) {
             Style style = GetStyle(original);
             if (original.Equals("-")) return original;
             if (style == Style.CV)
@@ -287,23 +289,17 @@ namespace OpenUtau.Core.Util
                         {
                             return HiraganaRomajiHelper.GetVowel(mainPho) + " " + original;
                         }
-                        else if (HiraganaRomajiHelper.IsSupportedRomaji(mainPho))
+                        if (HiraganaRomajiHelper.IsSupportedRomaji(mainPho))
                         {
                             return mainPho.Last() + " " + original;
                         }
-                        else
-                        {
-                            int startIndex = mainPho.IndexOfAny(new char[] { 'a', 'e', 'i', 'o', 'u' });
-                            var wildGuessVowel = mainPho.Substring(Math.Max(0, startIndex));
-                            return wildGuessVowel + " " + original;
-                        }
+                        int startIndex = mainPho.IndexOfAny(new[] { 'a', 'e', 'i', 'o', 'u' });
+                        var wildGuessVowel = mainPho.Substring(Math.Max(0, startIndex));
+                        return wildGuessVowel + " " + original;
                     }
-                    else
-                    {
-                        return "- " + original;
-                    }
+                    return "- " + original;
                 }
-                else if(dest == Style.CVVC)
+                if(dest == Style.CVVC)
                 {
                     string pt1 = "";
                     string pt2 = "";
@@ -316,14 +312,14 @@ namespace OpenUtau.Core.Util
                         pt1 = original;
                     }
                     if (lator == null) {
-                        pt2 = LyricsHelper.GetVowel(original) + " R";
+                        pt2 = LyricsHelper.GetVowel(original, singer) + " R";
                     }
                     else
                     {
-                        string con = LyricsHelper.GetConsonant(lator.Lyric);
-                        pt2 = LyricsHelper.GetVowel(original) + " " + (string.IsNullOrEmpty(con) ? LyricsHelper.GetVowel(lator.Lyric) : con);
+                        string con = LyricsHelper.GetConsonant(lator.Lyric, singer);
+                        pt2 = LyricsHelper.GetVowel(original, singer) + " " + (string.IsNullOrEmpty(con) ? LyricsHelper.GetVowel(lator.Lyric, singer) : con);
                     }
-					return pt1 + '\t' + pt2;
+                    return pt1 + '\t' + pt2;
                 }
             }
             else if (style == Style.VCV)
@@ -346,28 +342,22 @@ namespace OpenUtau.Core.Util
         /// <param name="phoneme"></param>
         /// <returns></returns>
         public static Style GetStyle(string phoneme) {
-            var match = System.Text.RegularExpressions.Regex.Match(phoneme, pattern: @"([\w-]+)\s(\w+)");
+            var match = Regex.Match(phoneme, pattern: @"([\w-]+)\s(\w+)");
             if (match.Success)
             {
                 if (match.Groups[1].Value == "-")
                 {
                     return Style.VCV;
                 }
-                else
-                {
-                    if (HiraganaRomajiHelper.IsSupportedHiragana(match.Groups[2].Value) || HiraganaRomajiHelper.IsSupportedRomaji(match.Groups[2].Value))
-                        return Style.VCV;
-                    return Style.VC;
-                }
+                if (HiraganaRomajiHelper.IsSupportedHiragana(match.Groups[2].Value) || HiraganaRomajiHelper.IsSupportedRomaji(match.Groups[2].Value))
+                    return Style.VCV;
+                return Style.VC;
             }
-            else if(System.Text.RegularExpressions.Regex.IsMatch(phoneme, pattern: @"[\w-]+"))
+            if(Regex.IsMatch(phoneme, pattern: @"[\w-]+"))
             {
                 return Style.CV;
             }
-            else
-            {
-                return Style.Others;
-            }
+            return Style.Others;
         }
     }
 }

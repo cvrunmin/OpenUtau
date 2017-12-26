@@ -34,7 +34,7 @@ namespace OpenUtau.UI.Models
     class MidiViewHitTest : ICmdSubscriber
     {
         MidiViewModel midiVM;
-        UProject Project { get { return DocManager.Inst.Project; } }
+        UProject Project => DocManager.Inst.Project;
 
         public MidiViewHitTest(MidiViewModel midiVM) { this.midiVM = midiVM; }
 

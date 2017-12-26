@@ -62,8 +62,8 @@ namespace OpenUtau.Core.Util
         /// </summary>
         private string Path
         {
-            set { m_Path = value; }
-            get { return m_Path; }
+            set => m_Path = value;
+            get => m_Path;
         }
 
         /// <summary>

@@ -15,19 +15,25 @@ namespace OpenUtau.UI.Controls
 {
     class NotesElement : ExpElement
     {
-        public new double X { set { if (tTrans.X != Math.Round(value)) { tTrans.X = Math.Round(value); MarkUpdate(); } } get { return tTrans.X; } }
-        public double Y { set { if (tTrans.Y != Math.Round(value)) { tTrans.Y = Math.Round(value); } } get { return tTrans.Y; } }
+        public new double X { set { if (tTrans.X != Math.Round(value)) { tTrans.X = Math.Round(value); MarkUpdate(); } } get => tTrans.X;
+        }
+        public double Y { set { if (tTrans.Y != Math.Round(value)) { tTrans.Y = Math.Round(value); } } get => tTrans.Y;
+        }
 
         double _trackHeight;
-        public double TrackHeight { set { if (_trackHeight != value) { _trackHeight = value; MarkUpdate(); } } get { return _trackHeight; } }
+        public double TrackHeight { set { if (_trackHeight != value) { _trackHeight = value; MarkUpdate(); } } get => _trackHeight;
+        }
 
         double _quarterWidth;
-        public double QuarterWidth { set { if (_quarterWidth != value) { _quarterWidth = value; MarkUpdate(); } } get { return _quarterWidth; } }
+        public double QuarterWidth { set { if (_quarterWidth != value) { _quarterWidth = value; MarkUpdate(); } } get => _quarterWidth;
+        }
 
         bool _showPitch = true;
-        public bool ShowPitch { set { if (_showPitch != value) { _showPitch = value; MarkUpdate(); } } get { return _showPitch; } }
+        public bool ShowPitch { set { if (_showPitch != value) { _showPitch = value; MarkUpdate(); } } get => _showPitch;
+        }
 
-        public override UVoicePart Part { set { _part = value; ClearFormattedTextPool(); MarkUpdate(); } get { return _part; } }
+        public override UVoicePart Part { set { _part = value; ClearFormattedTextPool(); MarkUpdate(); } get => _part;
+        }
 
         public OpenUtau.UI.Models.MidiViewModel midiVM;
 
@@ -88,7 +94,8 @@ namespace OpenUtau.UI.Controls
             if (note.IsLyricBoxActive) DrawLyricBox(note);
         }
         private TextBox lyricBox = null;
-        public TextBox LyricBox { get { return lyricBox; } }
+        public TextBox LyricBox => lyricBox;
+
         protected virtual void DrawLyricBox(UNote note)
         {
             double left = note.PosTick * midiVM.QuarterWidth / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar + 1 - midiVM.OffsetX;

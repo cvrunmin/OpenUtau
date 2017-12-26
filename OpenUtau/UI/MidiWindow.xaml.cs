@@ -56,7 +56,7 @@ namespace OpenUtau.UI
         private bool _tiny;
         public bool LyricsPresetDedicate
         {
-            get { return _tiny; }
+            get => _tiny;
             set
             {
                 _tiny = value;
@@ -81,9 +81,8 @@ namespace OpenUtau.UI
 
         private bool _viewOnly;
         private bool _multiview;
-        public bool ViewOnly { get {
-                return _viewOnly;
-            } set {
+        public bool ViewOnly { get => _viewOnly;
+            set {
                 _viewOnly = value;
                 menuEdit.IsEnabled = !value;
                 MultiView = value;

@@ -31,14 +31,14 @@ namespace OpenUtau.Core
 
         static DocManager _s;
         static DocManager GetInst() { if (_s == null) { _s = new DocManager(); } return _s; }
-        public static DocManager Inst { get { return GetInst(); } }
+        public static DocManager Inst => GetInst();
 
         public int playPosTick = 0;
 
         Dictionary<string, USinger> _singers;
-        public Dictionary<string, USinger> Singers { get { return _singers; } }
+        public Dictionary<string, USinger> Singers => _singers;
         UProject _project;
-        public UProject Project { get { return _project; } }
+        public UProject Project => _project;
 
         public void SearchAllSingers()
         {
@@ -46,6 +46,7 @@ namespace OpenUtau.Core
             var list = new List<USinger>();
             foreach (var item in Project.Singers)
             {
+                if(item != null)
                 list.Add(Singers.FirstOrDefault(pair => pair.Value.Name.Equals(item.Name) && pair.Value.Path.Equals(item.Path)).Value);
             }
             Project.Singers = list.Distinct().ToList();
@@ -62,13 +63,7 @@ namespace OpenUtau.Core
         UCommandGroup undoGroup = null;
         UCommandGroup savedPoint = null;
 
-        public bool ChangesSaved
-        {
-            get
-            {
-                return Project.Saved && (undoQueue.Count > 0 && savedPoint == undoQueue.Last() || undoQueue.Count == 0 && savedPoint == null);
-            }
-        }
+        public bool ChangesSaved => Project.Saved && (undoQueue.Count > 0 && savedPoint == undoQueue.Last() || undoQueue.Count == 0 && savedPoint == null);
 
         public void ExecuteCmd(UCommand cmd, bool quiet = false)
         {

@@ -81,7 +81,7 @@ namespace OpenUtau.Core.USTx
     public class USinger
     {
         public string Name { get; set; } = "";
-        public string DisplayName { get { return Loaded ? Name : Name + "[Unloaded]"; } }
+        public string DisplayName => Loaded ? Name : Name + "[Unloaded]";
         public string Path = "";
         public string Author;
         public string Website;
@@ -101,7 +101,9 @@ namespace OpenUtau.Core.USTx
         public Dictionary<string, string> PitchMap = new Dictionary<string, string>();
         public SortedDictionary<string, UOto> AliasMap = new SortedDictionary<string, UOto>();
         public SortedDictionary<string, SortedSet<string>> ConsonentMap = new SortedDictionary<string, SortedSet<string>>();
+        public SortedDictionary<string, SortedSet<string>> ConsonentRawMap = new SortedDictionary<string, SortedSet<string>>();
         public SortedDictionary<string, SortedSet<string>> VowelMap = new SortedDictionary<string, SortedSet<string>>();
+        public SortedDictionary<string, SortedSet<string>> VowelRawMap = new SortedDictionary<string, SortedSet<string>>();
         public SortedDictionary<string, UDictionaryNote> PresetLyricsMap = new SortedDictionary<string, UDictionaryNote>();
     }
 }

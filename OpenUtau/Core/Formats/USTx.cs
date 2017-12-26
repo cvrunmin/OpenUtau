@@ -146,10 +146,7 @@ namespace OpenUtau.Core.Formats
                 return result;
             }
 
-            public override IEnumerable<Type> SupportedTypes
-            {
-                get { return new List<Type>(new Type[] { typeof(UNote) }); }
-            }
+            public override IEnumerable<Type> SupportedTypes => new List<Type>(new Type[] { typeof(UNote) });
         }
 
         internal class UPhonemeConverter : JavaScriptConverter
@@ -202,10 +199,7 @@ namespace OpenUtau.Core.Formats
                 return result;
             }
 
-            public override IEnumerable<Type> SupportedTypes
-            {
-                get { return new List<Type>(new Type[] { typeof(UPhoneme) }); }
-            }
+            public override IEnumerable<Type> SupportedTypes => new List<Type>(new Type[] { typeof(UPhoneme) });
         }
 
         internal class UPartConvertor : JavaScriptConverter
@@ -307,10 +301,7 @@ namespace OpenUtau.Core.Formats
                 return result;
             }
 
-            public override IEnumerable<Type> SupportedTypes
-            {
-                get { return new List<Type>(new Type[] { typeof(UPart), typeof(UVoicePart), typeof(UWavePart) }); }
-            }
+            public override IEnumerable<Type> SupportedTypes => new List<Type>(new Type[] { typeof(UPart), typeof(UVoicePart), typeof(UWavePart) });
         }
 
         internal class UProjectConvertor : JavaScriptConverter
@@ -408,10 +399,7 @@ namespace OpenUtau.Core.Formats
                 return result;
             }
 
-            public override IEnumerable<Type> SupportedTypes
-            {
-                get { return new List<Type>(new Type[] { typeof(UProject) }); }
-            }
+            public override IEnumerable<Type> SupportedTypes => new List<Type>(new Type[] { typeof(UProject) });
         }
 
         internal class MiscConvertor : JavaScriptConverter
@@ -618,21 +606,16 @@ namespace OpenUtau.Core.Formats
                 return result;
             }
 
-            public override IEnumerable<Type> SupportedTypes
-            {
-                get {
-                    return new List<Type>(new Type[] {
-                        typeof(IntExpression),
-                        typeof(FloatExpression),
-                        typeof(FlagIntExpression),
-                        typeof(FlagFloatExpression),
-                        typeof(BoolExpression),
-                        typeof(FlagBoolExpression),
-                        typeof(UTrack),
-                        typeof(USinger)
-                    });
-                }
-            }
+            public override IEnumerable<Type> SupportedTypes => new List<Type>(new Type[] {
+                typeof(IntExpression),
+                typeof(FloatExpression),
+                typeof(FlagIntExpression),
+                typeof(FlagFloatExpression),
+                typeof(BoolExpression),
+                typeof(FlagBoolExpression),
+                typeof(UTrack),
+                typeof(USinger)
+            });
         }
         private static UExpression ResolveExpression(string key, object value, JavaScriptSerializer serializer)
         {

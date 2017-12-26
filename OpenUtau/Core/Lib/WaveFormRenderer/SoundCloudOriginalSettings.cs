@@ -27,7 +27,7 @@ namespace WaveFormRendererLib
                 }
                 return base.TopPeakPen;
             }
-            set { base.TopPeakPen = value; }
+            set => base.TopPeakPen = value;
         }
 
 
@@ -43,14 +43,11 @@ namespace WaveFormRendererLib
                 }
                 return base.BottomPeakPen;
             }
-            set { base.BottomPeakPen = value; }
+            set => base.BottomPeakPen = value;
         }
 
 
-        public override Pen BottomSpacerPen
-        {
-            get { throw new InvalidOperationException("No spacer pen required"); }
-        }
+        public override Pen BottomSpacerPen => throw new InvalidOperationException("No spacer pen required");
 
         private Pen CreateSoundcloudBottomPen(int topHeight, int bottomHeight)
         {

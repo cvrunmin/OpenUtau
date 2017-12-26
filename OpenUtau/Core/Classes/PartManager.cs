@@ -306,7 +306,7 @@ namespace OpenUtau.Core
                 {
                     UNote former = part.Notes.FirstOrDefault(note1 => note1 != note && Math.Abs(note.PosTick - note1.EndTick) < DocManager.Inst.Project.Resolution / 64);
                     UNote lator = part.Notes.FirstOrDefault(note1 => note1 != note && Math.Abs(note1.PosTick - note.EndTick) < DocManager.Inst.Project.Resolution / 64);
-                    var mod = Util.SamplingStyleHelper.GetCorrespondingPhoneme(note.Lyric, former, lator, singer.Style);
+                    var mod = Util.SamplingStyleHelper.GetCorrespondingPhoneme(note.Lyric, former, lator, singer.Style, singer);
                     var mods = mod.Split('\t');
                     if (mods.Length == 1) {
                         if(note.Phonemes.Count == 1)
@@ -314,7 +314,7 @@ namespace OpenUtau.Core
                         else
                         {
                             note.Phonemes.Clear();
-                            note.Phonemes.Add(new UPhoneme() { Phoneme = mods[0], Parent = note});
+                            note.Phonemes.Add(new UPhoneme { Phoneme = mods[0], Parent = note});
                         }
                     }
                     else

@@ -7,7 +7,37 @@
         mc:Ignorable="d"
         Title="SingerCVTableDialog" Height="480" Width="650">
     <Grid>
-        <DataGrid x:Name="dataGridCV" Margin="10" ItemsSource="{Binding}" RowEditEnding="dataGridCV_RowEditEnding" CellEditEnding="dataGridCV_CellEditEnding"/>
+        <DataGrid x:Name="dataGridCV" Margin="10,10,10,0" ItemsSource="{Binding}" RowEditEnding="dataGridCV_RowEditEnding" CellEditEnding="dataGridCV_CellEditEnding" Height="429" VerticalAlignment="Top" Visibility="Collapsed"/>
+        <TabControl>
+            <TabItem Header="Vowels">
+                <Grid Background="#FFE5E5E5">
+                    <ListBox x:Name="listVowel" HorizontalAlignment="Left" Height="300" Margin="10,10,0,0" VerticalAlignment="Top" Width="250" SelectionChanged="listVowel_SelectionChanged"/>
+                    <Grid Height="300" Margin="265,10,10,0" VerticalAlignment="Top" Background="White">
+                        <Label Content="Vowel (use for VCV/CVVC)" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                        <TextBox x:Name="txtVowel" HorizontalAlignment="Left" Height="23" Margin="10,40,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+                        <Label Content="Phonemes" HorizontalAlignment="Left" Margin="10,68,0,0" VerticalAlignment="Top"/>
+                        <TextBox x:Name="txtPhoV" Margin="10,98,10,10" TextWrapping="Wrap" AutoWordSelection="True" VerticalScrollBarVisibility="Visible"/>
+                    </Grid>
+                    <Button x:Name="butRemoveV" Content="{DynamicResource Remove}" HorizontalAlignment="Left" Margin="185,315,0,0" VerticalAlignment="Top" Width="75" Click="butRemoveV_Click"/>
+                    <Button x:Name="butAddV" Content="{DynamicResource Add}" Margin="0,315,90,0" VerticalAlignment="Top" Click="butAddV_Click" HorizontalAlignment="Right" Width="75"/>
+                    <Button x:Name="butSaveV" Content="{DynamicResource Save}" Margin="551,315,10,0" VerticalAlignment="Top" Click="butSaveV_Click"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Consonents">
+                <Grid Background="#FFE5E5E5">
+                    <ListBox x:Name="listConsonents" HorizontalAlignment="Left" Height="300" Margin="10,10,0,0" VerticalAlignment="Top" Width="250" SelectionChanged="listConsonents_SelectionChanged"/>
+                    <Grid Height="300" Margin="265,10,10,0" VerticalAlignment="Top" Background="White">
+                        <Label Content="Consonent (use for VCV/CVVC)" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                        <TextBox x:Name="txtConsonent" HorizontalAlignment="Left" Height="23" Margin="10,40,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+                        <Label Content="Phonemes" HorizontalAlignment="Left" Margin="10,68,0,0" VerticalAlignment="Top"/>
+                        <TextBox x:Name="txtPhoC" Margin="10,98,10,10" TextWrapping="Wrap" AutoWordSelection="True" VerticalScrollBarVisibility="Visible"/>
+                    </Grid>
+                    <Button x:Name="butRemoveC" Content="{DynamicResource Remove}" HorizontalAlignment="Left" Margin="185,315,0,0" VerticalAlignment="Top" Width="75" Click="butRemoveC_Click"/>
+                    <Button x:Name="butAddC" Content="{DynamicResource Add}" HorizontalAlignment="Right" Margin="0,315,90,0" VerticalAlignment="Top" Width="75" Click="butAddC_Click"/>
+                    <Button x:Name="butSaveC" Content="{DynamicResource Save}" HorizontalAlignment="Left" Margin="551,315,0,0" VerticalAlignment="Top" Width="75" Click="butSaveC_Click"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
 
     </Grid>
 </Window>

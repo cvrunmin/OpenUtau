@@ -32,10 +32,11 @@ namespace OpenUtau.UI.Models
         public int Index;
 
         int _selectedIndex;
-        public int SelectedIndex { set { _selectedIndex = value; OnPropertyChanged("SelectedIndex"); } get { return _selectedIndex; } }
+        public int SelectedIndex { set { _selectedIndex = value; OnPropertyChanged("SelectedIndex"); } get => _selectedIndex;
+        }
 
         ObservableCollection<string> _keys = new ObservableCollection<string>();
-        public ObservableCollection<string> Keys { get { return _keys; } }
+        public ObservableCollection<string> Keys => _keys;
 
         ExpDisMode _displayMode = ExpDisMode.Hidden;
 
@@ -51,33 +52,17 @@ namespace OpenUtau.UI.Models
                     OnPropertyChanged("Highlight");
                 }
             }
-            get { return _displayMode; }
+            get => _displayMode;
         }
 
-        public Brush TagBrush
-        {
-            get
-            {
-                return DisplayMode == ExpDisMode.Visible ? ThemeManager.BlackKeyNameBrushNormal :
-                    DisplayMode == ExpDisMode.Shadow ? ThemeManager.CenterKeyNameBrushNormal : ThemeManager.WhiteKeyNameBrushNormal;
-            }
-        }
-        public Brush Background
-        {
-            get
-            {
-                return DisplayMode == ExpDisMode.Visible ? ThemeManager.BlackKeyBrushNormal :
-                    DisplayMode == ExpDisMode.Shadow ? ThemeManager.CenterKeyBrushNormal : ThemeManager.WhiteKeyBrushNormal;
-            }
-        }
-        public Brush Highlight
-        {
-            get
-            {
-                return DisplayMode == ExpDisMode.Visible ? Brushes.Black :
-                    DisplayMode == ExpDisMode.Shadow ? Brushes.Black : Brushes.Black;
-            }
-        }
+        public Brush TagBrush => DisplayMode == ExpDisMode.Visible ? ThemeManager.BlackKeyNameBrushNormal :
+            DisplayMode == ExpDisMode.Shadow ? ThemeManager.CenterKeyNameBrushNormal : ThemeManager.WhiteKeyNameBrushNormal;
+
+        public Brush Background => DisplayMode == ExpDisMode.Visible ? ThemeManager.BlackKeyBrushNormal :
+            DisplayMode == ExpDisMode.Shadow ? ThemeManager.CenterKeyBrushNormal : ThemeManager.WhiteKeyBrushNormal;
+
+        public Brush Highlight => DisplayMode == ExpDisMode.Visible ? Brushes.Black :
+            DisplayMode == ExpDisMode.Shadow ? Brushes.Black : Brushes.Black;
 
         public ExpComboBoxViewModel() { this.Subscribe(DocManager.Inst); }
 

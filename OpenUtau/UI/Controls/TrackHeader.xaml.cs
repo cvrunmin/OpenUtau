@@ -26,7 +26,8 @@ namespace OpenUtau.UI.Controls
     public partial class TrackHeader : UserControl
     {
         UTrack _track;
-        public UTrack Track { set { _track = value; this.DataContext = value; } get { return _track; } }
+        public UTrack Track { set { _track = value; this.DataContext = value; } get => _track;
+        }
 
         [System.Runtime.InteropServices.DllImport("User32.dll")]
         private static extern bool SetCursorPos(int X, int Y);

@@ -18,7 +18,7 @@ namespace OpenUtau.Core.USTx
         public int PosTick = 0;
         public bool Error { get; set; }
         public virtual int DurTick { set; get; }
-        public int EndTick { get { return PosTick + DurTick; } }
+        public int EndTick => PosTick + DurTick;
 
         public UPart() { }
 
@@ -70,7 +70,7 @@ namespace OpenUtau.Core.USTx
         public string FilePath
         {
             set { _filePath = value; Name = System.IO.Path.GetFileName(value); }
-            get { return _filePath; }
+            get => _filePath;
         }
 
         public bool UseRelativePath { get; set; }
@@ -84,8 +84,8 @@ namespace OpenUtau.Core.USTx
         public int TailTrimTick { get; set; } = 0;
         public override int DurTick
         {
-            get { return FileDurTick - HeadTrimTick - TailTrimTick; }
-            set { TailTrimTick = FileDurTick - HeadTrimTick - value; }
+            get => FileDurTick - HeadTrimTick - TailTrimTick;
+            set => TailTrimTick = FileDurTick - HeadTrimTick - value;
         }
         public override int GetMinDurTick(UProject project) { return 60; }
 

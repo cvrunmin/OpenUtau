@@ -61,17 +61,19 @@ namespace OpenUtau.UI.Models
         public OtoViewModel model;
         protected DrawingVisual visual;
 
-        protected override int VisualChildrenCount { get { return 1; } }
+        protected override int VisualChildrenCount => 1;
         protected override Visual GetVisualChild(int index) { return visual; }
 
         protected UVoicePart _part;
-        public virtual UVoicePart Part { set { _part = value; MarkUpdate(); } get { return _part; } }
+        public virtual UVoicePart Part { set { _part = value; MarkUpdate(); } get => _part;
+        }
 
         public string Key;
         protected TranslateTransform tTrans;
 
         protected double _visualHeight;
-        public double VisualHeight { set { if (_visualHeight != value) { _visualHeight = value; MarkUpdate(); } } get { return _visualHeight; } }
+        public double VisualHeight { set { if (_visualHeight != value) { _visualHeight = value; MarkUpdate(); } } get => _visualHeight;
+        }
         protected double _scaleX;
         public double ScaleX {
             set {

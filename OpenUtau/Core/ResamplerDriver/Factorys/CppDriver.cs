@@ -133,13 +133,7 @@ namespace OpenUtau.Core.ResamplerDriver.Factorys
             }
 
         }
-        public bool isLegalPlugin
-        {
-            get
-            {
-                return _isLegalPlugin;
-            }
-        }
+        public bool isLegalPlugin => _isLegalPlugin;
 
         public System.IO.Stream DoResampler(DriverModels.EngineInput Args)
         {

@@ -111,18 +111,12 @@ namespace OpenUtau.Core.Render
         /// <summary>
         /// The output WaveFormat of this sample provider
         /// </summary>
-        public WaveFormat WaveFormat
-        {
-            get { return this.waveFormat; }
-        }
+        public WaveFormat WaveFormat => this.waveFormat;
 
         /// <summary>
         /// Last sample of sequence (not included)
         /// </summary>
-        public int LastSample
-        {
-            get { return lastSample; }
-        }
+        public int LastSample => lastSample;
 
         /// <summary>
         /// Reads samples from this sample provider

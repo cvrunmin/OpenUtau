@@ -59,10 +59,7 @@ namespace OpenUtau.Core.Render.NAudio
         /// </summary>
         public TimeSpan StartTime
         {
-            get
-            {
-                return startTime;
-            }
+            get => startTime;
             set
             {
                 lock (lockObject)
@@ -81,10 +78,7 @@ namespace OpenUtau.Core.Render.NAudio
         /// </summary>
         public TimeSpan SourceOffset
         {
-            get
-            {
-                return sourceOffset;
-            }
+            get => sourceOffset;
             set
             {
                 lock (lockObject)
@@ -102,10 +96,7 @@ namespace OpenUtau.Core.Render.NAudio
         /// </summary>
         public TimeSpan SourceLength
         {
-            get
-            {
-                return sourceLength;
-            }
+            get => sourceLength;
             set
             {
                 lock (lockObject)
@@ -135,10 +126,7 @@ namespace OpenUtau.Core.Render.NAudio
         /// </summary>
         public override long Position
         {
-            get
-            {
-                return position;
-            }
+            get => position;
             set
             {
                 lock (lockObject)

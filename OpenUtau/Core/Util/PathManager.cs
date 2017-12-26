@@ -14,8 +14,8 @@ namespace OpenUtau.Core
         public const string DefaultCachePath = "UCache";
 
         private string _homePath;
-        public string HomePath { get { return _homePath; } }
-        
+        public string HomePath => _homePath;
+
         private PathManager()
         {
             _homePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);

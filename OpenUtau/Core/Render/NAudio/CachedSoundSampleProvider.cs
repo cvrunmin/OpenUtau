@@ -13,7 +13,9 @@ namespace OpenUtau.Core.Render
         private readonly CachedSound cachedSound;
         private long position;
 
-        public long Position { set { position = value; } get { return position; } }
+        public long Position { set => position = value;
+            get => position;
+        }
 
         public CachedSoundSampleProvider(CachedSound cachedSound)
         {
@@ -29,7 +31,7 @@ namespace OpenUtau.Core.Render
             return (int)samplesToCopy;
         }
 
-        public WaveFormat WaveFormat { get { return cachedSound.WaveFormat; } }
+        public WaveFormat WaveFormat => cachedSound.WaveFormat;
 
         public CachedSoundSampleProvider Clone() {
             return new CachedSoundSampleProvider(cachedSound.Clone());

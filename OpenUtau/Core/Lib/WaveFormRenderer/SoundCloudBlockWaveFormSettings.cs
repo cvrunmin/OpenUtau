@@ -27,8 +27,8 @@ namespace WaveFormRendererLib
 
         public override Pen TopPeakPen
         {
-            get { return topPen; }
-            set { topPen = value; }
+            get => topPen;
+            set => topPen = value;
         }
 
         public Color TopSpacerGradientStartColor { get; set; }
@@ -45,21 +45,21 @@ namespace WaveFormRendererLib
                 }
                 return topSpacerPen;
             }
-            set { topSpacerPen = value; }
+            set => topSpacerPen = value;
         }
 
 
         public override Pen BottomPeakPen
         {
-            get { return bottomPen; }
-            set { bottomPen = value; }
+            get => bottomPen;
+            set => bottomPen = value;
         }
 
 
         public override Pen BottomSpacerPen
         {
-            get { return bottomSpacerPen; }
-            set { bottomSpacerPen = value; }
+            get => bottomSpacerPen;
+            set => bottomSpacerPen = value;
         }
 
     }
