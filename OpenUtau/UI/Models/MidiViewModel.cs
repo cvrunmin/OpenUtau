@@ -456,16 +456,16 @@ namespace OpenUtau.UI.Models
                 ExpElement expEl = new ExpElement();
                 if(ViewMode)
                 {
-                    if (Part.Expressions[_cmd.ExpKey] is IntExpression || Part.Expressions[_cmd.ExpKey] is FloatExpression)
+                    if (DocManager.Inst.Project.ExpressionTable[_cmd.ExpKey] is IntExpression || DocManager.Inst.Project.ExpressionTable[_cmd.ExpKey] is FloatExpression)
                     expEl = new ViewOnlyFloatExpElement() { Key = _cmd.ExpKey, Part = this.Part, midiVM = this };
-                else if (Part.Expressions[_cmd.ExpKey] is BoolExpression)
+                else if (DocManager.Inst.Project.ExpressionTable[_cmd.ExpKey] is BoolExpression)
                     expEl = new ViewOnlyBoolExpElement() { Key = _cmd.ExpKey, Part = this.Part, midiVM = this };
                 }
                 else
                 {
-                    if (Part.Expressions[_cmd.ExpKey] is IntExpression || Part.Expressions[_cmd.ExpKey] is FloatExpression)
+                    if (DocManager.Inst.Project.ExpressionTable[_cmd.ExpKey] is IntExpression || DocManager.Inst.Project.ExpressionTable[_cmd.ExpKey] is FloatExpression)
                         expEl = new FloatExpElement() { Key = _cmd.ExpKey, Part = this.Part, midiVM = this };
-                    else if (Part.Expressions[_cmd.ExpKey] is BoolExpression)
+                    else if (DocManager.Inst.Project.ExpressionTable[_cmd.ExpKey] is BoolExpression)
                         expEl = new BoolExpElement() { Key = _cmd.ExpKey, Part = this.Part, midiVM = this };
                 }
 
