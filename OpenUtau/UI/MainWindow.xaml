@@ -197,8 +197,8 @@
             </Grid>
         </Grid>
         <ProgressBar x:Name="progrss" Style="{StaticResource WindowBottomProgressBarStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
-                     Margin="0,0,0,0" Height="5" Value="{Binding Progress, Source={StaticResource progVM}}"
-                     Foreground="{Binding Foreground, Source={StaticResource progVM}}"/>
+                     Margin="0,0,0,0" Height="5" Value="{Binding Progress, FallbackValue=0, Source={StaticResource progVM}}"
+                     Foreground="{Binding Foreground, Source={StaticResource progVM}}" IsIndeterminate="{Binding IsIndeterminate, Source={StaticResource progVM}}"/>
         <TextBlock x:Name="progressText" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="4,0,4,5"
                    Text="{Binding Info, Source={StaticResource progVM}}"/>
     </Grid>

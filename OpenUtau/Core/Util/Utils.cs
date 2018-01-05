@@ -187,7 +187,8 @@ namespace OpenUtau.Core.Util
             string r = phos[0];
             for (int i = 1; i < phos.Length; i++)
             {
-                r = r.Remove(r.IndexOf(FindOverlapping(r, phos[i]))) + phos[i];
+                string ov = FindOverlapping(r, phos[i]);
+                r = (string.IsNullOrWhiteSpace(ov) ? r : r.Remove(r.IndexOf(ov))) + phos[i];
             }
             return r;
         }

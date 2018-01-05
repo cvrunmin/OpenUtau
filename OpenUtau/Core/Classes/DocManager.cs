@@ -163,6 +163,13 @@ namespace OpenUtau.Core
             System.Diagnostics.Debug.WriteLine("undoGroup started");
         }
 
+        public void RestoreUndoGroup()
+        {
+            if (undoGroup != null) { System.Diagnostics.Debug.WriteLine("undoGroup already started"); return; }
+            undoGroup = undoQueue.RemoveFromBack();
+            System.Diagnostics.Debug.WriteLine("undoGroup restored");
+        }
+
         public void EndUndoGroup()
         {
             if (undoGroup != null && undoGroup.Commands.Count > 0) { undoQueue.AddToBack(undoGroup); redoQueue.Clear(); }

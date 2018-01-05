@@ -156,12 +156,63 @@ namespace OpenUtau.Core
     public class ResizePartCommand : PartCommand
     {
         int newDur, oldDur;
-        public ResizePartCommand(UProject project, UPart part, int newDur) { this.project = project; this.part = part; this.newDur = newDur; this.oldDur = part.DurTick; }
+        bool stretch;
+        public ResizePartCommand(UProject project, UPart part, int newDur, bool stretch = false) { this.project = project; this.part = part; this.newDur = newDur; this.oldDur = part.DurTick; this.stretch = stretch; }
         public override string ToString() { return "Change parts duration"; }
-        public override void Execute() { part.DurTick = newDur;
+        public override void Execute() {
+            part.DurTick = newDur;
+            //if (stretch && part is UVoicePart voice) {
+            //    var sra = (float)newDur / oldDur;
+            //    foreach (var note in voice.Notes)
+            //    {
+            //        note.PosTick = (int)Math.Floor(note.PosTick * sra);
+            //        note.DurTick = (int)Math.Floor(note.DurTick * sra);
+            //    }
+            //}
             base.Execute();
         }
-        public override void Unexecute() { part.DurTick = oldDur;
+        public override void Unexecute() {
+            part.DurTick = oldDur;
+            //if (stretch && part is UVoicePart voice)
+            //{
+            //    var sra = (float)newDur / oldDur;
+            //    foreach (var note in voice.Notes)
+            //    {
+            //        note.PosTick = (int)Math.Ceiling(note.PosTick / sra);
+            //        note.DurTick = (int)Math.Ceiling(note.DurTick / sra);
+            //    }
+            //}
+            base.Unexecute();
+        }
+    }
+
+    public class StretchPartCommand : PartCommand
+    {
+        int newDur, oldDur;
+        float stretchRatio;
+        public StretchPartCommand(UProject project, UPart part, float stretch) { this.project = project; this.part = part; this.stretchRatio = stretch; }
+        public override string ToString() { return "stretch parts"; }
+        public override void Execute()
+        {
+            if (part is UVoicePart voice) {
+                foreach (var note in voice.Notes)
+                {
+                    note.PosTick = (int)Math.Floor(note.PosTick * stretchRatio);
+                    note.DurTick = (int)Math.Floor(note.DurTick * stretchRatio);
+                }
+            }
+            base.Execute();
+        }
+        public override void Unexecute()
+        {
+            if (part is UVoicePart voice)
+            {
+                foreach (var note in voice.Notes)
+                {
+                    note.PosTick = (int)Math.Ceiling(note.PosTick / stretchRatio);
+                    note.DurTick = (int)Math.Ceiling(note.DurTick / stretchRatio);
+                }
+            }
             base.Unexecute();
         }
     }

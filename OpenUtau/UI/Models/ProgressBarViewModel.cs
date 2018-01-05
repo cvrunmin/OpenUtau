@@ -28,6 +28,7 @@ namespace OpenUtau.UI.Models
         }
         public int Progress { set; get; }
         public string Info { set; get; }
+        public bool IsIndeterminate { get; set; }
 
         public void Update(ProgressBarNotification cmd)
         {
@@ -35,8 +36,10 @@ namespace OpenUtau.UI.Models
             {
                 Info = cmd.Info;
                 Progress = cmd.Progress;
+                IsIndeterminate = cmd.Progress < 0;
             }
             OnPropertyChanged("Progress");
+            OnPropertyChanged("IsIndeterminate");
             OnPropertyChanged("Info");
         }
 

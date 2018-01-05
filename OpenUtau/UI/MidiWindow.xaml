@@ -58,7 +58,7 @@
                     </Grid>
                 </ToggleButton.Content>
             </ToggleButton>
-            <ToggleButton x:Name="convertToggle" Style="{StaticResource ShowPitchToggleButtonStyle}" Width="20" Margin="0" HorizontalAlignment="Left" Focusable="False" IsChecked="{Binding Part.ConvertStyle, Source={StaticResource midiVM}}" Grid.Column="3" IsThreeState="True" Click="convertToggle_Click">
+            <ToggleButton x:Name="convertToggle" Style="{StaticResource ShowPitchToggleButtonStyle}" Width="20" Margin="0" HorizontalAlignment="Left" Focusable="False" IsChecked="{Binding AutoConvert, Source={StaticResource midiVM}}" Grid.Column="3" IsThreeState="True" Click="convertToggle_Click">
                 <ToggleButton.Content>
                     <Canvas Name="svg8" Width="4.7624999" Height="4.7625001" RenderTransformOrigin="0.5,0.5">
                         <Canvas.RenderTransform>

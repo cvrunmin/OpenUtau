@@ -1,0 +1,23 @@
+{
+	"MainWidth" : 1024,
+	"MainHeight" : 768,
+	"MainMaximized" : false,
+	"MidiWidth" : 1024,
+	"MidiHeight" : 768,
+	"MidiMaximized" : false,
+	"UndoLimit" : 100,
+	"MultiThreadLimit" : 5,
+	"SingerSearchPaths" : [
+		"Singers"
+	],
+	"EnterToEdit" : false,
+	"RenderNoteAtInstant" : false,
+	"AutoConvertStyles" : false,
+	"RenderManager" : "PreRender",
+	"WavePlayer" : "WaveOut",
+	"InternalEnginePreview" : true,
+	"InternalEngineExport" : true,
+	"ExternalPreviewEngine" : "",
+	"ExternalExportEngine" : "",
+	"Language" : "en-us"
+}

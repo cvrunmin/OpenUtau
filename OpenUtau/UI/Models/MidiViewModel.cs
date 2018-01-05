@@ -112,6 +112,8 @@ namespace OpenUtau.UI.Models
         public Visibility PhonemeVisibility => _showPhoneme ? Visibility.Visible : Visibility.Collapsed;
         public bool Snap { set { _snap = value; OnPropertyChanged("Snap"); } get => _snap;
         }
+        
+        public bool? AutoConvert { set { if (Part != null) Part.ConvertStyle = value; OnPropertyChanged(nameof(AutoConvert)); } get => Part?.ConvertStyle; }
 
         public void HorizontalPropertiesChanged()
         {

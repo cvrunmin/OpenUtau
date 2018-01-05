@@ -61,15 +61,18 @@ namespace OpenUtau.Core.Render
             }
             int i = 0;
             int total = project.Tracks.Count;
+            var schedule = new List<Task>();
+            DocManager.Inst.ExecuteCmd(new ProgressBarNotification(-1, $"Checking cache"));
+            foreach (var item in project.Tracks.Select(track=>track.Singer).Distinct())
+            {
+                schedule.Add(Task.Run(() => SoundbankCache.MakeSingerCache(item)));
+            }
+            await Task.WhenAll(schedule);
+            schedule.Clear();
             DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, $"Rendering Tracks 0/{total}"));
             UWaveMixerStream32 masterMix = new UWaveMixerStream32();
             List<TrackSampleProvider> trackSources = Enumerable.Repeat((TrackSampleProvider)null, project.Tracks.Count).ToList();
             var parts = project.Parts.GroupBy(part => part.TrackNo).ToDictionary(group => group.Key);
-            var schedule = new List<Task>();
-            foreach (var item in project.Tracks.Select(track=>track.Singer).Distinct())
-            {
-                SoundbankCache.MakeSingerCache(item);
-            }
             foreach (UTrack track in project.Tracks)
             {
                 schedule.Add(Task.Run(async() =>
@@ -115,12 +118,13 @@ namespace OpenUtau.Core.Render
                                     }
                                     return null;
                                     }).ContinueWith(task=> {
+                                        DocManager.Inst.ExecuteCmd(new ProgressBarNotification((int)((float)i / total * 100), $"Rendering Tracks {i}/{total}"));
                                         try
                                         {
 
                                         if (!task.IsCanceled && !task.Result.IsFaulted && !task.Result.IsCanceled && !task.Result.IsFaulted && task.Result.Result != null) {
                                             var s = task.Result.Result;
-                                            trackMixing.AddInputStream(new UWaveOffsetStream(s, TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)/* - project.TickToMillisecond(480, part.PosTick) * part.PosTick / project.Resolution*/), TimeSpan.Zero, s.TotalTime));
+                                            trackMixing.AddInputStream(new UWaveOffsetStream(s, TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)), TimeSpan.Zero, s.TotalTime));
                                         }
 
                                         }

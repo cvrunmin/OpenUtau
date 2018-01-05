@@ -324,6 +324,20 @@ namespace OpenUtau.UI
 
         private void trackCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            if (_resizePartElement && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) {
+                if (trackVM.SelectedParts.Count == 0) {
+                    var part = _hitPartElement.Part;
+                    DocManager.Inst.EndUndoGroup();
+                    float newTick = part.DurTick;
+                    DocManager.Inst.Undo();
+                    var oldTick = part.DurTick;
+                    DocManager.Inst.Redo();
+                    DocManager.Inst.RestoreUndoGroup();
+                    DocManager.Inst.ExecuteCmd(new StretchPartCommand(trackVM.Project, part, newTick / oldTick));
+                } else {
+
+                }
+            }
             _movePartElement = false;
             _resizePartElement = false;
             _hitPartElement = null;
@@ -389,14 +403,14 @@ namespace OpenUtau.UI
                 {
                     int newDurTick = (int)(trackVM.Project.Resolution * trackVM.CanvasRoundToSnappedQuarter(mousePos.X) / trackVM.BeatPerBar) - _hitPartElement.Part.PosTick;
                     if (newDurTick > _resizeMinDurTick && newDurTick != _hitPartElement.Part.DurTick)
-                        DocManager.Inst.ExecuteCmd(new ResizePartCommand(trackVM.Project, _hitPartElement.Part, newDurTick));
+                        DocManager.Inst.ExecuteCmd(new ResizePartCommand(trackVM.Project, _hitPartElement.Part, newDurTick, Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)));
                 }
                 else
                 {
                     int deltaDurTick = (int)(trackVM.CanvasRoundToSnappedQuarter(mousePos.X) * trackVM.Project.Resolution / trackVM.BeatPerBar) - _hitPartElement.Part.EndTick;
                     if (deltaDurTick != 0 && _partResizeShortest.DurTick + deltaDurTick > _resizeMinDurTick)
                         foreach (UPart part in trackVM.SelectedParts)
-                            DocManager.Inst.ExecuteCmd(new ResizePartCommand(trackVM.Project, part, part.DurTick + deltaDurTick));
+                            DocManager.Inst.ExecuteCmd(new ResizePartCommand(trackVM.Project, part, part.DurTick + deltaDurTick, Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)));
                 }
             }
             else if (Mouse.RightButton == MouseButtonState.Pressed) // Remove
