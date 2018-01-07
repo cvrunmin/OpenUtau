@@ -216,7 +216,7 @@ namespace OpenUtau.Core.Formats
                         file.WriteLine("Tempo=" + project.BPM);
                         file.WriteLine("Tracks=1");
                         file.WriteLine("ProjectName=" + project.Name + "-" + track.Name);
-                        file.WriteLine("VoiceDir=" + track.Singer.Path);
+                        file.WriteLine("VoiceDir=" + track.Singer?.Path);
                         //file.WriteLine("OutFile="+project.OutputDir);
                         file.WriteLine("CacheDir=" + project.CacheDir);
                         List<UNote> writeNotes = new List<UNote>();

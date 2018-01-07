@@ -323,13 +323,13 @@ namespace OpenUtau.Core
                         {
                             note.Phonemes[0].Phoneme = mods[0];
                             note.Phonemes[1].Phoneme = mods[1];
-                            note.Phonemes[1].PosTick = (int)Math.Round(note.DurTick * 0.75);
+                            note.Phonemes[1].PosTick = Math.Max((int)Math.Round(note.DurTick * 0.75), note.DurTick - 15);
                         }
                         else
                         {
                             note.Phonemes.Clear();
                             note.Phonemes.Add(new UPhoneme() { Phoneme = mods[0], Parent = note });
-                            note.Phonemes.Add(new UPhoneme() { Phoneme = mods[1], Parent = note, PosTick = (int)Math.Round(note.DurTick * 0.75) });
+                            note.Phonemes.Add(new UPhoneme() { Phoneme = mods[1], Parent = note, PosTick = Math.Max((int)Math.Round(note.DurTick * 0.75), note.DurTick - 15) });
                         }
                     }
                 }

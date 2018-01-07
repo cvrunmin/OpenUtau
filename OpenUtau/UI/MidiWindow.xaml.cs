@@ -1388,14 +1388,14 @@ namespace OpenUtau.UI
                         var pts = mod.Split('\t');
                         var note1 = note.Clone();
                         note1.PosTick = note.PosTick;
-                        note1.DurTick = (int)Math.Round(note.DurTick * 0.75);
+                        note1.DurTick = Math.Max((int)Math.Round(note.DurTick * 0.75), note.DurTick - 15);
                         note1.Vibrato = note.Vibrato.Split(note1, note1.PosTick) as VibratoExpression;
                         note1.Lyric = pts[0];
                         var note2 = note.Clone();
                         if (pts.Length > 1)
                         {
                             note2.PosTick = note1.EndTick;
-                            note2.DurTick = (int)Math.Round(note.DurTick * 0.25);
+                            note2.DurTick = Math.Min((int)Math.Round(note.DurTick * 0.25), 15);
                             note2.Vibrato = note.Vibrato.Split(note2, note2.PosTick) as VibratoExpression;
                             note2.Lyric = pts[1];
                         }
