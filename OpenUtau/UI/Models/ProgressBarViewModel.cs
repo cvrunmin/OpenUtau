@@ -49,5 +49,7 @@ namespace OpenUtau.UI.Models
         {
             if (cmd is ProgressBarNotification) Update((ProgressBarNotification)cmd);
         }
+
+        public void PostOnNext(UCommandGroup cmds, bool isUndo) { }
     }
 }

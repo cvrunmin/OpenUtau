@@ -28,6 +28,8 @@ namespace OpenUtau.Core
 
         public abstract void OnNext(UCommand cmd, bool isUndo);
 
+        public void PostOnNext(UCommandGroup cmds, bool isUndo) { }
+
         public abstract void UpdatePlayPos();
 
         public abstract bool IsPlayingBack();

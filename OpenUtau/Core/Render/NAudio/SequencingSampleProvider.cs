@@ -22,6 +22,10 @@ namespace OpenUtau.Core.Render
         private int lastSample;
         private const int maxInputs = 2048; // protect ourselves against doing something silly
 
+
+        public SequencingSampleProvider(WaveFormat format) {
+            waveFormat = format;
+        }
         /// <summary>
         /// Creates a new SequencingSampleProvider, based on the given inputs
         /// </summary>

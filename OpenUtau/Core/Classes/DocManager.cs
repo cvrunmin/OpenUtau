@@ -202,7 +202,7 @@ namespace OpenUtau.Core
         public void Subscribe(ICmdSubscriber sub) { if (!subscribers.Contains(sub)) subscribers.Add(sub); }
         public void UnSubscribe(ICmdSubscriber sub) { subscribers.Remove(sub); }
         public void Publish(UCommand cmd, bool isUndo = false) { lock (subscribers) { foreach (var sub in subscribers) sub.OnNext(cmd, isUndo); } }
-
+        public void PostPublish(UCommandGroup cmds, bool isUndo = false) { lock (subscribers) { foreach (var sub in subscribers) sub.PostOnNext(cmds, isUndo); } }
         # endregion
 
         # region Command handeling

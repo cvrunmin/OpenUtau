@@ -241,6 +241,8 @@ namespace OpenUtau.UI.Dialogs
             }
         }
 
+        public void PostOnNext(UCommandGroup cmds, bool isUndo) { }
+
         private void ForceUpdateTextBox()
         {
             foreach (var item in gridProperties.Children)

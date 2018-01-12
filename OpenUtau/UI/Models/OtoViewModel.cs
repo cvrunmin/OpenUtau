@@ -51,6 +51,8 @@ namespace OpenUtau.UI.Models
             RedrawIfUpdated();
         }
 
+        public void PostOnNext(UCommandGroup cmds, bool isUndo) { }
+
         public void Subscribe(ICmdPublisher publisher)
         {
             if (publisher != null) publisher.Subscribe(this);

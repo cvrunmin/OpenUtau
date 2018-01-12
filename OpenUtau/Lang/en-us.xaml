@@ -87,4 +87,14 @@
     <s:String x:Key="EnterKeyEditNote">Edit note when enter is pressed</s:String>
     <s:String x:Key="SplitSelectedParts">Split selected parts</s:String>
     <s:String x:Key="MergeSelectedParts">Merge selected parts</s:String>
+
+
+    <s:String x:Key="16B441">16-bit, 44100 Hz</s:String>
+    <s:String x:Key="16B480">16-bit, 48000 Hz</s:String>
+    <s:String x:Key="16B960">16-bit, 96000 Hz</s:String>
+    <s:String x:Key="16B1920">16-bit, 192000 Hz</s:String>
+    <s:String x:Key="24B441">24-bit, 44100 Hz</s:String>
+    <s:String x:Key="24B480">24-bit, 48000 Hz</s:String>
+    <s:String x:Key="24B960">24-bit, 96000 Hz</s:String>
+    <s:String x:Key="24B1920">24-bit, 192000 Hz</s:String>
 </ResourceDictionary>

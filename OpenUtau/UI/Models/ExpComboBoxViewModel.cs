@@ -103,6 +103,8 @@ namespace OpenUtau.UI.Models
             else if (cmd is SelectExpressionNotification) OnSelectExp((SelectExpressionNotification)cmd);
         }
 
+        public void PostOnNext(UCommandGroup cmds, bool isUndo) { }
+
         # endregion
 
         # region Cmd Handling

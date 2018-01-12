@@ -394,7 +394,9 @@ namespace OpenUtau.Core
             }
         }
 
-        # endregion
+        public void PostOnNext(UCommandGroup cmds, bool isUndo) { }
+
+        #endregion
 
     }
 }

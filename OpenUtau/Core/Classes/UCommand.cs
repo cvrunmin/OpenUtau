@@ -69,11 +69,13 @@ namespace OpenUtau.Core
         void Subscribe(ICmdSubscriber subscriber);
         void UnSubscribe(ICmdSubscriber subscriber);
         void Publish(UCommand cmd, bool isUndo);
+        void PostPublish(UCommandGroup cmds, bool isUndo);
     }
 
     public interface ICmdSubscriber
     {
         void Subscribe(ICmdPublisher publisher);
         void OnNext(UCommand cmd, bool isUndo);
+        void PostOnNext(UCommandGroup cmds, bool isUndo);
     }
 }

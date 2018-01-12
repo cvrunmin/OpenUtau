@@ -584,6 +584,8 @@ namespace OpenUtau.UI.Models
             }
         }
 
+        public void PostOnNext(UCommandGroup cmds, bool isUndo) { }
+
         # endregion
 
     }

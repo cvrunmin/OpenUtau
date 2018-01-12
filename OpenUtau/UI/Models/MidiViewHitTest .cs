@@ -184,6 +184,8 @@ namespace OpenUtau.UI.Models
             if (cmd is RedrawNotesNotification) { }
         }
 
+        public void PostOnNext(UCommandGroup cmds, bool isUndo) { }
+
         # endregion
     }
 }

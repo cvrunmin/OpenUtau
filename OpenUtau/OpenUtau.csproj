@@ -171,10 +171,12 @@
     <Compile Include="Core\Render\NAudio\CachedSound.cs" />
     <Compile Include="Core\Render\NAudio\CachedSoundSampleProvider.cs" />
     <Compile Include="Core\Render\NAudio\EnvelopeSampleProvider.cs" />
+    <Compile Include="Core\Render\NAudio\PreRenderingStream.cs" />
     <Compile Include="Core\Render\NAudio\TrackSampleProvider.cs" />
     <Compile Include="Core\Render\NAudio\SequencingSampleProvider.cs" />
     <Compile Include="Core\Render\NAudio\TrackWaveChannel.cs" />
     <Compile Include="Core\Render\NAudio\UOffsetSampleProvider.cs" />
+    <Compile Include="Core\Render\NAudio\UWaveMixerStream.cs" />
     <Compile Include="Core\Render\NAudio\UWaveMixerStream32.cs" />
     <Compile Include="Core\Render\NAudio\UWaveOffsetStream.cs" />
     <Compile Include="Core\Render\RenderItem.cs" />

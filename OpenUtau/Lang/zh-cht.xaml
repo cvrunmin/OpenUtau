@@ -87,4 +87,14 @@
     <s:String x:Key="EnterKeyEditNote">按下輸入鍵以編輯音符</s:String>
     <s:String x:Key="SplitSelectedParts">分拆已選部分</s:String>
     <s:String x:Key="MergeSelectedParts">合併已選部分</s:String>
+
+
+    <s:String x:Key="16B441">16位元, 44100 Hz</s:String>
+    <s:String x:Key="16B480">16位元, 48000 Hz</s:String>
+    <s:String x:Key="16B960">16位元, 96000 Hz</s:String>
+    <s:String x:Key="16B1920">16位元, 192000 Hz</s:String>
+    <s:String x:Key="24B441">24位元, 44100 Hz</s:String>
+    <s:String x:Key="24B480">24位元, 48000 Hz</s:String>
+    <s:String x:Key="24B960">24位元, 96000 Hz</s:String>
+    <s:String x:Key="24B1920">24位元, 192000 Hz</s:String>
 </ResourceDictionary>

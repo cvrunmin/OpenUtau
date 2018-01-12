@@ -52,6 +52,7 @@ namespace OpenUtau.UI.Dialogs
             if (!NAudio.Wave.AsioOut.isSupported()) {
                 ComboWavePlayer.Items.Remove("ASIO");
             }
+            comboSamplingR.SelectedValue = Core.Util.Preferences.Default.BitDepth + ";" + Core.Util.Preferences.Default.SamplingRate;
         }
 
         private void ComboBoxLang_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -203,6 +204,13 @@ namespace OpenUtau.UI.Dialogs
         private void chkboxAutoConvert_Click(object sender, RoutedEventArgs e)
         {
             Core.Util.Preferences.Default.AutoConvertStyles = chkboxAutoConvert.IsChecked.Value;
+            Core.Util.Preferences.Save();
+        }
+
+        private void comboSamplingR_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Core.Util.Preferences.Default.SamplingRate = Convert.ToInt32(((comboSamplingR.SelectedItem as ComboBoxItem)?.Tag as string)?.Split(';')[1] ?? "44100");
+            Core.Util.Preferences.Default.BitDepth = Convert.ToInt32(((comboSamplingR.SelectedItem as ComboBoxItem)?.Tag as string)?.Split(';')[0] ?? "16");
             Core.Util.Preferences.Save();
         }
     }

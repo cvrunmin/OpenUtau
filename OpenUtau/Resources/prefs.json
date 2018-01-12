@@ -19,5 +19,7 @@
     "InternalEngineExport": true,
     "ExternalPreviewEngine": "",
     "ExternalExportEngine": "",
-	"Language": "en-us"
+  "Language": "en-us",
+  "SamplingRate": 44100,
+  "BitDepth":  16
 }

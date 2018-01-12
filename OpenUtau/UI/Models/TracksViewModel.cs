@@ -423,6 +423,8 @@ namespace OpenUtau.UI.Models
 
         public void Subscribe(ICmdPublisher publisher) { if (publisher != null) publisher.Subscribe(this); }
 
+        public void PostOnNext(UCommandGroup cmds, bool isUndo) { }
+
         public void OnNext(UCommand cmd, bool isUndo)
         {
             if (cmd is NoteCommand)
