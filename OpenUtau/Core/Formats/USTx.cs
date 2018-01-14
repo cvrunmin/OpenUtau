@@ -773,6 +773,7 @@ namespace OpenUtau.Core.Formats
                     {
                         foreach (var note in _part.Notes)
                         {
+                            if(!note.VirtualExpressions.ContainsKey(item.Key))continue;
                             switch (item.Value.Type.Replace("flag_", ""))
                             {
                                 case "int":

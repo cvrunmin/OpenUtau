@@ -89,19 +89,14 @@ namespace OpenUtau.Core.Render
                         {
                             if (part is UWavePart)
                             {
-                                ISampleProvider src;
+                                WaveStream src;
                                 lock (lockObject)
                                 {
-                                    src = BuildWavePartAudio(part as UWavePart, project);
+                                    src = BuildWavePartSAudio(part as UWavePart, project);
                                 }
                                 if (src != null)
                                 {
-                                    subschedule.Add(DocManager.Inst.Factory.StartNew(async () => await WriteProviderToStream(src, part.PartNo, token)).Unwrap().ContinueWith(task=> {
-                                        if (!task.IsCanceled && task.Result != null) {
-                                            var s = task.Result;
-                                            trackMixing.AddInputStream(new UWaveOffsetStream(s, TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)), TimeSpan.Zero, s.TotalTime));
-                                        }
-                                    }));
+                                    trackMixing.AddInputStream(new UWaveOffsetStream(src, TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)), TimeSpan.Zero, src.TotalTime)); 
                                 }
                             }
                             else
@@ -195,10 +190,10 @@ namespace OpenUtau.Core.Render
                             if (!task.IsCanceled)
                             {
                                 ISampleProvider src = task.Result ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider();
-                                return await DocManager.Inst.Factory.StartNew(async () => await WriteProviderToStream(src, part.PartNo, token)).Unwrap();
+                                return await DocManager.Inst.Factory.StartNew(async () => await WriteProviderToStream(src, part.PartNo, token), token).Unwrap();
                             }
                             return null;
-                        }).ContinueWith(task => {
+                        }, token).ContinueWith(task => {
                             DocManager.Inst.ExecuteCmd(new ProgressBarNotification((int)((float)i / total * 100), $"Rendering Tracks {i}/{total}"));
                             try
                             {
@@ -283,6 +278,22 @@ namespace OpenUtau.Core.Render
             SoundbankCache.FlushCachedSingers();
             return masterMix;
         }
+
+        private WaveStream BuildWavePartSAudio(UWavePart part, UProject project)
+        {
+            WaveStream stream;
+            try
+            {
+                stream = new AudioFileReader(part.FilePath);
+            }
+            catch
+            {
+                return new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToWaveStream(); 
+            }
+            var offseted = new UWaveOffsetStream(stream) { SourceOffset = TimeSpan.FromMilliseconds((int)project.TickToMillisecond(part.HeadTrimTick, part.PosTick - part.HeadTrimTick)), SourceLength = TimeSpan.FromMilliseconds((int)project.TickToMillisecond(part.DurTick, part.PosTick)) };
+            return offseted;
+        }
+
         private ISampleProvider BuildWavePartAudio(UWavePart part, UProject project)
         {
             WaveStream stream;
@@ -331,7 +342,8 @@ namespace OpenUtau.Core.Render
             var str = new System.IO.MemoryStream(limit);
             var wave = source.ToWaveProvider();
             var buffer = new byte[source.WaveFormat.AverageBytesPerSecond];
-            while (str.Position < limit)
+            var pos = 0;
+            while (pos < limit)
             {
                 if (token.IsCancellationRequested) break;
                 if (2147483591 - str.Position < buffer.Length)
@@ -344,7 +356,7 @@ namespace OpenUtau.Core.Render
                         str.Flush();
                         break;
                     }
-                    await str.WriteAsync(buffer, 0, bytesRead1);
+                    await str.WriteAsync(buffer, 0, bytesRead1, token);
                     break;
                 }
                 var bytesRead = wave.Read(buffer, 0, buffer.Length);
@@ -354,7 +366,8 @@ namespace OpenUtau.Core.Render
                     str.Flush();
                     break;
                 }
-                await str.WriteAsync(buffer, 0, bytesRead);
+                await str.WriteAsync(buffer, 0, bytesRead, token);
+                pos += bytesRead;
             }
             buffer = null;
             wave = null;
