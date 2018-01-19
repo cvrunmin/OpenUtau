@@ -79,7 +79,7 @@ namespace OpenUtau.Core.Render
             //Array.Copy(waveBuffer.FloatBuffer, buffer, waveBuffer.FloatBufferCount);
             for (int i = 0; i < bytesRead / 4; i++)
             {
-                buffer[i] = waveBuffer.FloatBuffer[i];
+                buffer[offset + i] = waveBuffer.FloatBuffer[offset + i];
             }
             return bytesRead / 4;
         }
@@ -103,7 +103,7 @@ namespace OpenUtau.Core.Render
 
         public static WaveStream ToWaveStream(this IWaveProvider provider) {
             var str = new System.IO.MemoryStream();
-            var buffer = new byte[provider.WaveFormat.AverageBytesPerSecond * 4];
+            var buffer = new byte[provider.WaveFormat.AverageBytesPerSecond];
             while (true)
             {
                 if (2147483591 - str.Position < buffer.Length)

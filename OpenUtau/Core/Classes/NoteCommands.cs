@@ -10,7 +10,7 @@ namespace OpenUtau.Core
 {
     public abstract class NoteCommand : UCommand 
     {
-        protected UNote[] Notes;
+        public UNote[] Notes;
         public UVoicePart Part;
         public override void Execute()
         {

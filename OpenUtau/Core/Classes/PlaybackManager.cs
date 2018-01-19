@@ -72,6 +72,164 @@ namespace OpenUtau.Core
             }
         }
     }
+
+    class PPSPlaybackManager : PlaybackManager
+    {
+
+        private static PPSPlaybackManager _s;
+        public static PPSPlaybackManager Inst { get { if (_s == null) { _s = new PPSPlaybackManager(); } return _s; } }
+
+        PreRenderingStream masterMix = new PreRenderingStream();
+
+        public override void OnNext(UCommand cmd, bool isUndo)
+        {
+            if (cmd is SeekPlayPosTickNotification)
+            {
+                var _cmd = cmd as SeekPlayPosTickNotification;
+                int tick = _cmd.playPosTick;
+                DocManager.Inst.ExecuteCmd(new SetPlayPosTickNotification(tick));
+                if (outDevice != null && masterMix != null)
+                {
+                    masterMix.CurrentTime = TimeSpan.FromMilliseconds(DocManager.Inst.Project.TickToMillisecond(tick));
+                }
+            }
+            //else if (cmd is VolumeChangeNotification)
+            //{
+            //    var _cmd = cmd as VolumeChangeNotification;
+            //    if (masterMix != null && masterMix.InputCount > _cmd.TrackNo)
+            //    {
+            //        (masterMix.InputStreams.Find(stream => ((TrackWaveChannel)stream).TrackNo == _cmd.TrackNo) as TrackWaveChannel).PlainVolume = DecibelToVolume(_cmd.Volume);
+            //    }
+            //    if (trackSources != null && trackSources.Count > _cmd.TrackNo)
+            //    {
+            //        trackSources.Find(stream => stream.TrackNo == _cmd.TrackNo).PlainVolume = DecibelToVolume(_cmd.Volume);
+            //    }
+            //}
+            //else if (cmd is PanChangeNotification)
+            //{
+            //    var _cmd = cmd as PanChangeNotification;
+            //    if (masterMix != null && masterMix.InputCount > _cmd.TrackNo)
+            //    {
+            //        (masterMix.InputStreams.Find(stream => ((TrackWaveChannel)stream).TrackNo == _cmd.TrackNo) as TrackWaveChannel).Pan = (float)_cmd.Pan / 90f;
+            //    }
+            //    if (trackSources != null && trackSources.Count > _cmd.TrackNo)
+            //    {
+            //        trackSources.Find(stream => stream.TrackNo == _cmd.TrackNo).Pan = (float)_cmd.Pan / 90f;
+            //    }
+            //}
+            //else if (cmd is MuteNotification mute)
+            //{
+            //    if (masterMix != null)
+            //        foreach (var item in masterMix.InputStreams)
+            //        {
+            //            TrackWaveChannel ch = (item as TrackWaveChannel);
+            //            ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+            //        }
+            //    if (trackSources != null)
+            //        foreach (var ch in trackSources)
+            //        {
+            //            ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+            //        }
+            //}
+            //else if (cmd is SoloNotification solo)
+            //{
+            //    if (masterMix != null)
+            //        foreach (var item in masterMix.InputStreams)
+            //        {
+            //            TrackWaveChannel ch = (item as TrackWaveChannel);
+            //            ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+            //        }
+            //    if (trackSources != null)
+            //        foreach (var ch in trackSources)
+            //        {
+            //            ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+            //        }
+            //}
+        }
+        public override void Play(UProject project)
+        {
+            if (outDevice != null)
+            {
+                if (outDevice.PlaybackState == PlaybackState.Playing) return;
+                else if (outDevice.PlaybackState == PlaybackState.Paused)
+                {
+                    if (outDevice is WaveOut)
+                        (outDevice as WaveOut).Resume();
+                    else outDevice.Play();
+                    return;
+                }
+                else outDevice.Dispose();
+            }
+            BuildAudioAndPlay(project);
+        }
+
+        public override bool IsPlayingBack()
+        {
+            return outDevice?.PlaybackState == PlaybackState.Playing;
+        }
+
+        public override void StopPlayback()
+        {
+            if (outDevice != null)
+            {
+                outDevice.Stop();
+                outDevice.Dispose();
+                outDevice = null;
+            }
+        }
+
+        public override void PausePlayback()
+        {
+            if (outDevice != null) outDevice.Pause();
+        }
+
+        private void StartPlayback(bool preMade = false)
+        {
+            if (outDevice != null && outDevice.PlaybackState == PlaybackState.Paused)
+            {
+                if (outDevice is WaveOut)
+                    (outDevice as WaveOut).Resume();
+                else outDevice.Play();
+                return;
+            }
+            outDevice = CreatePlayer(); ;
+            outDevice.PlaybackStopped += (sender, e) => {
+                StopPlayback();
+            };
+            if (masterMix != null)
+            {
+                outDevice.Init(masterMix);
+                outDevice.Play();
+            }
+        }
+
+        int pendingParts = 0;
+        object lockObject = new object();
+        private void BuildAudioAndPlay(UProject project)
+        {            
+                if (masterMix != null)
+            {
+                foreach (var item in project.Tracks)
+                {
+                    masterMix.AddTrack(project, item);
+                }
+            }
+               
+                StartPlayback(true);
+            
+        }
+
+        public override void UpdatePlayPos()
+        {
+            if (outDevice != null && outDevice.PlaybackState == PlaybackState.Playing)
+            {
+                double ms = masterMix.CurrentTime.TotalMilliseconds;
+                int tick = DocManager.Inst.Project.MillisecondToTick(ms);
+                DocManager.Inst.ExecuteCmd(new SetPlayPosTickNotification(tick), true);
+            }
+        }
+    }
+
     class PreRenderPlaybackManager : PlaybackManager
     {
 

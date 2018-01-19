@@ -109,7 +109,7 @@ namespace OpenUtau.Core.Render
                                     if (!task.IsCanceled)
                                     {
                                         ISampleProvider src = task.Result ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider();
-                                        return await DocManager.Inst.Factory.StartNew(async () => await WriteProviderToStream(src, part.PartNo, token)).Unwrap();
+                                        return await DocManager.Inst.Factory.StartNew(async () => await WritePartProviderToStream(src, part.PartNo, token)).Unwrap();
                                     }
                                     return null;
                                     }).ContinueWith(task=> {
@@ -164,20 +164,14 @@ namespace OpenUtau.Core.Render
             {
                 if (part is UWavePart)
                 {
-                    ISampleProvider src;
+                    WaveStream src;
                     lock (lockObject)
                     {
-                        src = BuildWavePartAudio(part as UWavePart, project);
+                        src = BuildWavePartSAudio(part as UWavePart, project);
                     }
                     if (src != null)
                     {
-                        subschedule.Add(DocManager.Inst.Factory.StartNew(async () => await WriteProviderToStream(src, part.PartNo, token)).Unwrap().ContinueWith(task => {
-                            if (!task.IsCanceled && task.Result != null)
-                            {
-                                var s = task.Result;
-                                trackMixing.AddInputStream(new UWaveOffsetStream(s, TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)), TimeSpan.Zero, s.TotalTime));
-                            }
-                        }));
+                        trackMixing.AddInputStream(new UWaveOffsetStream(src, TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)), TimeSpan.Zero, src.TotalTime));
                     }
                 }
                 else
@@ -190,7 +184,7 @@ namespace OpenUtau.Core.Render
                             if (!task.IsCanceled)
                             {
                                 ISampleProvider src = task.Result ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider();
-                                return await DocManager.Inst.Factory.StartNew(async () => await WriteProviderToStream(src, part.PartNo, token), token).Unwrap();
+                                return await DocManager.Inst.Factory.StartNew(async () => await WritePartProviderToStream(src, part.PartNo, token), token).Unwrap();
                             }
                             return null;
                         }, token).ContinueWith(task => {
@@ -327,11 +321,11 @@ namespace OpenUtau.Core.Render
             return db == -24 ? 0 : db < -16 ? (float)MusicMath.DecibelToLinear(db * 2 + 16) : (float)MusicMath.DecibelToLinear(db);
         }
 
-        public async static Task<WaveStream> WriteProviderToStream(ISampleProvider source, int partNo, CancellationToken token) {
+        public async static Task<WaveStream> WritePartProviderToStream(ISampleProvider source, int partNo, CancellationToken token) {
             double elisimatedMs;
             try
             {
-                elisimatedMs = DocManager.Inst.Project.TickToMillisecond(DocManager.Inst.Project.Parts[partNo].EndTick);
+                elisimatedMs = DocManager.Inst.Project.TickToMillisecond(DocManager.Inst.Project.Parts[partNo].DurTick);
             }
             catch (Exception)
             {

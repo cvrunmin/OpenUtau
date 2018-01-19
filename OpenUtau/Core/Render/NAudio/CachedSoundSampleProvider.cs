@@ -39,6 +39,10 @@ namespace OpenUtau.Core.Render
             var availableSamples = cachedSound.AudioData.Length - position;
             var samplesToCopy = Math.Min(availableSamples, count);
             //Array.Copy(cachedSound.AudioData, position, buffer, offset, samplesToCopy); //avoid using Array.Copy with WaveBuffer
+            for (int i = 0; i < count; i++)
+            {
+                buffer[i] = 0;
+            }
             for (int i = 0; i < samplesToCopy; i++)
             {
                 buffer[offset + i] = cachedSound.AudioData[position + i];

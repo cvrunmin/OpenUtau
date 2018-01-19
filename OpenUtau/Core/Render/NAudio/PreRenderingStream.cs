@@ -29,9 +29,14 @@ namespace OpenUtau.Core.Render.NAudio
 
         public override long Position { get => Mixer.Position; set => Mixer.Position = value; }
 
+        public PreRenderingStream() {
+            Mixer = new UWaveMixerStream(WaveFormat);
+            Subscribe(DocManager.Inst);
+        }
+
         public PreRenderingStream(WaveFormat format) {
             _waveFormat = format;
-            Mixer = new UWaveMixerStream(format);
+            Mixer = new UWaveMixerStream(WaveFormat);
             Subscribe(DocManager.Inst);
         }
 
@@ -69,6 +74,12 @@ namespace OpenUtau.Core.Render.NAudio
         public bool RemoveTrack(int trackno) {
             Mixer.RemoveInputStream(Tracks[trackno].Wrap);
             return Tracks.Remove(trackno);
+        }
+
+        public void AddPart(USTx.UProject project, UPart part)
+        {
+            if (part is UWavePart wave) AddPart(project, wave);
+            else if (part is UVoicePart v) AddPart(project, v);
         }
 
         public void AddPart(USTx.UProject project, UWavePart part) {
@@ -188,13 +199,34 @@ namespace OpenUtau.Core.Render.NAudio
                 }
                 else if (cmd is PartCommand pc)
                 {
-                    if (pc is RemovePartCommand) {
+                    if (pc is RemovePartCommand)
+                    {
                         RemovePart(pc.part.PartNo);
                     }
-                    else if(pc is ReplacePartCommand rpc)
+                    else if (pc is ReplacePartCommand rpc)
                     {
-                        //AddPart(pc.project, isUndo ? rpc.PartReplaced : rpc.PartReplacing)
+                        RemovePart(!isUndo ? rpc.PartReplaced.PartNo : rpc.PartReplacing.PartNo);
+                        AddPart(pc.project, isUndo ? rpc.PartReplaced : rpc.PartReplacing);
                     }
+                    else/* if (pc is AddPartCommand apc) */{
+                        AddPart(pc.project, pc.part);
+                    }
+                } else if (cmd is NoteCommand nc) {
+                    if (nc is RemoveNoteCommand rnc) {
+                        foreach (var note in rnc.Notes)
+                        {
+                            RemoveNote(nc.Part.PartNo, note.NoteNo);
+                        }
+                    }
+                    else
+                    {
+                        foreach (var item in nc.Notes)
+                        {
+                            AddNote(DocManager.Inst.Project, nc.Part, item);
+                        }
+                    }
+                } else if (cmd is ExpCommand ec) {
+                    AddNote(DocManager.Inst.Project, ec.Part, ec.Note);
                 }
             }
         }
