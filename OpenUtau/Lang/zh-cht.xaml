@@ -97,4 +97,8 @@
     <s:String x:Key="24B480">24位元, 48000 Hz</s:String>
     <s:String x:Key="24B960">24位元, 96000 Hz</s:String>
     <s:String x:Key="24B1920">24位元, 192000 Hz</s:String>
+    <s:String x:Key="32B441">32位元, 44100 Hz</s:String>
+    <s:String x:Key="32B480">32位元, 48000 Hz</s:String>
+    <s:String x:Key="32B960">32位元, 96000 Hz</s:String>
+    <s:String x:Key="32B1920">32位元, 192000 Hz</s:String>
 </ResourceDictionary>

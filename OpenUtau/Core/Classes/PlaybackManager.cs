@@ -39,11 +39,14 @@ namespace OpenUtau.Core
             publisher?.Subscribe(this);
         }
 
-        public static PlaybackManager GetActiveManager() {
+        public static PlaybackManager GetActiveManager()
+        {
             try
             {
                 switch (Util.Preferences.Default.RenderManager)
                 {
+                    case "PPS":
+                        return PPSPlaybackManager.Inst;
                     case "Instant":
                         return InstantPlaybackManager.Inst;
                     case "PreRender":
@@ -57,7 +60,8 @@ namespace OpenUtau.Core
             }
         }
 
-        public IWavePlayer CreatePlayer() {
+        public IWavePlayer CreatePlayer()
+        {
             switch (Core.Util.Preferences.Default.WavePlayer)
             {
                 case "WASAPI":
@@ -80,6 +84,8 @@ namespace OpenUtau.Core
         public static PPSPlaybackManager Inst { get { if (_s == null) { _s = new PPSPlaybackManager(); } return _s; } }
 
         PreRenderingStream masterMix = new PreRenderingStream();
+
+        public PreRenderingStream Master => masterMix;
 
         public override void OnNext(UCommand cmd, bool isUndo)
         {
@@ -158,7 +164,6 @@ namespace OpenUtau.Core
                     else outDevice.Play();
                     return;
                 }
-                else outDevice.Dispose();
             }
             BuildAudioAndPlay(project);
         }
@@ -173,8 +178,6 @@ namespace OpenUtau.Core
             if (outDevice != null)
             {
                 outDevice.Stop();
-                outDevice.Dispose();
-                outDevice = null;
             }
         }
 
@@ -193,7 +196,8 @@ namespace OpenUtau.Core
                 return;
             }
             outDevice = CreatePlayer(); ;
-            outDevice.PlaybackStopped += (sender, e) => {
+            outDevice.PlaybackStopped += (sender, e) =>
+            {
                 StopPlayback();
             };
             if (masterMix != null)
@@ -206,17 +210,17 @@ namespace OpenUtau.Core
         int pendingParts = 0;
         object lockObject = new object();
         private void BuildAudioAndPlay(UProject project)
-        {            
-                if (masterMix != null)
+        {
+            if (masterMix != null)
             {
                 foreach (var item in project.Tracks)
                 {
                     masterMix.AddTrack(project, item);
                 }
             }
-               
-                StartPlayback(true);
-            
+
+            StartPlayback(true);
+
         }
 
         public override void UpdatePlayPos()
@@ -237,7 +241,7 @@ namespace OpenUtau.Core
 
         private static PreRenderPlaybackManager _s;
         public static PreRenderPlaybackManager Inst { get { if (_s == null) { _s = new PreRenderPlaybackManager(); } return _s; } }
-        
+
         UWaveMixerStream32 masterMix;
         List<TrackWaveChannel> trackSources = new List<TrackWaveChannel>();
         private CancellationTokenSource token;
@@ -266,7 +270,8 @@ namespace OpenUtau.Core
 
         public override void StopPlayback()
         {
-            if (pendingParts > 0) {
+            if (pendingParts > 0)
+            {
                 token.Cancel();
             }
             if (outDevice != null)
@@ -301,7 +306,8 @@ namespace OpenUtau.Core
                 foreach (var source in trackSources) masterMix.AddInputStream(source);
             }
             outDevice = CreatePlayer(); ;
-            outDevice.PlaybackStopped += (sender, e) => {
+            outDevice.PlaybackStopped += (sender, e) =>
+            {
                 StopPlayback();
             };
             if (masterMix != null)
@@ -322,13 +328,13 @@ namespace OpenUtau.Core
                 pendingParts = 1;
                 token = new CancellationTokenSource();
                 token.Token.Register(() => DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, ""), true));
-                masterMix = await RenderDispatcher.Inst.GetMixingStream(project,token.Token);
+                masterMix = await RenderDispatcher.Inst.GetMixingStream(project, token.Token);
                 trackSources = new List<TrackWaveChannel>(masterMix.InputStreams.Cast<TrackWaveChannel>());
             }
             catch (OperationCanceledException) { }
             finally
             {
-                if(masterMix != null)
+                if (masterMix != null)
                     masterMix.CurrentTime = SkipedTimeSpan;
                 pendingParts = 0;
                 StartPlayback(true);
@@ -373,7 +379,7 @@ namespace OpenUtau.Core
                 var _cmd = cmd as VolumeChangeNotification;
                 if (masterMix != null && masterMix.InputCount > _cmd.TrackNo)
                 {
-                    (masterMix.InputStreams.Find(stream=> ((TrackWaveChannel)stream).TrackNo == _cmd.TrackNo) as TrackWaveChannel).PlainVolume = DecibelToVolume(_cmd.Volume);
+                    (masterMix.InputStreams.Find(stream => ((TrackWaveChannel)stream).TrackNo == _cmd.TrackNo) as TrackWaveChannel).PlainVolume = DecibelToVolume(_cmd.Volume);
                 }
                 if (trackSources != null && trackSources.Count > _cmd.TrackNo)
                 {
@@ -402,31 +408,31 @@ namespace OpenUtau.Core
                 {
                     trackSources.Find(stream => stream.TrackNo == mute.TrackNo).Muted = mute.Muted;
                 }*/
-                if(masterMix != null)
-                foreach (var item in masterMix.InputStreams)
-                {
-                    TrackWaveChannel ch = (item as TrackWaveChannel);
-                    ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
-                }
-                if(trackSources != null)
-                foreach (var ch in trackSources)
-                {
-                    ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
-                }
+                if (masterMix != null)
+                    foreach (var item in masterMix.InputStreams)
+                    {
+                        TrackWaveChannel ch = (item as TrackWaveChannel);
+                        ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+                    }
+                if (trackSources != null)
+                    foreach (var ch in trackSources)
+                    {
+                        ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+                    }
             }
             else if (cmd is SoloNotification solo)
             {
-                if(masterMix != null)
-                foreach (var item in masterMix.InputStreams)
-                {
-                    TrackWaveChannel ch = (item as TrackWaveChannel);
-                    ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
-                }
-                if(trackSources != null)
-                foreach (var ch in trackSources)
-                {
-                    ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
-                }
+                if (masterMix != null)
+                    foreach (var item in masterMix.InputStreams)
+                    {
+                        TrackWaveChannel ch = (item as TrackWaveChannel);
+                        ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+                    }
+                if (trackSources != null)
+                    foreach (var ch in trackSources)
+                    {
+                        ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+                    }
             }
         }
 
@@ -507,7 +513,8 @@ namespace OpenUtau.Core
                 foreach (var source in trackSources) masterMix.AddMixerInput(source);
             }
             outDevice = CreatePlayer();
-            outDevice.PlaybackStopped += (sender, e) => {
+            outDevice.PlaybackStopped += (sender, e) =>
+            {
                 StopPlayback();
             };
             outDevice.Init(masterMix.USkip(span));
@@ -518,7 +525,8 @@ namespace OpenUtau.Core
         object lockObject = new object();
 
 
-        private async void BuildAudioAndPlay(UProject project) {
+        private async void BuildAudioAndPlay(UProject project)
+        {
             try
             {
                 token = new CancellationTokenSource();
@@ -540,7 +548,8 @@ namespace OpenUtau.Core
             if (outDevice != null && outDevice.PlaybackState == PlaybackState.Playing)
             {
                 double ms;
-                switch (outDevice) {
+                switch (outDevice)
+                {
                     case WaveOut wo:
                         ms = wo.GetPosition() * 1000.0 / masterMix.WaveFormat.BitsPerSample / masterMix.WaveFormat.Channels * 8 / masterMix.WaveFormat.SampleRate;
                         break;
@@ -625,31 +634,31 @@ namespace OpenUtau.Core
                 {
                     trackSources[mute.TrackNo].Muted = mute.Muted;
                 }*/
-                if(masterMix != null)
-                foreach (var item in masterMix.MixerInputs)
-                {
-                    TrackSampleProvider ch = (item as TrackSampleProvider);
-                    ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
-                }
+                if (masterMix != null)
+                    foreach (var item in masterMix.MixerInputs)
+                    {
+                        TrackSampleProvider ch = (item as TrackSampleProvider);
+                        ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+                    }
                 if (trackSources != null)
-                foreach (var ch in trackSources)
-                {
-                    ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
-                }
+                    foreach (var ch in trackSources)
+                    {
+                        ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+                    }
             }
             else if (cmd is SoloNotification solo)
             {
-                if(masterMix != null)
-                foreach (var item in masterMix.MixerInputs)
-                {
-                    TrackSampleProvider ch = (item as TrackSampleProvider);
-                    ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
-                }
-                if(trackSources != null)
-                foreach (var ch in trackSources)
-                {
-                    ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
-                }
+                if (masterMix != null)
+                    foreach (var item in masterMix.MixerInputs)
+                    {
+                        TrackSampleProvider ch = (item as TrackSampleProvider);
+                        ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+                    }
+                if (trackSources != null)
+                    foreach (var ch in trackSources)
+                    {
+                        ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+                    }
             }
         }
 

@@ -55,9 +55,10 @@
             <ComboBox x:Name="comboRenderMana" HorizontalAlignment="Left" Margin="10,82,0,0" VerticalAlignment="Top" Width="256" SelectionChanged="comboRenderMana_SelectionChanged">
                 <ComboBoxItem Content="Instant"/>
                 <ComboBoxItem Content="Pre-render"/>
+                <ComboBoxItem Content="New Pre-render"/>
             </ComboBox>
         </Grid>
-        <Grid x:Name="renderingGrid" Margin="170,2,10,10" Visibility="Visible">
+        <Grid x:Name="renderingGrid" Margin="170,2,10,10" Visibility="Collapsed">
             <ScrollViewer>
                 <Grid>
 
@@ -92,7 +93,7 @@
                     <TextBlock TextWrapping="Wrap" Text="{DynamicResource ResamplingNotes}" Margin="9,265,0,0"/>
                     <CheckBox x:Name="chkboxInstantRender" Content="{DynamicResource InstantRender}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Click="chkboxInstantRender_Click"/>
                     <Label Content="Sampling Rate &amp; Bit Depth" HorizontalAlignment="Left" Margin="9,20,0,0" VerticalAlignment="Top"/>
-                    <ComboBox x:Name="comboSamplingR" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top" Width="160" SelectedIndex="0" SelectionChanged="comboSamplingR_SelectionChanged" SelectedValuePath="Tag">
+                    <ComboBox x:Name="comboSamplingR" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top" Width="160" SelectionChanged="comboSamplingR_SelectionChanged" SelectedValuePath="Tag">
                         <ComboBoxItem Content="{DynamicResource 16B441}" Tag="16;44100"/>
                         <ComboBoxItem Content="{DynamicResource 16B480}" Tag="16;48000"/>
                         <ComboBoxItem Content="{DynamicResource 16B960}" Tag="16;96000"/>
@@ -101,6 +102,10 @@
                         <ComboBoxItem Content="{DynamicResource 24B480}" Tag="24;48000"/>
                         <ComboBoxItem Content="{DynamicResource 24B960}" Tag="24;96000"/>
                         <ComboBoxItem Content="{DynamicResource 24B1920}" Tag="24;196000"/>
+                        <ComboBoxItem Content="{DynamicResource 32B441}" Tag="32;44100"/>
+                        <ComboBoxItem Content="{DynamicResource 32B480}" Tag="32;48000"/>
+                        <ComboBoxItem Content="{DynamicResource 32B960}" Tag="32;96000"/>
+                        <ComboBoxItem Content="{DynamicResource 32B1920}" Tag="32;196000"/>
                     </ComboBox>
 
                 </Grid>

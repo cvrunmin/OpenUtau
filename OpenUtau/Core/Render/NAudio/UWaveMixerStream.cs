@@ -77,11 +77,21 @@ namespace OpenUtau.Core.Render.NAudio
                 if (!waveStream.WaveFormat.Equals(waveFormat)) {
                 try
                 {
-                    if (waveStream.WaveFormat.Channels != waveFormat.Channels)
+                    /*if (waveStream.WaveFormat.Channels != waveFormat.Channels || (waveFormat.BitsPerSample == 32 && waveStream.WaveFormat.BitsPerSample != 32))
                     {
                         waveStream = new WaveChannel32(waveStream);
                     }
-                    waveStream = new WaveFormatConversionStream(waveFormat, waveStream);
+                    else if (waveFormat.BitsPerSample == 16 && waveStream.WaveFormat.BitsPerSample == 32) {
+                        waveStream = new Wave32To16Stream(waveStream);
+                    }
+                    else if (waveStream.WaveFormat.SampleRate != waveFormat.SampleRate) {
+                        waveStream = new ResamplerDmoStream(waveStream, waveFormat);
+                    }
+                    else
+                    {
+                        waveStream = new WaveFormatConversionStream(waveFormat, new Wave32To16Stream(waveStream));
+                    }*/
+                    waveStream = new UWaveFormatConvertStream(waveStream, waveFormat);
                 }
                 catch (Exception e)
                 {
@@ -160,22 +170,25 @@ namespace OpenUtau.Core.Render.NAudio
 
             // sum the channels in
             var readBuffer = new byte[count];
-            lock (inputsLock)
+            if (count != 0)
             {
-                foreach (var inputStream in inputStreams)
+                lock (inputsLock)
                 {
-                    if (inputStream.HasData(count))
+                    foreach (var inputStream in inputStreams)
                     {
-                        int readFromThisStream = inputStream.Read(readBuffer, 0, count);
-                        // don't worry if input stream returns less than we requested - may indicate we have got to the end
-                        bytesRead = Math.Max(bytesRead, readFromThisStream);
-                        if (readFromThisStream > 0)
-                            SumAudio(buffer, offset, readBuffer, inputStream.WaveFormat, readFromThisStream);
-                    }
-                    else
-                    {
-                        bytesRead = Math.Max(bytesRead, count);
-                        inputStream.Position += count;
+                        if (inputStream.HasData(count))
+                        {
+                            int readFromThisStream = inputStream.Read(readBuffer, 0, count);
+                            // don't worry if input stream returns less than we requested - may indicate we have got to the end
+                            bytesRead = Math.Max(bytesRead, readFromThisStream);
+                            if (readFromThisStream > 0)
+                                SumAudio(buffer, offset, readBuffer, inputStream.WaveFormat, readFromThisStream);
+                        }
+                        else
+                        {
+                            bytesRead = Math.Max(bytesRead, count);
+                            inputStream.Position += count;
+                        }
                     }
                 }
             }

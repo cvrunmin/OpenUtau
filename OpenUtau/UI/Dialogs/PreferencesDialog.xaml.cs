@@ -171,7 +171,7 @@ namespace OpenUtau.UI.Dialogs
             Core.Util.Preferences.Save();
         }
 
-        private string[] RenderManager = new string[] { "Instant", "PreRender" };
+        private string[] RenderManager = new string[] { "Instant", "PreRender", "PPS" };
 
         private void comboRenderMana_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -212,6 +212,7 @@ namespace OpenUtau.UI.Dialogs
             Core.Util.Preferences.Default.SamplingRate = Convert.ToInt32(((comboSamplingR.SelectedItem as ComboBoxItem)?.Tag as string)?.Split(';')[1] ?? "44100");
             Core.Util.Preferences.Default.BitDepth = Convert.ToInt32(((comboSamplingR.SelectedItem as ComboBoxItem)?.Tag as string)?.Split(';')[0] ?? "16");
             Core.Util.Preferences.Save();
+            PPSPlaybackManager.Inst.Master.RegenFormat();
         }
     }
 }

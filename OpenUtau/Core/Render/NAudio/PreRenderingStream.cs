@@ -1,4 +1,5 @@
 ﻿using NAudio.Wave;
+using NAWave = NAudio.Wave;
 using OpenUtau.Core.USTx;
 using System;
 using System.Collections.Generic;
@@ -6,21 +7,29 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static OpenUtau.Core.MusicMath;
 
 namespace OpenUtau.Core.Render.NAudio
 {
     class PreRenderingStream : WaveStream, ICmdSubscriber
     {
-        private WaveFormat _waveFormat = new WaveFormat(Core.Util.Preferences.Default.SamplingRate, Core.Util.Preferences.Default.BitDepth, 2);
+        private WaveFormat _waveFormat = Core.Util.Preferences.Default.BitDepth == 32 ? WaveFormat.CreateIeeeFloatWaveFormat(Core.Util.Preferences.Default.SamplingRate, 2) : new WaveFormat(Core.Util.Preferences.Default.SamplingRate, Core.Util.Preferences.Default.BitDepth, 2);
+
+        internal void RegenFormat() {
+            _waveFormat = Core.Util.Preferences.Default.BitDepth == 32 ? NAWave.WaveFormat.CreateIeeeFloatWaveFormat(Core.Util.Preferences.Default.SamplingRate, 2) : new WaveFormat(Core.Util.Preferences.Default.SamplingRate, Core.Util.Preferences.Default.BitDepth, 2);
+            Mixer = new UWaveMixerStream(WaveFormat);
+            foreach (var item in Tracks.Keys)
+            {
+                FillTrack(item);
+            }
+        }
 
         public override WaveFormat WaveFormat => _waveFormat;
 
         public UWaveMixerStream Mixer { get; private set; }
 
         private Dictionary<int, (UWaveMixerStream Source, TrackWaveChannel Wrap)> Tracks = new Dictionary<int, (UWaveMixerStream Source, TrackWaveChannel Wrap)>();
-
-        private Dictionary<int, (float Volume, float Pan)> TrackModifiers = new Dictionary<int, (float Volume, float Pan)>();
-
+        
         private Dictionary<int, (WaveStream Source, UWaveOffsetStream Warp)> Parts = new Dictionary<int, (WaveStream Source, UWaveOffsetStream Warp)>();
 
         private Dictionary<(int Part, int Note), List<RenderItemSampleProvider>> Notes = new Dictionary<(int, int), List<RenderItemSampleProvider>>();
@@ -71,6 +80,16 @@ namespace OpenUtau.Core.Render.NAudio
             Mixer.AddInputStream(warp);
         }
 
+
+        public void FillTrack(int trackno)
+        {
+            if (Tracks.ContainsKey(trackno))
+            {
+                Mixer.RemoveInputStream(Tracks[trackno].Wrap);
+                Mixer.AddInputStream(Tracks[trackno].Wrap);
+            }
+        }
+
         public bool RemoveTrack(int trackno) {
             Mixer.RemoveInputStream(Tracks[trackno].Wrap);
             return Tracks.Remove(trackno);
@@ -105,13 +124,14 @@ namespace OpenUtau.Core.Render.NAudio
                 }
                 foreach (var item in Notes.Where(pair=>pair.Key.Part == part.PartNo).SelectMany(pair=>pair.Value))
                 {
+                    if(item != null)
                     sp.AddInputStream(item);
                 }
                 var s1 = new UWaveOffsetStream(sp, TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)), TimeSpan.Zero, TimeSpan.FromMilliseconds(project.TickToMillisecond(part.DurTick, part.PosTick)));
                 if (Parts.ContainsKey(part.PartNo)) Parts[part.PartNo] = (sp, s1);
                 else Parts.Add(part.PartNo, (sp, s1));
             }
-            catch
+            catch(Exception e)
             {
                 System.Diagnostics.Debug.WriteLine($"cannot add voice part {part.PartNo}\"{part.Name}\"");
             }
@@ -124,8 +144,8 @@ namespace OpenUtau.Core.Render.NAudio
             Parts.Remove(part);
         }
 
-        public void AddNote(USTx.UProject project, UVoicePart part, UNote note) {
-            var items = ResamplerInterface.RenderNote(project, part, note);
+        public async void AddNote(USTx.UProject project, UVoicePart part, UNote note) {
+            var items = await ResamplerInterface.RenderNoteAsync(project, part, note);
             (int PartNo, int NoteNo) key = (part.PartNo, note.NoteNo);
             List<RenderItemSampleProvider> list = items.Select(item => new RenderItemSampleProvider(item)).ToList();
             if (Notes.ContainsKey(key))
@@ -180,6 +200,36 @@ namespace OpenUtau.Core.Render.NAudio
             else if (cmd is TrackCommand tc)
             {
 
+            }
+            if (cmd is VolumeChangeNotification vcn)
+            {
+                if (Tracks.ContainsKey(vcn.TrackNo))
+                {
+                    Tracks[vcn.TrackNo].Wrap.PlainVolume = DecibelToVolume(vcn.Volume);
+                }
+            }
+            else if (cmd is PanChangeNotification pcn)
+            {
+                if (Tracks.ContainsKey(pcn.TrackNo))
+                {
+                    Tracks[pcn.TrackNo].Wrap.Pan = (float)pcn.Pan / 90f;
+                }
+            }
+            else if (cmd is MuteNotification mute)
+            {
+                    foreach (var item in Tracks)
+                    {
+                        TrackWaveChannel ch = item.Value.Wrap;
+                        ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+                    }
+            }
+            else if (cmd is SoloNotification solo)
+            {
+                    foreach (var item in Tracks)
+                    {
+                        TrackWaveChannel ch = item.Value.Wrap;
+                        ch.Muted = DocManager.Inst.Project.Tracks[ch.TrackNo].ActuallyMuted;
+                    }
             }
         }
 

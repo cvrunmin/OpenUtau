@@ -153,11 +153,15 @@ namespace OpenUtau.Core.Render
             System.Diagnostics.Debug.WriteLine("Total time {0} ms", watch.Elapsed.TotalMilliseconds);
             return renderItems;
         }
+        public static Task<IEnumerable<RenderItem>> RenderNoteAsync(UProject project, UVoicePart part, UNote note) {
+            return DocManager.Inst.Factory.StartNew(() => RenderNote(project, part, note));
+        }
         public static IEnumerable<RenderItem> RenderNote(UProject project, UVoicePart part, UNote note) {
 
             System.IO.FileInfo ResamplerFile = new System.IO.FileInfo(PathManager.Inst.GetPreviewEnginePath());
             IResamplerDriver engine = ResamplerDriver.ResamplerDriver.LoadEngine(ResamplerFile.FullName);
             var inst = new ResamplerInterface();
+            var list = new List<RenderItem>();
             foreach (UPhoneme phoneme in note.Phonemes)
             {
                 RenderItem item = inst.BuildRenderItem(phoneme, part, project);
@@ -165,8 +169,9 @@ namespace OpenUtau.Core.Render
                 {
                     RenderPhoneme(engine, PathManager.Inst.GetCachePath(project.FilePath), item, Path.GetFileNameWithoutExtension(project.FilePath), part.TrackNo);
                 }
-                yield return item;
+                list.Add(item);
             }
+            return list;
         }
         private static void RenderPhoneme(IResamplerDriver engine, string cacheDir, RenderItem item, string projectName, int track)
         {

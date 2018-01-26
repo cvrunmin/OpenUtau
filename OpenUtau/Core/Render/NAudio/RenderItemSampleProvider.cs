@@ -21,7 +21,7 @@ namespace OpenUtau.Core.Render
         public RenderItemSampleProvider(RenderItem renderItem)
         {
             this.RenderItem = renderItem;
-            if (this.RenderItem.Error)
+            if (this.RenderItem.Error || RenderItem.Sound == null)
             {
 
             }

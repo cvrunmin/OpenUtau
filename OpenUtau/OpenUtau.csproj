@@ -176,6 +176,7 @@
     <Compile Include="Core\Render\NAudio\SequencingSampleProvider.cs" />
     <Compile Include="Core\Render\NAudio\TrackWaveChannel.cs" />
     <Compile Include="Core\Render\NAudio\UOffsetSampleProvider.cs" />
+    <Compile Include="Core\Render\NAudio\UWaveFormatConvertStream.cs" />
     <Compile Include="Core\Render\NAudio\UWaveMixerStream.cs" />
     <Compile Include="Core\Render\NAudio\UWaveMixerStream32.cs" />
     <Compile Include="Core\Render\NAudio\UWaveOffsetStream.cs" />
