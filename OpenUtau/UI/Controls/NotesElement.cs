@@ -293,7 +293,7 @@ namespace OpenUtau.UI.Controls
             var _pts = _pitchExp.Data as List<PitchPoint>;
             if (_pts.Count < 2) return;
 
-            double pt0Tick = note.PosTick + MusicMath.MillisecondToTick(_pts[0].X, DocManager.Inst.Project.BPM, DocManager.Inst.Project.BeatUnit, DocManager.Inst.Project.Resolution);
+            double pt0Tick = note.PosTick + DocManager.Inst.Project.MillisecondToTick(_pts[0].X, DocManager.Inst.Project.Parts[note.PartNo].PosTick + note.PosTick);
             double pt0X = midiVM.QuarterWidth * pt0Tick / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
             double pt0Pit = note.NoteNum + _pts[0].Y / 10.0;
             double pt0Y = TrackHeight * ((double)UIConstants.MaxNoteNum - 1.0 - pt0Pit) + TrackHeight / 2;
@@ -304,7 +304,7 @@ namespace OpenUtau.UI.Controls
 
             for (int i = 1; i < _pts.Count; i++)
             {
-                double pt1Tick = note.PosTick + MusicMath.MillisecondToTick(_pts[i].X, DocManager.Inst.Project.BPM, DocManager.Inst.Project.BeatUnit, DocManager.Inst.Project.Resolution);
+                double pt1Tick = note.PosTick + DocManager.Inst.Project.MillisecondToTick(_pts[i].X, DocManager.Inst.Project.Parts[note.PartNo].PosTick + note.PosTick);
                 double pt1X = midiVM.QuarterWidth * pt1Tick / DocManager.Inst.Project.Resolution * midiVM.BeatPerBar;
                 double pt1Pit = note.NoteNum + _pts[i].Y / 10.0;
                 double pt1Y = TrackHeight * ((double)UIConstants.MaxNoteNum - 1.0 - pt1Pit) + TrackHeight / 2;

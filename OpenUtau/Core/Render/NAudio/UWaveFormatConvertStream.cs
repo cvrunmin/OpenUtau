@@ -10,22 +10,20 @@ namespace OpenUtau.Core.Render.NAudio
 {
     public class UWaveFormatConvertStream : WaveStream
     {
-        private WaveFormat _waveFormat;
-
-        public override WaveFormat WaveFormat => _waveFormat;
+        public override WaveFormat WaveFormat { get; }
 
         public override long Length => (long)Math.Ceiling(sourceStream.Length / sourceStream.WaveFormat.BitsPerSample * 8 / sourceStream.WaveFormat.Channels * ((double)WaveFormat.SampleRate / sourceStream.WaveFormat.SampleRate) * WaveFormat.BitsPerSample / 8 * WaveFormat.Channels);
 
         private long position;
 
-        public override long Position { get => position; set { position = value; sourceStream.Position = (long)((double)position / WaveFormat.BitsPerSample * 8 / WaveFormat.Channels / (WaveFormat.SampleRate / sourceStream.WaveFormat.SampleRate) * sourceStream.WaveFormat.BitsPerSample / 8 * sourceStream.WaveFormat.Channels); } }
+        public override long Position { get => position; set { position = value; sourceStream.Position = (long)((double)position / WaveFormat.BitsPerSample * 8 / WaveFormat.Channels / ((double)WaveFormat.SampleRate / sourceStream.WaveFormat.SampleRate) * sourceStream.WaveFormat.BitsPerSample / 8 * sourceStream.WaveFormat.Channels); } }
 
         private WaveStream sourceStream;
 
         public UWaveFormatConvertStream(WaveStream source, WaveFormat format)
         {
             sourceStream = source;
-            _waveFormat = format;
+            WaveFormat = format;
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -62,60 +60,77 @@ namespace OpenUtau.Core.Render.NAudio
             if (old.Encoding == WaveFormatEncoding.IeeeFloat)
             {
                 var warps = new WaveBuffer(src);
-                var warpsc = Enumerable.Repeat(new WaveBuffer(sampleSC * bytesPsample), old.Channels).ToArray();
-                for (int i = 0; i < sampleS; i++)
+                var warpsc = new WaveBuffer[old.Channels];
+                for (int i = 0; i < warpsc.Length; i++)
                 {
-                    warpsc[i % old.Channels].FloatBuffer[i / old.Channels] = warps.FloatBuffer[i];
+                    warpsc[i] = new WaveBuffer(sampleSC * bytesPsample);
                 }
-                var warpc = Enumerable.Repeat(new WaveBuffer(sampleC * bytesPsample), old.Channels).ToArray();
-                for (int i = 0; i < sample; i++)
+                for (int i = 0; i < sampleSC; i++)
                 {
-                    var pos = i / old.Channels / ratio;
-                    warpc[i % old.Channels].FloatBuffer[i / old.Channels] = (warpsc[i % old.Channels].FloatBuffer[(int)Math.Floor(pos)] * (1 - (pos - (float)Math.Truncate(pos))) + warpsc[i % old.Channels].FloatBuffer[(int)Math.Ceiling(pos)] * (pos - (float)Math.Truncate(pos)));
+                    for (int j = 0; j < old.Channels; j++)
+                    {
+                        warpsc[j].FloatBuffer[i] = warps.FloatBuffer[i * old.Channels + j];
+                    }
+                }
+                var warpc = new WaveBuffer[old.Channels];
+                for (int i = 0; i < warpsc.Length; i++)
+                {
+                    warpc[i] = new WaveBuffer(sampleC * bytesPsample);
+                }
+                for (int i = 0; i < sampleC; i++)
+                {
+                    var pos = i / ratio;
+                    for (int j = 0; j < old.Channels; j++)
+                    {
+                        warpc[j].FloatBuffer[i] = warpsc[j].FloatBuffer[(int)Math.Floor(pos)] * (1 - (pos - (float)Math.Truncate(pos))) + warpsc[j].FloatBuffer[(int)Math.Ceiling(pos)] * (pos - (float)Math.Truncate(pos));
+                    }
                 }
                 var warp = new WaveBuffer(bs);
-                for (int i = 0; i < sample; i++)
+                for (int i = 0; i < sampleC; i++)
                 {
-                    warp.FloatBuffer[i] = warpc[i % old.Channels].FloatBuffer[i / old.Channels];
+                    for (int j = 0; j < old.Channels; j++)
+                    {
+                        warp.FloatBuffer[i * old.Channels + j] = warpc[j].FloatBuffer[i];
+                    }
                 }
             }
             else if (old.Encoding == WaveFormatEncoding.Pcm)
             {
-                var isc = Enumerable.Repeat(new int[sampleSC * bytesPsample], old.Channels).ToArray();
-                var ic = Enumerable.Repeat(new int[sampleC * bytesPsample], old.Channels).ToArray();
+                var isc = new int[old.Channels, sampleSC * bytesPsample];
+                var ic = new int[old.Channels, sampleC * bytesPsample];
                 switch (old.BitsPerSample)
                 {
                     case 16:
                         for (int i = 0; i < sampleS; i++)
                         {
                             int a = BitConverter.ToInt16(src, i * 2);
-                            isc[i % old.Channels][i / old.Channels] = a;
+                            isc[i % old.Channels,i / old.Channels] = a;
                         }
                         for (int i = 0; i < sample; i++)
                         {
                             var pos = i / old.Channels / ratio;
-                            ic[i % old.Channels][i / old.Channels] = (int)(isc[i % old.Channels][(int)Math.Floor(pos)] * (1 - (pos - (float)Math.Truncate(pos))) + isc[i % old.Channels][(int)Math.Ceiling(pos)] * (pos - (float)Math.Truncate(pos)));
+                            ic[i % old.Channels,i / old.Channels] = (int)(isc[i % old.Channels,(int)Math.Floor(pos)] * (1 - (pos - (float)Math.Truncate(pos))) + isc[i % old.Channels,(int)Math.Ceiling(pos)] * (pos - (float)Math.Truncate(pos)));
                         }
                         var warp = new WaveBuffer(bs);
                         for (int i = 0; i < sample; i++)
                         {
-                            warp.ShortBuffer[i] = (short)(ic[i % old.Channels][i / old.Channels]);
+                            warp.ShortBuffer[i] = (short)(ic[i % old.Channels,i / old.Channels]);
                         }
                         break;
                     case 24:
                         for (int i = 0; i < sampleS; i++)
                         {
                             int a = (((sbyte)src[i * 3 + 2] << 16) | (src[i * 3 + 1] << 8) | src[i * 3]);
-                            isc[i % old.Channels][i / old.Channels] = a;
+                            isc[i % old.Channels,i / old.Channels] = a;
                         }
                         for (int i = 0; i < sample; i++)
                         {
                             var pos = i / old.Channels / ratio;
-                            ic[i % old.Channels][i / old.Channels] = (int)(isc[i % old.Channels][(int)Math.Floor(pos)] * (1 - (pos - (float)Math.Truncate(pos))) + isc[i % old.Channels][(int)Math.Ceiling(pos)] * (pos - (float)Math.Truncate(pos)));
+                            ic[i % old.Channels,i / old.Channels] = (int)(isc[i % old.Channels,(int)Math.Floor(pos)] * (1 - (pos - (float)Math.Truncate(pos))) + isc[i % old.Channels,(int)Math.Ceiling(pos)] * (pos - (float)Math.Truncate(pos)));
                         }
                         for (int i = 0; i < sample; i++)
                         {
-                            var sample24 = ic[i % old.Channels][i / old.Channels];
+                            var sample24 = ic[i % old.Channels,i / old.Channels];
                             bs[i * 3] = (byte)(sample24);
                             bs[i * 3 + 1] = (byte)(sample24 >> 8);
                             bs[i * 3 + 2] = (byte)(sample24 >> 16);
@@ -125,16 +140,16 @@ namespace OpenUtau.Core.Render.NAudio
                         for (int i = 0; i < sampleS; i++)
                         {
                             int a = (((sbyte)src[i * 4 + 3] << 24 | src[i * 4 + 2] << 16) | (src[i * 4 + 1] << 8) | src[i * 4]);
-                            isc[i % old.Channels][i / old.Channels] = a;
+                            isc[i % old.Channels,i / old.Channels] = a;
                         }
                         for (int i = 0; i < sample; i++)
                         {
                             var pos = i / old.Channels / ratio;
-                            ic[i % old.Channels][i / old.Channels] = (int)(isc[i % old.Channels][(int)Math.Floor(pos)] * (1 - (pos - (float)Math.Truncate(pos))) + isc[i % old.Channels][(int)Math.Ceiling(pos)] * (pos - (float)Math.Truncate(pos)));
+                            ic[i % old.Channels,i / old.Channels] = (int)(isc[i % old.Channels,(int)Math.Floor(pos)] * (1 - (pos - (float)Math.Truncate(pos))) + isc[i % old.Channels,(int)Math.Ceiling(pos)] * (pos - (float)Math.Truncate(pos)));
                         }
                         for (int i = 0; i < sample; i++)
                         {
-                            var sample32i = ic[i % old.Channels][i / old.Channels];
+                            var sample32i = ic[i % old.Channels,i / old.Channels];
                             bs[i * 4] = (byte)(sample32i);
                             bs[i * 4 + 1] = (byte)(sample32i >> 8);
                             bs[i * 4 + 2] = (byte)(sample32i >> 16);
@@ -230,7 +245,7 @@ namespace OpenUtau.Core.Render.NAudio
                     warp.ShortBuffer[i] = (short)(sample32 * 32767);
                 else if (mod.BitsPerSample == 24)
                 {
-                    var sample24 = (int)(sample32 * 8388607.0);
+                    var sample24 = (int)Math.Round(sample32 * 8388607.0);
                     bd[i * 3] = (byte)(sample24);
                     bd[i * 3 + 1] = (byte)(sample24 >> 8);
                     bd[i * 3 + 2] = (byte)(sample24 >> 16);

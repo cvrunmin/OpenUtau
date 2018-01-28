@@ -325,7 +325,7 @@ namespace OpenUtau.Core.Render
             double elisimatedMs;
             try
             {
-                elisimatedMs = DocManager.Inst.Project.TickToMillisecond(DocManager.Inst.Project.Parts[partNo].DurTick);
+                elisimatedMs = DocManager.Inst.Project.TickToMillisecond(DocManager.Inst.Project.Parts[partNo].DurTick, DocManager.Inst.Project.Parts[partNo].PosTick);
             }
             catch (Exception)
             {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -202,8 +203,15 @@ namespace OpenUtau.Core
             };
             if (masterMix != null)
             {
+                try
+                {
                 outDevice.Init(masterMix);
                 outDevice.Play();
+                }
+                catch (COMException e)
+                {
+                    outDevice.Stop();
+                }
             }
         }
 
@@ -312,8 +320,15 @@ namespace OpenUtau.Core
             };
             if (masterMix != null)
             {
+                try
+                {
                 outDevice.Init(masterMix);
                 outDevice.Play();
+                }
+                catch (COMException e)
+                {
+                    outDevice.Stop();
+                }
             }
         }
 
@@ -517,8 +532,15 @@ namespace OpenUtau.Core
             {
                 StopPlayback();
             };
+            try
+            {
             outDevice.Init(masterMix.USkip(span));
             outDevice.Play();
+            }
+            catch (COMException e)
+            {
+                outDevice.Stop();
+            }
         }
 
         int pendingParts = 0;
