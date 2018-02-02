@@ -316,7 +316,8 @@ namespace OpenUtau.Core.Util
                     }
                     else
                     {
-                        if (GetStyle(lator.Lyric) == Style.VC) return pt1;
+                        Style style1 = GetStyle(lator.Lyric);
+                        if (style1 == Style.VC || style1 == Style.VCV) return pt1;
                         string con = LyricsHelper.GetConsonant(lator.Lyric, singer);
                         pt2 = LyricsHelper.GetVowel(original, singer) + " " + (string.IsNullOrEmpty(con) ? LyricsHelper.GetVowel(lator.Lyric, singer) : con);
                     }

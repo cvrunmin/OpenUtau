@@ -187,6 +187,7 @@
     <Compile Include="Core\Classes\ExpCommands.cs" />
     <Compile Include="Core\Render\RenderDispatcher.cs" />
     <Compile Include="Core\Render\SoundbankCache.cs" />
+    <Compile Include="Core\Render\UtauRenderScript.cs" />
     <Compile Include="Core\ResamplerDriver\DriverEngine.cs" />
     <Compile Include="Core\ResamplerDriver\DriverModels.cs" />
     <Compile Include="Core\ResamplerDriver\Factorys\CppDriver.cs" />

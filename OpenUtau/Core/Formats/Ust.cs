@@ -220,37 +220,19 @@ namespace OpenUtau.Core.Formats
                         //file.WriteLine("OutFile="+project.OutputDir);
                         file.WriteLine("CacheDir=" + project.CacheDir);
                         List<UNote> writeNotes = new List<UNote>();
+                        int endtick = 0;
                         if ((tParts.FirstOrDefault()?.PosTick ?? 0) > 0)
                         {
                             var note = project.CreateNote(60, 0, tParts.FirstOrDefault().PosTick);
                             note.Lyric = "R";
                             note.Phonemes[0].Phoneme = "R";
                             writeNotes.Add(note);
+                            endtick += note.DurTick;
                         }
-                        int endtick = 0;
                         int pos = 0;
                         foreach (var part in tParts)
                         {
-                            foreach (var note in part.Notes)
-                            {
-                                if (note.PosTick > endtick)
-                                {
-                                    var note1 = project.CreateNote(60, 0, note.PosTick - endtick);
-                                    note1.Lyric = "R";
-                                    note1.Phonemes[0].Phoneme = "R";
-                                    writeNotes.Add(note1);
-                                }
-                                foreach (var pho in note.Phonemes)
-                                {
-                                    var nnote = note.Clone();
-                                    nnote.DurTick = pho.DurTick;
-                                    nnote.PosTick = note.PosTick + pho.PosTick;
-                                    nnote.Phonemes.Clear();
-                                    nnote.Phonemes.Add(pho.Clone(nnote));
-                                    writeNotes.Add(nnote);
-                                }
-                                endtick = note.EndTick;
-                            }
+                            endtick = MakeUstNotes(project, writeNotes, endtick, part);
                         }
                         foreach (var note in writeNotes)
                         {
@@ -321,6 +303,33 @@ namespace OpenUtau.Core.Formats
                     }
                 }
             }
+        }
+
+        internal static int MakeUstNotes(UProject project, List<UNote> writeNotes, int endtick, UVoicePart part)
+        {
+            foreach (var note in part.Notes)
+            {
+                if (part.PosTick + note.PosTick > endtick)
+                {
+                    var note1 = project.CreateNote(60, 0, note.PosTick - endtick);
+                    note1.Lyric = "R";
+                    note1.Phonemes[0].Phoneme = "R";
+                    note1.Phonemes[0].Oto = new UOto() { File = "R.wav" };
+                    writeNotes.Add(note1);
+                }
+                foreach (var pho in note.Phonemes)
+                {
+                    var nnote = note.Clone();
+                    nnote.DurTick = pho.DurTick;
+                    nnote.PosTick = note.PosTick + pho.PosTick;
+                    nnote.Phonemes.Clear();
+                    nnote.Phonemes.Add(pho.Clone(nnote));
+                    writeNotes.Add(nnote);
+                }
+                endtick = note.EndTick + part.PosTick;
+            }
+
+            return endtick;
         }
 
         static UNote NoteFromUst(UNote note, List<string> lines, UstVersion version)

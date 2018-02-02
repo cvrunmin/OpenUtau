@@ -19,12 +19,16 @@ namespace OpenUtau.Core.Render
         public int Modulation;
         public string StrFlags;
         public List<int> PitchData;
+        public int DurTick;
         public int RequiredLength;
+        public int LengthAdjustment;
 		public double Tempo;
         public UOto Oto;
+        public UPhoneme Phoneme;
 
         // For connector
         public double SkipOver;
+        public double Overlap;
         public double PosMs;
         public double DurMs;
         public List<ExpPoint> Envelope;

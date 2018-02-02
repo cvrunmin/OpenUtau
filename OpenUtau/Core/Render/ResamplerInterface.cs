@@ -164,7 +164,7 @@ namespace OpenUtau.Core.Render
             var list = new List<RenderItem>();
             foreach (UPhoneme phoneme in note.Phonemes)
             {
-                RenderItem item = inst.BuildRenderItem(phoneme, part, project);
+                RenderItem item = BuildRenderItem(phoneme, part, project);
                 if (!item.Error)
                 {
                     RenderPhoneme(engine, PathManager.Inst.GetCachePath(project.FilePath), item, Path.GetFileNameWithoutExtension(project.FilePath), part.TrackNo);
@@ -179,7 +179,7 @@ namespace OpenUtau.Core.Render
 
             if (sound == null)
             {
-                string cachefile = Path.Combine(cacheDir, $"{projectName}-Track_{track}-{item.HashParameters():x}.wav");
+                string cachefile = GetCacheFile(cacheDir, item, projectName, track);
                 if (!File.Exists(cachefile) || new FileInfo(cachefile).Length == 0)
                 {
                     Debug.WriteLine("Sound {0:x} resampling {1}", item.HashParameters(), item.GetResamplerExeArgs());
@@ -215,7 +215,12 @@ namespace OpenUtau.Core.Render
             item.Sound = sound;
         }
 
-        private RenderItem BuildRenderItem(UPhoneme phoneme, UVoicePart part, UProject project)
+        internal static string GetCacheFile(string cacheDir, RenderItem item, string projectName, int track)
+        {
+            return Path.Combine(cacheDir, $"{projectName}-Track_{track}-{item.HashParameters():x}.wav");
+        }
+
+        internal static RenderItem BuildRenderItem(UPhoneme phoneme, UVoicePart part, UProject project, bool nocache = false)
         {
             USinger singer = project.Tracks[part.TrackNo].Singer;
             bool err = false;
@@ -236,27 +241,31 @@ namespace OpenUtau.Core.Render
             {
                 Error = err,
                 // For resampler
-                RawFile = SoundbankCache.GetSoundCachePath(rawfile, singer),
+                RawFile = nocache ? rawfile : SoundbankCache.GetSoundCachePath(rawfile, singer),
                 NoteNum = phoneme.Parent.NoteNum,
                 Velocity = (int)phoneme.Parent.Expressions["velocity"].Data,
                 Volume = (int)phoneme.Parent.Expressions["volume"].Data,
                 StrFlags = phoneme.Parent.GetResamplerFlags(),
                 PitchData = BuildPitchData(phoneme, part, project),
+                DurTick = (int)phoneme.DurTick,
                 RequiredLength = (int)requiredLength,
+                LengthAdjustment = (int)lengthAdjustment,
                 Oto = phoneme.Oto,
+                Phoneme = phoneme,
                 Tempo = /*tempo == 0 ? */project.BPM/* : tempo*/,
 
                 // For connector
                 SkipOver = (phoneme.Oto?.Preutter).GetValueOrDefault() * strechRatio - phoneme.Preutter,
                 PosMs = project.TickToMillisecond(phoneme.Parent.PosTick + phoneme.PosTick, part.PosTick) - phoneme.Preutter,
                 DurMs = project.TickToMillisecond(phoneme.DurTick, part.PosTick + phoneme.Parent.PosTick + phoneme.PosTick) + lengthAdjustment,
+                Overlap = phoneme.Overlap,
                 Envelope = phoneme.Envelope.Points
             };
 
             return item;
         }
 
-        private List<int> BuildPitchData(UPhoneme phoneme, UVoicePart part, UProject project)
+        internal static List<int> BuildPitchData(UPhoneme phoneme, UVoicePart part, UProject project)
         {
             List<int> pitches = new List<int>();
             UNote lastNote = part.Notes.Where(x => x.CompareTo(phoneme.Parent) < 0).LastOrDefault();
@@ -322,7 +331,7 @@ namespace OpenUtau.Core.Render
             }
 
             // Interpolation
-            const int intervalTick = 1;
+            const float intervalTick = 1.25f;
             double intervalMs = DocManager.Inst.Project.TickToMillisecond(intervalTick, part.PosTick + phoneme.Parent.PosTick);
             double currMs = startMs;
             int i = 0;
@@ -347,7 +356,7 @@ namespace OpenUtau.Core.Render
             return pitches;
         }
 
-        private double InterpolateVibrato(VibratoExpression vibrato, double posMs)
+        internal static double InterpolateVibrato(VibratoExpression vibrato, double posMs)
         {
             double lengthMs = vibrato.Length / 100 * DocManager.Inst.Project.TickToMillisecond(vibrato.Parent.DurTick, DocManager.Inst.Project.Parts[vibrato.Parent.PartNo].PosTick + vibrato.Parent.PosTick);
             double inMs = lengthMs * vibrato.In / 100;
