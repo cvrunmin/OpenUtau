@@ -18,8 +18,10 @@
     "InternalEnginePreview": true,
     "InternalEngineExport": true,
     "ExternalPreviewEngine": "",
-    "ExternalExportEngine": "",
+  "ExternalExportEngine": "",
+    "ScriptWavtool": "",
   "Language": "en-us",
+    "UseScript": false, 
   "SamplingRate": 44100,
   "BitDepth":  16
 }

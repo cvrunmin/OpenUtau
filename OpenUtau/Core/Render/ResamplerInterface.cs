@@ -215,9 +215,9 @@ namespace OpenUtau.Core.Render
             item.Sound = sound;
         }
 
-        internal static string GetCacheFile(string cacheDir, RenderItem item, string projectName, int track)
+        internal static string GetCacheFile(string cacheDir, RenderItem item, string projectName, int track, int c = -1)
         {
-            return Path.Combine(cacheDir, $"{projectName}-Track_{track}-{item.HashParameters():x}.wav");
+            return Path.Combine(cacheDir, $"{(c == -1 ? "" : c + "_")}{projectName}-Track_{track}-{item.HashParameters():x}.wav");
         }
 
         internal static RenderItem BuildRenderItem(UPhoneme phoneme, UVoicePart part, UProject project, bool nocache = false)

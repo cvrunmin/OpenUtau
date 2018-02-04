@@ -129,7 +129,7 @@ namespace OpenUtau.Core
             }
         }
 
-        private static void UpdateOverlapAdjustment(UVoicePart part)
+        internal static void UpdateOverlapAdjustment(UVoicePart part)
         {
             UPhoneme lastPhoneme = null;
             UNote lastNote = null;

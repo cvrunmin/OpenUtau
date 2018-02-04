@@ -11,7 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-
+using Microsoft.WindowsAPICodePack.Dialogs;
 using OpenUtau.Core;
 
 namespace OpenUtau.UI.Dialogs
@@ -213,6 +213,24 @@ namespace OpenUtau.UI.Dialogs
             Core.Util.Preferences.Default.BitDepth = Convert.ToInt32(((comboSamplingR.SelectedItem as ComboBoxItem)?.Tag as string)?.Split(';')[0] ?? "16");
             Core.Util.Preferences.Save();
             PPSPlaybackManager.Inst.Master.RegenFormat();
+        }
+
+        private void butBrowseWavtool_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("Wavtool", "*.exe"));
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                txtboxWavtool.Text = dialog.FileName;
+                Core.Util.Preferences.Default.ScriptWavtool = txtboxWavtool.Text;
+                Core.Util.Preferences.Save();
+            }
+        }
+
+        private void chkboxUseScript_Click(object sender, RoutedEventArgs e)
+        {
+            Core.Util.Preferences.Default.UseScript = chkboxUseScript.IsChecked.Value;
+            Core.Util.Preferences.Save();
         }
     }
 }

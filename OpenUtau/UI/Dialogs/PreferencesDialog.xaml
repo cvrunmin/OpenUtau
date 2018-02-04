@@ -58,11 +58,11 @@
                 <ComboBoxItem Content="New Pre-render"/>
             </ComboBox>
         </Grid>
-        <Grid x:Name="renderingGrid" Margin="170,2,10,10" Visibility="Collapsed">
+        <Grid x:Name="renderingGrid" Margin="170,2,10,10" Visibility="Visible">
             <ScrollViewer>
-                <Grid>
+                <Grid Margin="0,-0,0,0">
 
-                    <GroupBox Header="{DynamicResource ResamplingPreviewTitle}" Height="80" VerticalAlignment="Top" Margin="0,78,0,0">
+                    <GroupBox Header="{DynamicResource ResamplingPreviewTitle}" Height="80" VerticalAlignment="Top" Margin="0,147,0,0">
                         <Grid>
                             <RadioButton x:Name="previewRatioInternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,10,0,0" GroupName="preview" Checked="previewEngine_Checked" Content="{DynamicResource ResamplingInternal}"/>
                             <Grid Margin="8,34,18,3">
@@ -76,7 +76,7 @@
                             </Grid>
                         </Grid>
                     </GroupBox>
-                    <GroupBox Header="{DynamicResource ResamplingExportTitle}" Height="80" VerticalAlignment="Top" Margin="0,163,0,0">
+                    <GroupBox Header="{DynamicResource ResamplingExportTitle}" Height="80" VerticalAlignment="Top" Margin="0,232,0,0">
                         <Grid>
                             <RadioButton x:Name="exportRatioInternal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,10,0,0" GroupName="export" Checked="exportEngine_Checked" Content="{DynamicResource ResamplingInternal}"/>
                             <Grid Margin="8,34,18,3">
@@ -90,7 +90,7 @@
                             </Grid>
                         </Grid>
                     </GroupBox>
-                    <TextBlock TextWrapping="Wrap" Text="{DynamicResource ResamplingNotes}" Margin="9,265,0,0"/>
+                    <TextBlock TextWrapping="Wrap" Text="{DynamicResource ResamplingNotes}" Margin="0,317,9,0"/>
                     <CheckBox x:Name="chkboxInstantRender" Content="{DynamicResource InstantRender}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Click="chkboxInstantRender_Click"/>
                     <Label Content="Sampling Rate &amp; Bit Depth" HorizontalAlignment="Left" Margin="9,20,0,0" VerticalAlignment="Top"/>
                     <ComboBox x:Name="comboSamplingR" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top" Width="160" SelectionChanged="comboSamplingR_SelectionChanged" SelectedValuePath="Tag">
@@ -107,6 +107,13 @@
                         <ComboBoxItem Content="{DynamicResource 32B960}" Tag="32;96000"/>
                         <ComboBoxItem Content="{DynamicResource 32B1920}" Tag="32;196000"/>
                     </ComboBox>
+                    <CheckBox x:Name="chkboxUseScript" Content="Use Utau Render Batch" HorizontalAlignment="Left" Margin="10,76,0,0" VerticalAlignment="Top" Click="chkboxUseScript_Click"/>
+                    <GroupBox Header="WavTool" Height="46" Margin="0,96,0,0" VerticalAlignment="Top">
+                        <Grid>
+                            <Button x:Name="butBrowseWavtool" Content="..." VerticalAlignment="Top" HorizontalAlignment="Right" Padding="10,1" Click="butBrowseWavtool_Click"/>
+                            <TextBox x:Name="txtboxWavtool" Height="19" TextWrapping="Wrap" VerticalAlignment="Top" Margin="0,0,35,0"/>
+                        </Grid>
+                    </GroupBox>
 
                 </Grid>
             </ScrollViewer>

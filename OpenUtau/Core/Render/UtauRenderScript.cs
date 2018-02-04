@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OpenUtau.Core.USTx;
+using OpenUtau.Core.Util;
 
 namespace OpenUtau.Core.Render
 {
@@ -15,15 +16,15 @@ namespace OpenUtau.Core.Render
             using (var sw = new StreamWriter(File.Create(path)))
             {
                 sw.WriteLine(@"@if exist %temp% goto A");
-                sw.WriteLine(@"@if exist ""%cachedir%\%9_*.wav"" del ""% cachedir%\%9_*.wav""");
                 sw.WriteLine(@"@""%resamp%"" %1 %temp% %2 %vel% %flag% %5 %6 %7 %8 %params%");
                 sw.WriteLine(@":A");
-                sw.WriteLine(@"@""%tool%"" ""%output%"" %temp% %stp% %3 %env%");
+                sw.WriteLine(@"if %9 EQU %endpt% (""%tool%"" ""%output%"" %temp% %stp% %3 %env% LAST_NOTE) else (""%tool%"" ""%output%"" %temp% %stp% %3 %env%)");
             }
         }
 
         public static void GenerateTempBat(string path, UProject project, UVoicePart part)
         {
+            GenerateTempHelperBat(Path.Combine(Path.GetDirectoryName(path), $"temp_helper-{part.PartNo}.bat"));
             using (var sw = new StreamWriter(File.Create(path)))
             {
                 #region BATCH HEADER
@@ -32,10 +33,11 @@ namespace OpenUtau.Core.Render
                 sw.WriteLine($"@set tempo={project.BPM}");
                 sw.WriteLine($"@set samples=44100");
                 sw.WriteLine($"@set oto={project.Tracks[part.TrackNo].Singer.Path}");
-                sw.WriteLine($"@set tool={""}");
+                sw.WriteLine($"@set tool={Preferences.Default.ScriptWavtool}");
                 sw.WriteLine($"@set resamp={PathManager.Inst.GetPreviewEnginePath()}");
-                sw.WriteLine($"@set output=temp-Part_{part.PartNo}.wav");
-                sw.WriteLine($"@set cachedir={Path.Combine(project.FilePath, "UCache")}");
+                sw.WriteLine($@"@set helper=""{Path.Combine(Path.GetDirectoryName(path), $"temp_helper-{part.PartNo}.bat")}""");
+                sw.WriteLine($@"@set output=""{Path.Combine(Path.GetDirectoryName(path), $"temp-Part_{part.PartNo}.wav")}""");
+                sw.WriteLine($"@set cachedir={Path.Combine(Path.GetDirectoryName(project.FilePath ?? path), "UCache")}");
                 sw.WriteLine($"@set flag=\"\"");
                 sw.WriteLine($"@set env=0 5 35 0 100 100 0");
                 sw.WriteLine($"@set stp=0");
@@ -47,33 +49,41 @@ namespace OpenUtau.Core.Render
                 // Length = Length@Tempo+Corr value, Corr value = Preutter - Preutter of next note + Overlap of next note
                 var list = new List<UNote>();
                 Formats.Ust.MakeUstNotes(project, list, part.PosTick, part);
+                var vp = new UVoicePart(){Expressions = part.Expressions, TrackNo = part.TrackNo };
+                list.ForEach(note=>vp.Notes.Add(note));
+                PartManager.UpdateOverlapAdjustment(vp);
+                list = vp.Notes.ToList();
                 var ri = new List<RenderItem>();
                 foreach (var item in list.SelectMany(note => note.Phonemes))
                 {
                     ri.Add(ResamplerInterface.BuildRenderItem(item, part, project, true));
                 }
+
+                vp = null;
                 #region RenderNote
                 var c = 0;
+                sw.WriteLine($"@set endpt={ri.Count - 1}");
                 foreach (var item in ri)
                 {
                     c++;
                     if (item.Oto.File.EndsWith("R.wav"))
                     {
-                        sw.WriteLine($@"@""%tool%"" ""%output%"" ""%oto%\R.wav"" 0 {item.DurTick}@{item.Tempo}{item.LengthAdjustment:+#.###;-#.###;+0} 0 0");
+                        sw.WriteLine($@"@""%tool%"" ""%output%"" ""%oto%\R.wav"" 0 {item.DurTick * 4}@{item.Tempo}{item.LengthAdjustment:+#.###;-#.###;+0} 0 0");
                     }
                     else if(!item.Error)
                     {
-                        sw.WriteLine($@"@set params={item.Volume} {item.Modulation} !{item.Tempo} AA#13#");
+                        sw.WriteLine($@"@set params={item.Volume} {item.Modulation} !{item.Tempo} {Base64.Base64EncodeInt12(item.PitchData.ToArray())}");
                         sw.WriteLine($@"@set flag=""{item.StrFlags}""");
-                        sw.WriteLine($@"@set env={item.Envelope[0].X} {item.Envelope[1].X} {item.RequiredLength - item.Envelope[3].X} {item.Envelope[0].Y} {item.Envelope[1].Y} {item.Envelope[3].Y} {item.Envelope[4].Y} {item.Overlap} {item.Envelope[4].X} {item.Envelope[2].X} {item.Envelope[2].Y}");
+                        sw.WriteLine($@"@set env={item.Envelope[0].X - item.Envelope[0].X} {item.Envelope[1].X - item.Envelope[0].X} {item.Phoneme.TailIntrude} {item.Envelope[0].Y} {item.Envelope[1].Y} {item.Envelope[3].Y} {item.Envelope[4].Y} {item.Overlap} {item.RequiredLength - item.Envelope[4].X} {item.Envelope[2].X - item.Envelope[0].X} {item.Envelope[2].Y}");
                         sw.WriteLine($@"@set vel={item.Velocity}");
-                        sw.WriteLine($@"@set temp=""{ResamplerInterface.GetCacheFile(Path.Combine(project.FilePath, "UCache"), item, project.Name, part.TrackNo)}""");
-                        sw.WriteLine($@"@echo ----------------------------------------({c}/{ri.Count})");
-                        sw.WriteLine($@"@if not exist ""%temp%"" call %helper% ""%oto%\{item.Oto?.File}"" {MusicMath.GetNoteString(item.NoteNum)} {item.DurTick}@{item.Tempo}{item.LengthAdjustment:+#.###;-#.###;+0} {item.Phoneme.Preutter} {item.Oto?.Offset} {item.RequiredLength:D} {item.Oto.Consonant} {item.Oto.Cutoff} {c - 1}");
+                        sw.WriteLine($@"@set temp=""{ResamplerInterface.GetCacheFile(Path.Combine(Path.GetDirectoryName(project.FilePath ?? path), "UCache"), item, string.IsNullOrWhiteSpace(project.FilePath) ? "temp" : Path.GetFileNameWithoutExtension(project.FilePath), part.TrackNo, c - 1)}""");
+                        sw.WriteLine($@"@echo {new string('#', 40 * c / ri.Count)}{new string('-', 40 - 40 * c / ri.Count)}({c}/{ri.Count})");
+                        sw.WriteLine($@"@call %helper% ""%oto%\{item.Oto?.File}"" {MusicMath.GetNoteString(item.NoteNum)} {item.DurTick * 4}@{item.Tempo}{item.LengthAdjustment:+#.###;-#.###;+0} {item.Phoneme.Preutter} {item.Oto?.Offset} {item.RequiredLength:D} {item.Oto.Consonant} {item.Oto.Cutoff} {c - 1}");
                     }
                 }
                 #endregion
                 #region FOOTER
+                sw.WriteLine();
                 sw.WriteLine(@"@if not exist ""%output%.whd"" goto E");
                 sw.WriteLine(@"@if not exist ""%output%.dat"" goto E");
                 sw.WriteLine(@"copy /Y ""%output%.whd"" /B + ""%output%.dat"" /B ""%output%""");

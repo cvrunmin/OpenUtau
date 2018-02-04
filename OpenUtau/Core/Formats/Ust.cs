@@ -311,9 +311,10 @@ namespace OpenUtau.Core.Formats
             {
                 if (part.PosTick + note.PosTick > endtick)
                 {
-                    var note1 = project.CreateNote(60, 0, note.PosTick - endtick);
+                    var note1 = project.CreateNote(60, 0, (part.PosTick + note.PosTick) - endtick);
                     note1.Lyric = "R";
                     note1.Phonemes[0].Phoneme = "R";
+                    note1.Phonemes[0].DurTick = note1.DurTick;
                     note1.Phonemes[0].Oto = new UOto() { File = "R.wav" };
                     writeNotes.Add(note1);
                 }
