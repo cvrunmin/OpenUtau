@@ -129,22 +129,26 @@ namespace OpenUtau.Core
             }
         }
 
-        internal static void UpdateOverlapAdjustment(UVoicePart part)
+        internal static void UpdateOverlapAdjustment(UVoicePart part) {
+            UpdateOverlapAdjustment(part.Notes, part.PosTick);
+        }
+
+        internal static void UpdateOverlapAdjustment(SortedSet<UNote> notes, int posTick)
         {
             UPhoneme lastPhoneme = null;
             UNote lastNote = null;
-            foreach (UNote note in part.Notes)
+            foreach (UNote note in notes)
             {
                 foreach (UPhoneme phoneme in note.Phonemes)
                 {
                     if (lastPhoneme != null)
                     {
                         int gapTick = phoneme.Parent.PosTick + phoneme.PosTick - lastPhoneme.Parent.PosTick - lastPhoneme.EndTick;
-                        double gapMs = DocManager.Inst.Project.TickToMillisecond(gapTick, part.PosTick + note.PosTick + phoneme.PosTick);
+                        double gapMs = DocManager.Inst.Project.TickToMillisecond(gapTick, posTick + note.PosTick + phoneme.PosTick);
                         if (gapMs < phoneme.Preutter)
                         {
                             phoneme.Overlapped = true;
-                            double lastDurMs = DocManager.Inst.Project.TickToMillisecond(lastPhoneme.DurTick, part.PosTick + lastPhoneme.Parent.PosTick + lastPhoneme.PosTick);
+                            double lastDurMs = DocManager.Inst.Project.TickToMillisecond(lastPhoneme.DurTick, posTick + lastPhoneme.Parent.PosTick + lastPhoneme.PosTick);
                             double correctionRatio = (lastDurMs + Math.Min(0, gapMs)) / 2 / (phoneme.Preutter - phoneme.Overlap);
                             if (phoneme.Preutter - phoneme.Overlap > gapMs + lastDurMs / 2)
                             {
@@ -160,8 +164,8 @@ namespace OpenUtau.Core
                             }
                             else phoneme.OverlapCorrection = false;
 
-                            phoneme.Preutter = Math.Min(phoneme.Preutter, DocManager.Inst.Project.TickToMillisecond(lastPhoneme.DurTick, part.PosTick + lastPhoneme.Parent.PosTick + lastPhoneme.PosTick));
-                            phoneme.Overlap = Math.Min(phoneme.Overlap, DocManager.Inst.Project.TickToMillisecond(phoneme.DurTick, part.PosTick + note.PosTick + phoneme.PosTick));
+                            phoneme.Preutter = Math.Min(phoneme.Preutter, DocManager.Inst.Project.TickToMillisecond(lastPhoneme.DurTick, posTick + lastPhoneme.Parent.PosTick + lastPhoneme.PosTick));
+                            phoneme.Overlap = Math.Min(phoneme.Overlap, DocManager.Inst.Project.TickToMillisecond(phoneme.DurTick, posTick + note.PosTick + phoneme.PosTick));
 
                             lastPhoneme.TailIntrude = phoneme.Preutter - gapMs;
                             lastPhoneme.TailOverlap = phoneme.Overlap;

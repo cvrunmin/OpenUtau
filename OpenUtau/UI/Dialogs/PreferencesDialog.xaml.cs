@@ -53,6 +53,8 @@ namespace OpenUtau.UI.Dialogs
                 ComboWavePlayer.Items.Remove("ASIO");
             }
             comboSamplingR.SelectedValue = Core.Util.Preferences.Default.BitDepth + ";" + Core.Util.Preferences.Default.SamplingRate;
+            chkboxUseScript.IsChecked = Core.Util.Preferences.Default.UseScript;
+            txtboxWavtool.Text = Core.Util.Preferences.Default.ScriptWavtool;
         }
 
         private void ComboBoxLang_SelectionChanged(object sender, SelectionChangedEventArgs e)

@@ -160,11 +160,11 @@ namespace OpenUtau.Core.Render
             return masterMix;
         }
 
-        private Task<Task<WaveStream>> BuildVoicePart(UProject project, UVoicePart part, IResamplerDriver engine, CancellationToken token)
+        private async Task<Task<WaveStream>> BuildVoicePart(UProject project, UVoicePart part, IResamplerDriver engine, CancellationToken token)
         {
             if (Preferences.Default.UseScript)
             {
-                return DocManager.Inst.Factory.StartNew(() => Task.Run(()=>
+                return Task.Run(() => DocManager.Inst.Factory.StartNew(()=>
                 {
                     var batch = Path.Combine(DocManager.CachePath, $"temp-Part_{part.PartNo}.bat");
                     UtauRenderScript.GenerateTempBat(batch, project, part);
@@ -177,17 +177,17 @@ namespace OpenUtau.Core.Render
                     catch (Exception e)
                     {
                         return WritePartProviderToStream(
-                            new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(), part.PartNo, CancellationToken.None).Result;
+                            new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(), part.PartNo, CancellationToken.None);
                     }
                 }));
             }
             else
-            return BuildVoicePartAudio(part, project, engine, token).ContinueWith(async task =>
+            return await Task.Run(()=>BuildVoicePartAudio(part, project, engine, token)).ContinueWith(async task =>
             {
                 if (!task.IsCanceled)
                 {
                     ISampleProvider src = task.Result ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider();
-                    return await (DocManager.Inst.Factory.StartNew(async () => await WritePartProviderToStream(src, part.PartNo, token)).Unwrap());
+                    return await (DocManager.Inst.Factory.StartNew(() => WritePartProviderToStream(src, part.PartNo, token)));
                 }
                 return null;
             });
@@ -223,7 +223,7 @@ namespace OpenUtau.Core.Render
                             if (!task.IsCanceled)
                             {
                                 ISampleProvider src = task.Result ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider();
-                                return await DocManager.Inst.Factory.StartNew(async () => await WritePartProviderToStream(src, part.PartNo, token), token).Unwrap();
+                                return await DocManager.Inst.Factory.StartNew(() => WritePartProviderToStream(src, part.PartNo, token), token);
                             }
                             return null;
                         }, token).ContinueWith(task => {
@@ -349,10 +349,10 @@ namespace OpenUtau.Core.Render
         private Task<SequencingSampleProvider> BuildVoicePartAudio(UVoicePart part, UProject project, IResamplerDriver engine) {
             return BuildVoicePartAudio(part, project, engine, System.Threading.CancellationToken.None);
         }
-        private Task<SequencingSampleProvider> BuildVoicePartAudio(UVoicePart part, UProject project, IResamplerDriver engine, System.Threading.CancellationToken cancel)
+        private async Task<SequencingSampleProvider> BuildVoicePartAudio(UVoicePart part, UProject project, IResamplerDriver engine, System.Threading.CancellationToken cancel)
         {
             ResamplerInterface ri = new ResamplerInterface();
-            return ri.ResamplePartNew(part, project, engine, cancel);
+            return await ri.ResamplePartNew(part, project, engine, cancel);
         }
 
         private float DecibelToVolume(double db)
@@ -360,7 +360,7 @@ namespace OpenUtau.Core.Render
             return db == -24 ? 0 : db < -16 ? (float)MusicMath.DecibelToLinear(db * 2 + 16) : (float)MusicMath.DecibelToLinear(db);
         }
 
-        public async static Task<WaveStream> WritePartProviderToStream(ISampleProvider source, int partNo, CancellationToken token) {
+        public static WaveStream WritePartProviderToStream(ISampleProvider source, int partNo, CancellationToken token) {
             double elisimatedMs;
             try
             {
@@ -389,7 +389,7 @@ namespace OpenUtau.Core.Render
                         str.Flush();
                         break;
                     }
-                    await str.WriteAsync(buffer, 0, bytesRead1, token);
+                    str.Write(buffer, 0, bytesRead1);
                     break;
                 }
                 var bytesRead = wave.Read(buffer, 0, buffer.Length);
@@ -399,7 +399,7 @@ namespace OpenUtau.Core.Render
                     str.Flush();
                     break;
                 }
-                await str.WriteAsync(buffer, 0, bytesRead, token);
+                str.Write(buffer, 0, bytesRead);
                 pos += bytesRead;
             }
             buffer = null;

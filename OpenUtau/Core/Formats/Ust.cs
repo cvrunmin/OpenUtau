@@ -311,7 +311,7 @@ namespace OpenUtau.Core.Formats
             {
                 if (part.PosTick + note.PosTick > endtick)
                 {
-                    var note1 = project.CreateNote(60, 0, (part.PosTick + note.PosTick) - endtick);
+                    var note1 = project.CreateNote(60, endtick - part.PosTick, (part.PosTick + note.PosTick) - endtick);
                     note1.Lyric = "R";
                     note1.Phonemes[0].Phoneme = "R";
                     note1.Phonemes[0].DurTick = note1.DurTick;
@@ -324,7 +324,10 @@ namespace OpenUtau.Core.Formats
                     nnote.DurTick = pho.DurTick;
                     nnote.PosTick = note.PosTick + pho.PosTick;
                     nnote.Phonemes.Clear();
-                    nnote.Phonemes.Add(pho.Clone(nnote));
+                    var pho1 = pho.Clone(nnote);
+                    pho1.PosTick = 0;
+                    pho1.DurTick = nnote.DurTick;
+                    nnote.Phonemes.Add(pho1);
                     writeNotes.Add(nnote);
                 }
                 endtick = note.EndTick + part.PosTick;
