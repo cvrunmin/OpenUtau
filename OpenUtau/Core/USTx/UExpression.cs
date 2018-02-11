@@ -275,7 +275,7 @@ namespace OpenUtau.Core.USTx
             foreach (var item in oldParnet.PitchBend.Points)
             {
                 var pre = item.Clone();
-                pre.X += DocManager.Inst.Project.TickToMillisecond(oldParnet.PosTick - Parent.PosTick);
+                pre.X += DocManager.Inst.Project.TickToMillisecond(oldParnet.PosTick - Parent.PosTick, DocManager.Inst.Project.Parts[oldParnet.PartNo].PosTick);
                 pre.Y += (oldParnet.NoteNum - Parent.NoteNum) * 10;
                 AddPoint(pre);
             }

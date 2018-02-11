@@ -321,7 +321,9 @@ namespace OpenUtau.Core.Formats
                 foreach (var pho in note.Phonemes)
                 {
                     var nnote = note.Clone();
+                    nnote.PitchBend = (PitchBendExpression)nnote.PitchBend.Split(nnote, (int)DocManager.Inst.Project.TickToMillisecond(pho.PosTick, part.PosTick + note.PosTick));
                     nnote.DurTick = pho.DurTick;
+                    nnote.PitchBend.Split(nnote, (int)DocManager.Inst.Project.TickToMillisecond(nnote.DurTick, part.PosTick + nnote.PosTick));
                     nnote.PosTick = note.PosTick + pho.PosTick;
                     nnote.Phonemes.Clear();
                     var pho1 = pho.Clone(nnote);
