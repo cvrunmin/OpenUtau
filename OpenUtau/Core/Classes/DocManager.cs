@@ -81,8 +81,9 @@ namespace OpenUtau.Core
                     PlaybackManager.GetActiveManager().StopPlayback();
                     undoQueue.Clear();
                     redoQueue.Clear();
+                    Render.RenderDispatcher.Inst.trackCache.ForEach(channel => channel.Dispose());
                     Render.RenderDispatcher.Inst.trackCache.Clear();
-                    Render.RenderDispatcher.Inst.trackCache.Capacity = 0;
+                    
                     Render.RenderCache.Inst.Clear();
                     undoGroup = null;
                     savedPoint = null;

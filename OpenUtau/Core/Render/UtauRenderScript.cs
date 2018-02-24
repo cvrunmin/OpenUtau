@@ -74,7 +74,8 @@ namespace OpenUtau.Core.Render
                     {
                         sw.WriteLine($@"@set params={item.Volume} {item.Modulation} !{item.Tempo} {Base64.Base64EncodeInt12(item.PitchData.ToArray())}");
                         sw.WriteLine($@"@set flag=""{item.StrFlags}""");
-                        sw.WriteLine($@"@set env={item.Envelope[0].X - item.Envelope[0].X} {item.Envelope[1].X - item.Envelope[0].X} {item.Phoneme.TailIntrude} {item.Envelope[0].Y} {item.Envelope[1].Y} {item.Envelope[3].Y} {item.Envelope[4].Y} {item.Overlap} {item.RequiredLength - item.Envelope[4].X} {item.Envelope[2].X - item.Envelope[0].X} {item.Envelope[2].Y}");
+                        sw.WriteLine($@"@set env={Math.Round(item.Envelope[0].X + item.Phoneme.Preutter, 5)} {item.Envelope[1].X - item.Envelope[0].X} {item.Envelope[4].X - item.Envelope[3].X} {item.Envelope[0].Y} {item.Envelope[1].Y} {item.Envelope[3].Y} {item.Envelope[4].Y} {item.Overlap} {0} {Math.Min(Math.Max(0, item.Envelope[2].X - item.Envelope[1].X), item.Envelope[3].X - item.Envelope[2].X)} {item.Envelope[2].Y}");
+                        sw.WriteLine($@"@set stp={Math.Max(0,(item.Oto?.Preutter ?? 0) - item.Phoneme.Preutter)}");
                         sw.WriteLine($@"@set vel={item.Velocity}");
                         sw.WriteLine($@"@set temp=""{ResamplerInterface.GetCacheFile(Path.Combine(Path.GetDirectoryName(project.FilePath ?? path), "UCache"), item, string.IsNullOrWhiteSpace(project.FilePath) ? "temp" : Path.GetFileNameWithoutExtension(project.FilePath), part.TrackNo, c - 1)}""");
                         sw.WriteLine($@"@echo {new string('#', 40 * c / ri.Count)}{new string('-', 40 - 40 * c / ri.Count)}({c}/{ri.Count})");
