@@ -2,6 +2,7 @@
 using NAudio.Wave;
 using OpenUtau.Core;
 using OpenUtau.Core.Render;
+using OpenUtau.Core.Render.NAudio;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -59,47 +60,31 @@ namespace OpenUtau.UI.Dialogs
             Task.Run(async () =>
             {
                 taskprogress.State = TaskDialogProgressBarState.Marquee;
-                var sampler = await RenderDispatcher.Inst.GetMixingSampleProvider(DocManager.Inst.Project, skipped.ToArray(), cancel.Token);
+                var sampler = await RenderDispatcher.Inst.GetMixingStream(DocManager.Inst.Project, cancel.Token);
                 taskprogress.State = TaskDialogProgressBarState.Normal;
                 taskdialog.Text = GenTextInfo(task: "Writing into files", status:"Writing track 0/" + DocManager.Inst.Project.Tracks.Count);
                 if (!shouldMix)
                 {
                     taskprogress.Value = 0;
-                    var tracks = sampler.MixerInputs.Cast<TrackSampleProvider>().ToList();
+                    var tracks = sampler.InputStreams.Cast<TrackWaveChannel>().ToList();
                     int i = 0;
                     foreach (var track in tracks)
                     {
                         if(track != null && !skipped.Contains(track.TrackNo))
                         {
-                            double elisimatedMs;
-                            try
-                            {
-                                var project = DocManager.Inst.Project;
-                                elisimatedMs = project.TickToMillisecond(project.Parts.Where(part => part.TrackNo == track.TrackNo).OrderByDescending(part => part.EndTick).First().EndTick);
-                            }
-                            catch (Exception)
-                            {
-                                elisimatedMs = 60000;
-                            }
+                            var p = track.Pan;
+                            var pv = track.PlainVolume;
+                            var mute = track.Muted;
+                            var pad = track.PadWithZeroes;
                             track.Pan = 0;
                             track.PlainVolume = MusicMath.DecibelToVolume(0);
                             track.Muted = false;
-                            int limit = track.WaveFormat.AverageBytesPerSecond * (int)Math.Ceiling(elisimatedMs / 1000);
-                            using (var str = new WaveFileWriter(System.IO.Path.Combine(path, System.IO.Path.GetFileNameWithoutExtension(DocManager.Inst.Project.FilePath) + "_Track-" + (track.TrackNo + 1) + ".wav"), track.WaveFormat))
-                            {
-                                var wave = track.ToWaveProvider();
-                                var buffer = new byte[track.WaveFormat.AverageBytesPerSecond * 4];
-                                while (str.Position < limit)
-                                {
-                                    var bytesRead = wave.Read(buffer, 0, buffer.Length);
-                                    if (bytesRead == 0)
-                                    {
-                                        // end of source provider
-                                        break;
-                                    }
-                                    await str.WriteAsync(buffer, 0, bytesRead);
-                                }
-                            }
+                            track.PadWithZeroes = false;
+                            WaveFileWriter.CreateWaveFile(System.IO.Path.Combine(path, System.IO.Path.GetFileNameWithoutExtension(DocManager.Inst.Project.FilePath) + "_Track-" + (track.TrackNo + 1) + ".wav"), track);
+                            track.Pan = p;
+                            track.PlainVolume = pv;
+                            track.Muted = mute;
+                            track.PadWithZeroes = pad;
                         }
 
                         ++i;
@@ -113,7 +98,7 @@ namespace OpenUtau.UI.Dialogs
                 else
                 {
                     taskdialog.Text = GenTextInfo("Writing into files", "Writing master track");
-                    WaveFileWriter.CreateWaveFile(path, sampler.ToWaveProvider());
+                    WaveFileWriter.CreateWaveFile(path, sampler);
                     Dispatcher.Invoke(()=>taskprogress.Value = 1000);
                 }
             }, cancel.Token).ContinueWith(task=>taskdialog.Close());
