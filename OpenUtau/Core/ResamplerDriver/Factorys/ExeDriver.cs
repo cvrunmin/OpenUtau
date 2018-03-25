@@ -4,12 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace OpenUtau.Core.ResamplerDriver.Factorys
 {
-    internal class ExeDriver : DriverModels, IResamplerDriver
+    internal class ExeDriver : DriverModels, IResamplerDriver, IWavetoolDriver
     {
         string ExePath = "";
         bool _isLegalPlugin = false;
@@ -33,11 +34,11 @@ namespace OpenUtau.Core.ResamplerDriver.Factorys
             if (!_isLegalPlugin) return ms;
             try
             {
-                string tmpFile = System.IO.Path.GetTempFileName();
+                string tmpFile = Args.intermediateWaveFile;//System.IO.Path.GetTempFileName();
                 string ArgParam = string.Format(
                     "\"{0}\" \"{1}\" {2} {3} \"{4}\" {5} {6} {7} {8} {9} {10} !{11} {12}",
                     Args.inputWaveFile,
-                    tmpFile,
+                    Args.intermediateWaveFile,
                     Args.NoteString,
                     Args.Velocity,
                     Args.StrFlags,
@@ -62,16 +63,52 @@ namespace OpenUtau.Core.ResamplerDriver.Factorys
                 {
                     byte[] Dat = System.IO.File.ReadAllBytes(tmpFile);
                     ms = new MemoryStream(Dat);
-                    try
+                    /*try
                     {
                         System.IO.File.Delete(tmpFile);
                     }
-                    catch { ;}
+                    catch { ;}*/
                 }
             }
             catch(Exception e) { ;}
             return ms;
         }
+
+        public void DoWavetool(EngineInput Args)
+        {
+            if (!_isLegalPlugin) return;
+            try
+            {
+                string ArgParam = $"\"{Args.outputWaveFile}\"  \"{Args.intermediateWaveFile}\" {Args.stp} {Args.durTick * 4}@{Args.Tempo}{Args.adjustment:+#.###;-#.###;+0} {string.Join(" ",Args.envelope)}";
+                if (Args.lastnote) ArgParam += " LAST_NOTE";
+                var p = new Process
+                {
+                    StartInfo = new ProcessStartInfo(ExePath, ArgParam)
+                    {
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        //RedirectStandardOutput = true
+                    }
+                };
+                /*p.OutputDataReceived += (obj, e) => {
+                    Debug.WriteLine(e.Data);
+                };*/
+                p.Start();
+                //p.BeginOutputReadLine();
+                p.WaitForExit();
+                if (p != null)
+                {
+                    p.Close();
+                    p.Dispose();
+                    p = null;
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+
         /*
          付：外挂ini配置文件格式：
          [Information]

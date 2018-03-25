@@ -105,5 +105,10 @@ namespace OpenUtau.Core
             if (Core.Util.Preferences.Default.InternalEngineExport) return "TnFndsOU.dll";
             else return Path.Combine(GetEngineSearchPath(), Core.Util.Preferences.Default.ExternalExportEngine);
         }
+
+        public string GetWavtoolPath()
+        {
+            return Core.Util.Preferences.Default.ScriptWavtool;
+        }
     }
 }

@@ -22,6 +22,13 @@ namespace OpenUtau.Core.ResamplerDriver
         System.IO.Stream DoResampler(DriverModels.EngineInput Args);
         DriverModels.EngineInfo GetInfo();
     }
+
+    internal interface IWavetoolDriver
+    {
+        void DoWavetool(DriverModels.EngineInput Args);
+        DriverModels.EngineInfo GetInfo();
+    }
+
     internal class ResamplerDriver
     {
         public static IResamplerDriver LoadEngine(string FilePath)

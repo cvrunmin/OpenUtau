@@ -13,6 +13,8 @@ namespace OpenUtau.Core.Render
         public bool Error;
         // For resampler
         public string RawFile;
+        public string MidFile;
+        public string OutFile;
         public int NoteNum;
         public int Velocity;
         public int Volume;
@@ -32,6 +34,7 @@ namespace OpenUtau.Core.Render
         public double PosMs;
         public double DurMs;
         public List<ExpPoint> Envelope;
+        public bool ln;
 
         // Sound data
         public CachedSound Sound = null;

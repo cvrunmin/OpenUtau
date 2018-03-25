@@ -162,13 +162,13 @@ namespace OpenUtau.Core.Render
 
         private async Task<Task<WaveStream>> BuildVoicePart(UProject project, UVoicePart part, IResamplerDriver engine, CancellationToken token)
         {
-            if (Preferences.Default.UseScript)
+            /*if (Preferences.Default.UseScript)
             {
                 return Task.Run(() => DocManager.Inst.Factory.StartNew(()=>
                 {
                     var batch = Path.Combine(DocManager.CachePath, $"temp-Part_{part.PartNo}.bat");
                     UtauRenderScript.GenerateTempBat(batch, project, part);
-                    var p = Process.Start(new ProcessStartInfo(batch) { UseShellExecute = false/*, CreateNoWindow = true */});
+                    var p = Process.Start(new ProcessStartInfo(batch) { UseShellExecute = false, CreateNoWindow = true });
                     p.WaitForExit();
                     try
                     {
@@ -181,13 +181,29 @@ namespace OpenUtau.Core.Render
                     }
                 }));
             }
-            else
-            return await Task.Run(()=>BuildVoicePartAudio(part, project, engine, token)).ContinueWith(async task =>
+            else*/
+            return await Task.Run(()=>BuildVoicePartAudio(part, project, engine, token, Preferences.Default.UseScript)).ContinueWith(async task =>
             {
                 if (!task.IsCanceled)
                 {
-                    ISampleProvider src = task.Result ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider();
-                    return await (DocManager.Inst.Factory.StartNew(() => WritePartProviderToStream(src, part.PartNo, token)));
+                    if (Preferences.Default.UseScript)
+                    {
+                        try
+                        {
+                            task.Result.Wait();
+                            return new AudioFileReader(Path.Combine(DocManager.CachePath, $"temp-Part_{part.PartNo}.wav"));
+                        }
+                        catch (Exception e)
+                        {
+                            return WritePartProviderToStream(
+                                new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(), part.PartNo, CancellationToken.None);
+                        }
+                    }
+                    else
+                    {
+                        ISampleProvider src = task.Result ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider();
+                        return await (DocManager.Inst.Factory.StartNew(() => WritePartProviderToStream(src, part.PartNo, token)));
+                    }
                 }
                 return null;
             });
@@ -346,13 +362,13 @@ namespace OpenUtau.Core.Render
             return offseted;
         }
 
-        private Task<SequencingSampleProvider> BuildVoicePartAudio(UVoicePart part, UProject project, IResamplerDriver engine) {
-            return BuildVoicePartAudio(part, project, engine, System.Threading.CancellationToken.None);
+        private Task<SequencingSampleProvider> BuildVoicePartAudio(UVoicePart part, UProject project, IResamplerDriver engine, bool useWavtool = false) {
+            return BuildVoicePartAudio(part, project, engine, System.Threading.CancellationToken.None, useWavtool);
         }
-        private async Task<SequencingSampleProvider> BuildVoicePartAudio(UVoicePart part, UProject project, IResamplerDriver engine, System.Threading.CancellationToken cancel)
+        private async Task<SequencingSampleProvider> BuildVoicePartAudio(UVoicePart part, UProject project, IResamplerDriver engine, System.Threading.CancellationToken cancel, bool useWavtool = false)
         {
             ResamplerInterface ri = new ResamplerInterface();
-            return await ri.ResamplePartNew(part, project, engine, cancel);
+            return await ri.ResamplePartNew(part, project, engine, cancel, useWavtool);
         }
 
         private float DecibelToVolume(double db)

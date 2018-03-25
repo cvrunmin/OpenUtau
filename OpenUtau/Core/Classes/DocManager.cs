@@ -14,6 +14,7 @@ namespace OpenUtau.Core
     class DocManager : ICmdPublisher
     {
         public static readonly string CachePath = Path.Combine(Path.GetTempPath(), "OpenUtau");
+        public static readonly string UtauCachePath = Path.Combine(Path.GetTempPath(), "utau1");
         DocManager() {
             _project = new UProject(); int limit;
             try

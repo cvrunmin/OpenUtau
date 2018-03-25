@@ -133,7 +133,7 @@ namespace OpenUtau.Core
             UpdateOverlapAdjustment(part.Notes, part.PosTick);
         }
 
-        internal static void UpdateOverlapAdjustment(SortedSet<UNote> notes, int posTick)
+        internal static void UpdateOverlapAdjustment(IEnumerable<UNote> notes, int posTick)
         {
             UPhoneme lastPhoneme = null;
             UNote lastNote = null;

@@ -310,16 +310,24 @@ namespace OpenUtau.Core.Formats
 
         internal static int MakeUstNotes(UProject project, List<UNote> writeNotes, int endtick, UVoicePart part, bool noPho = false)
         {
+            var lastnoteno = part.Notes.First().NoteNum;
             foreach (var note in part.Notes)
             {
                 if (part.PosTick + note.PosTick > endtick)
                 {
-                    var note1 = project.CreateNote(60, endtick - part.PosTick, (part.PosTick + note.PosTick) - endtick);
+                    int durTick = (part.PosTick + note.PosTick) - endtick;
+                    var note1 = project.CreateNote(lastnoteno, endtick - part.PosTick, durTick / 2);
                     note1.Lyric = "R";
                     note1.Phonemes[0].Phoneme = "R";
                     note1.Phonemes[0].DurTick = note1.DurTick;
                     note1.Phonemes[0].Oto = new UOto() { File = "R.wav" };
                     writeNotes.Add(note1);
+                    var note2 = project.CreateNote(note.NoteNum, endtick - part.PosTick + durTick / 2, durTick / 2);
+                    note2.Lyric = "R";
+                    note2.Phonemes[0].Phoneme = "R";
+                    note2.Phonemes[0].DurTick = note2.DurTick;
+                    note2.Phonemes[0].Oto = new UOto() { File = "R.wav" };
+                    writeNotes.Add(note2);
                 }
                 if (noPho)
                 {
@@ -474,6 +482,7 @@ namespace OpenUtau.Core.Formats
                     var shape = note.PitchBend.Points[i].Shape;
                     str3 += (shape == PitchPointShape.Out ? "r" : shape == PitchPointShape.Linear ? "s" : shape == PitchPointShape.In ? "j" : "") + ",";
                 }
+                if(str3.Length > 0)
                 str3 = str3.Remove(str3.Length - 1, 1);
                 list.Add("PBM=" + str3);
             }

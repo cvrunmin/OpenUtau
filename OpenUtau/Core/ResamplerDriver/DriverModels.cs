@@ -107,6 +107,8 @@ namespace OpenUtau.Core.ResamplerDriver
         public struct EngineInput
         {
             public string inputWaveFile;//1
+            public string intermediateWaveFile;//2;1
+            public string outputWaveFile;//;1
             public string NoteString;//noteID;//3
             public double Velocity;//fixSpeed;//4
             public string StrFlags;//5
@@ -119,6 +121,11 @@ namespace OpenUtau.Core.ResamplerDriver
             public double Tempo;//13
             public int nPitchBend;//13
             public int[] pitchBend;//13
+            public double stp;//;3
+            public int durTick;//;4
+            public double adjustment;//;4
+            public double[] envelope;//;5
+            public bool lastnote;//;6 , moresampler only
         }
         /// <summary>
         /// 参数初始化过程
@@ -126,42 +133,69 @@ namespace OpenUtau.Core.ResamplerDriver
         /// <returns></returns>
         public static EngineInput CreateInputModel()
         {
-            EngineInput Input = new EngineInput();
-            Input.inputWaveFile = "";
-            Input.NoteString = "";
-            Input.Velocity = 100;
-            Input.StrFlags = "";
-            Input.Offset = 0;
-            Input.RequiredLength = 0;
-            Input.Consonant = 0;
-            Input.Cutoff = 0;
-            Input.Volume = 100;
-            Input.Modulation = 0;
-            Input.Tempo = 120;
-            Input.nPitchBend = 0;
-            Input.pitchBend = new int[0];
+            EngineInput Input = new EngineInput
+            {
+                inputWaveFile = "",
+                intermediateWaveFile = "",
+                outputWaveFile = "",
+                NoteString = "",
+                Velocity = 100,
+                StrFlags = "",
+                Offset = 0,
+                RequiredLength = 0,
+                Consonant = 0,
+                Cutoff = 0,
+                Volume = 100,
+                Modulation = 100,
+                Tempo = 120,
+                nPitchBend = 0,
+                pitchBend = new int[0],
+                stp = 0,
+                durTick = 0,
+                adjustment = 0,
+                envelope = new double[] { 0,0 }
+            };
             return Input;
         }
         /// <summary>
         /// 从RenderItem初始化过程
         /// </summary>
         /// <returns></returns>
-        internal static EngineInput CreateInputModel(RenderItem renderItem,double Modulation)
+        internal static EngineInput CreateInputModel(RenderItem renderItem)
         {
-            EngineInput Ret = new EngineInput();
-            Ret.inputWaveFile = renderItem.RawFile;
-            Ret.NoteString = MusicMath.GetNoteString(renderItem.NoteNum);
-            Ret.Velocity = renderItem.Velocity;
-            Ret.StrFlags = renderItem.StrFlags;
-            Ret.Offset = renderItem.Oto.Offset;
-            Ret.RequiredLength = renderItem.RequiredLength;
-            Ret.Consonant = renderItem.Oto.Consonant;
-            Ret.Cutoff = renderItem.Oto.Cutoff;
-            Ret.Volume = renderItem.Volume;
-            Ret.Modulation = Modulation;
-            Ret.pitchBend = renderItem.PitchData.ToArray();
-            Ret.nPitchBend = renderItem.PitchData.Count;
-            Ret.Tempo =  renderItem.Tempo;
+            EngineInput Ret = new EngineInput
+            {
+                inputWaveFile = renderItem.RawFile,
+                intermediateWaveFile = renderItem.MidFile,
+                outputWaveFile = renderItem.OutFile,
+                NoteString = MusicMath.GetNoteString(renderItem.NoteNum),
+                Velocity = renderItem.Velocity,
+                StrFlags = renderItem.StrFlags,
+                Offset = renderItem.Oto?.Offset ?? 0,
+                RequiredLength = renderItem.RequiredLength,
+                Consonant = renderItem.Oto?.Consonant ?? 0,
+                Cutoff = renderItem.Oto?.Cutoff ?? 0,
+                Volume = renderItem.Volume,
+                Modulation = renderItem.Modulation,
+                pitchBend = renderItem.PitchData.ToArray(),
+                nPitchBend = renderItem.PitchData.Count,
+                Tempo = renderItem.Tempo,
+                durTick = renderItem.DurTick,
+                adjustment = renderItem.LengthAdjustment,
+                stp = /*Math.Max(0, (renderItem.Oto?.Preutter ?? 0) - renderItem.Phoneme.Preutter)*/renderItem.SkipOver,
+                envelope = new double[] {
+                    Math.Round(renderItem.Envelope[0].X + renderItem.Phoneme.Preutter, 5),
+                    renderItem.Envelope[1].X - renderItem.Envelope[0].X,
+                    renderItem.Envelope[4].X - renderItem.Envelope[3].X,
+                    renderItem.Envelope[0].Y,renderItem.Envelope[1].Y,
+                    renderItem.Envelope[3].Y,renderItem.Envelope[4].Y,
+                    renderItem.Overlap,
+                    0,
+                    Math.Min(Math.Max(0, renderItem.Envelope[2].X - renderItem.Envelope[1].X),
+                    renderItem.Envelope[3].X - renderItem.Envelope[2].X),renderItem.Envelope[2].Y
+                }
+
+            };
             return Ret;
         }
         #endregion
