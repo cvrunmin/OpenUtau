@@ -127,7 +127,7 @@ namespace OpenUtau.UI.Dialogs
                 {
                     if (track.Singer.Equals(SelectedSinger))
                     {
-                        track.Amended = true;
+                        track.ModifyCount++;
                     }
                 }
             }
@@ -252,7 +252,7 @@ namespace OpenUtau.UI.Dialogs
                 {
                     if (SelectedSinger.Equals(track.Singer))
                     {
-                        track.Amended = true;
+                        track.ModifyCount++;
                     }
                 }
             }

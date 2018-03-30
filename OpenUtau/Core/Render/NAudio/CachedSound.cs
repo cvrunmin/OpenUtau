@@ -31,7 +31,7 @@ namespace OpenUtau.Core.Render
                 Task.Delay(1000);
                 goto waiting;
             }
-            using (var audioFileReader = new AudioFileReader(audioFileName))
+            using (var audioFileReader = new AudioFileReaderExt(audioFileName))
             {
                 WaveFormat = audioFileReader.WaveFormat;
                 var wholeFile = new List<float>((int)(audioFileReader.Length / 4));

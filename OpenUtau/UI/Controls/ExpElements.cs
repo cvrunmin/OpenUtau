@@ -137,7 +137,7 @@ namespace OpenUtau.UI.Controls
                     min = exp2.Min;
                 }
                 double x1 = 0;
-                double x2 = Math.Round(ScaleX * Part.DurTick * DocManager.Inst.Project.BeatPerBar);
+                double x2 = Math.Round(ScaleX * Part.DurTick);
                 double partValueHeight = Math.Round(VisualHeight - VisualHeight * (data - min) / (max - min));
                 double partZeroHeight = Math.Round(VisualHeight - VisualHeight * (de - min) / (max - min));
                 cxt.DrawLine(pen5, new Point(x1 + 0.5, partZeroHeight + 0.5), new Point(x1 + 0.5, partValueHeight + 3));
@@ -153,8 +153,8 @@ namespace OpenUtau.UI.Controls
                     if (note.Expressions.ContainsKey(Key))
                     {
                         float nD = note.Expressions[Key] is IntExpression ? (int)note.Expressions[Key].Data : note.Expressions[Key] is FloatExpression ? (float)note.Expressions[Key].Data : 0;
-                        double noteX1 = Math.Round(ScaleX * note.PosTick * DocManager.Inst.Project.BeatPerBar);
-                        double noteX2 = Math.Round(ScaleX * note.EndTick * DocManager.Inst.Project.BeatPerBar);
+                        double noteX1 = Math.Round(ScaleX * note.PosTick);
+                        double noteX2 = Math.Round(ScaleX * note.EndTick);
                         double valueHeight = Math.Round(VisualHeight - VisualHeight * ((int)note.VirtualExpressions[Key].Data + data - min) / (max - min));
                         double zeroHeight = partValueHeight;
                         cxt.DrawLine(pen3, new Point(noteX1 + 0.5, zeroHeight + 0.5), new Point(noteX1 + 0.5, valueHeight + 3));
@@ -218,7 +218,7 @@ namespace OpenUtau.UI.Controls
                     de = exp1.Default;
                 }
                 double x1 = 0;
-                double x2 = Math.Round(ScaleX * Part.DurTick * DocManager.Inst.Project.BeatPerBar);
+                double x2 = Math.Round(ScaleX * Part.DurTick);
                 cxt.DrawLine(pen5, new Point(x1 + 0.5, 0.5), new Point(x1 + 0.5, VisualHeight + 3));
                 if (data) cxt.DrawRectangle(pen4.Brush, null, new Rect(new Point(x1 + 1.5, 0.5), new Point(Math.Max(x1 + 3, x2 - 3), VisualHeight)));
                 cxt.DrawText(new FormattedText(data.ToString(), System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, new SolidColorBrush(ThemeManager.NoteFillBrushes[0].Color)), new Point(x1 + 3, VisualHeight));
@@ -228,8 +228,8 @@ namespace OpenUtau.UI.Controls
                     if (note.Expressions.ContainsKey(Key))
                     {
                         bool nD = note.Expressions[Key] is BoolExpression ? (bool)note.Expressions[Key].Data : false;
-                        double noteX1 = Math.Round(ScaleX * note.PosTick * DocManager.Inst.Project.BeatPerBar);
-                        double noteX2 = Math.Round(ScaleX * note.EndTick * DocManager.Inst.Project.BeatPerBar);
+                        double noteX1 = Math.Round(ScaleX * note.PosTick);
+                        double noteX2 = Math.Round(ScaleX * note.EndTick);
                         cxt.DrawLine(pen3, new Point(noteX1 + 0.5, 0.5), new Point(noteX1 + 0.5, VisualHeight + 3));
                         if (nD) cxt.DrawRectangle(pen2.Brush, null, new Rect(new Point(noteX1 + 3, 0.5), new Point(Math.Max(noteX1 + 3, noteX2 - 3), VisualHeight)));
                         cxt.DrawText(new FormattedText(nD.ToString(), System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, new SolidColorBrush(ThemeManager.NoteFillBrushes[0].Color)), new Point(noteX1 + 3, VisualHeight - 24));

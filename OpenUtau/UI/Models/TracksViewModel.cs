@@ -173,8 +173,8 @@ namespace OpenUtau.UI.Models
         {
             if (quarter2 < quarter1) { double temp = quarter1; quarter1 = quarter2; quarter2 = temp; }
             if (track2 < track1) { int temp = track1; track1 = track2; track2 = temp; }
-            int tick1 = (int)(quarter1 * Project.Resolution / Project.BeatPerBar);
-            int tick2 = (int)(quarter2 * Project.Resolution / Project.BeatPerBar);
+            int tick1 = (int)(quarter1 * Project.Resolution);
+            int tick2 = (int)(quarter2 * Project.Resolution);
             TempSelectedParts.Clear();
             foreach (UPart part in Project.Parts)
             {
@@ -218,10 +218,10 @@ namespace OpenUtau.UI.Models
                 foreach (PartElement partElement in PartElements)
                 {
                     if (partElement.Modified) partElement.Redraw();
-                    partElement.X = -OffsetX + partElement.Part.PosTick * QuarterWidth / Project.Resolution * BeatPerBar;
+                    partElement.X = -OffsetX + partElement.Part.PosTick * QuarterWidth / Project.Resolution;
                     partElement.Y = -OffsetY + partElement.Part.TrackNo * TrackHeight + 1;
                     partElement.VisualHeight = TrackHeight - 2;
-                    partElement.ScaleX = QuarterWidth / Project.Resolution * BeatPerBar;
+                    partElement.ScaleX = QuarterWidth / Project.Resolution;
                     partElement.CanvasWidth = this.TrackCanvas.ActualWidth;
                 }
                 foreach (TrackHeader trackHeader in TrackHeaders)
@@ -242,7 +242,7 @@ namespace OpenUtau.UI.Models
             if (Project != null)
                 foreach (UPart part in Project.Parts)
                     if (part != null)
-                       quarterCount = Math.Max(quarterCount, (part.DurTick + part.PosTick) / Project.Resolution * BeatPerBar + UIConstants.SpareQuarterCount);
+                       quarterCount = Math.Max(quarterCount, (part.DurTick + part.PosTick) / Project.Resolution + UIConstants.SpareQuarterCount);
             QuarterCount = quarterCount;
 
             int trackCount = UIConstants.MinTrackCount;
@@ -285,7 +285,7 @@ namespace OpenUtau.UI.Models
 
         public void UpdatePlayPosMarker()
         {
-            double quarter = (double)playPosTick / DocManager.Inst.Project.Resolution * BeatPerBar;
+            double quarter = (double)playPosTick / DocManager.Inst.Project.Resolution;
             int playPosMarkerOffset = (int)Math.Round(QuarterToCanvas(quarter) + 0.5);
             Canvas.SetLeft(playPosMarker, playPosMarkerOffset - 6);
             playPosMarkerHighlight.Height = TrackCanvas.ActualHeight;
@@ -323,7 +323,7 @@ namespace OpenUtau.UI.Models
             double snapUnit = GetSnapUnit();
             return Math.Round(quater / snapUnit) * snapUnit;
         }
-        public int CanvasToSnappedTick(double X) { return (int)(CanvasToSnappedQuarter(X) * Project.Resolution / BeatPerBar); }
+        public int CanvasToSnappedTick(double X) { return (int)(CanvasToSnappedQuarter(X) * Project.Resolution); }
 
         # endregion
 
@@ -409,7 +409,7 @@ namespace OpenUtau.UI.Models
         private void OnPlayPosSet(int playPosTick)
         {
             this.playPosTick = playPosTick;
-            double playPosPix = QuarterToCanvas((double)playPosTick / Project.Resolution * BeatPerBar);
+            double playPosPix = QuarterToCanvas((double)playPosTick / Project.Resolution);
             if (playPosPix > TrackCanvas.ActualWidth * UIConstants.PlayPosMarkerMargin)
                 OffsetX += playPosPix - TrackCanvas.ActualWidth * UIConstants.PlayPosMarkerMargin;
             MarkUpdate();

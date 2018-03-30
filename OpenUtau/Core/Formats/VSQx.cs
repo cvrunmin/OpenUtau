@@ -121,9 +121,7 @@ namespace OpenUtau.Core.Formats
                     upart.Name = part.SelectSingleNode(partnamePath, nsmanager).InnerText;
                     upart.Comment = part.SelectSingleNode(partcommentPath, nsmanager).InnerText;
                     upart.PosTick = int.Parse(part.SelectSingleNode(postickPath, nsmanager).InnerText) + partPosTickShift;
-                    upart.PosTick /= uproject.BeatPerBar;
                     upart.DurTick = int.Parse(part.SelectSingleNode(playtimePath, nsmanager).InnerText);
-                    upart.DurTick /= uproject.BeatPerBar;
                     upart.TrackNo = utrack.TrackNo;
 
                     int i = 0;
@@ -132,8 +130,8 @@ namespace OpenUtau.Core.Formats
                         UNote unote = uproject.CreateNote();
 
                         unote.NoteNo = i;
-                        unote.PosTick = int.Parse(note.SelectSingleNode(postickPath, nsmanager).InnerText) / uproject.BeatPerBar;
-                        unote.DurTick = int.Parse(note.SelectSingleNode(durtickPath, nsmanager).InnerText) / uproject.BeatPerBar;
+                        unote.PosTick = int.Parse(note.SelectSingleNode(postickPath, nsmanager).InnerText);
+                        unote.DurTick = int.Parse(note.SelectSingleNode(durtickPath, nsmanager).InnerText);
                         unote.NoteNum = int.Parse(note.SelectSingleNode(notenumPath, nsmanager).InnerText);
                         unote.Lyric = note.SelectSingleNode(lyricPath, nsmanager).InnerText;
                         unote.Phonemes[0].Phoneme = note.SelectSingleNode(directUseLyricsAsPho ? lyricPath : phonemePath, nsmanager).InnerText;

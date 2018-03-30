@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using NAudio.Wave;
+using OpenUtau.Core.Render;
 
 namespace WaveFormRendererLib
 {
@@ -13,7 +14,7 @@ namespace WaveFormRendererLib
 
         public Image Render(string selectedFile, IPeakProvider peakProvider, WaveFormRendererSettings settings)
         {
-            using (var reader = new AudioFileReader(selectedFile))
+            using (var reader = new AudioFileReaderExt(selectedFile))
             {
                 int bytesPerSample = (reader.WaveFormat.BitsPerSample / 8);
                 var samples = reader.Length / (bytesPerSample);

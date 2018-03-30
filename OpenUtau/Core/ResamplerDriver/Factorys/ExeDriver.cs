@@ -79,7 +79,7 @@ namespace OpenUtau.Core.ResamplerDriver.Factorys
             if (!_isLegalPlugin) return;
             try
             {
-                string ArgParam = $"\"{Args.outputWaveFile}\"  \"{Args.intermediateWaveFile}\" {Args.stp} {Args.durTick * 4}@{Args.Tempo}{Args.adjustment:+#.###;-#.###;+0} {string.Join(" ",Args.envelope)}";
+                string ArgParam = $"\"{Args.outputWaveFile}\"  \"{Args.intermediateWaveFile}\" {Args.stp} {Args.durTick}@{Args.Tempo}{Args.adjustment:+#.###;-#.###;+0} {string.Join(" ",Args.envelope)}";
                 if (Args.lastnote) ArgParam += " LAST_NOTE";
                 var p = new Process
                 {

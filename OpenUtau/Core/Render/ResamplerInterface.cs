@@ -87,7 +87,6 @@ namespace OpenUtau.Core.Render
             {
                 var WavtoolFile = new FileInfo(PathManager.Inst.GetWavtoolPath());
                 wavtool = ResamplerDriver.ResamplerDriver.LoadEngine(WavtoolFile.FullName);
-                UtauRenderScript.GenerateTempBat(Path.Combine(DocManager.UtauCachePath, $"temp-Part_{part.PartNo}.bat"), project, part);
             }
             System.Diagnostics.Stopwatch watch = new Stopwatch();
             watch.Start();
@@ -102,8 +101,11 @@ namespace OpenUtau.Core.Render
                     string outfile = Path.Combine(DocManager.CachePath, $"temp-Part_{part.PartNo}.wav");
                     if (useWavtool)
                     {
-                        Formats.Ust.MakeUstNotes(project, renderlist, part.PosTick, part, true);
-                        PartManager.UpdateOverlapAdjustment(renderlist, part.PosTick);
+                        Formats.Ust.MakeUstNotes(project, renderlist, part.PosTick, part);
+                        var set = new SortedSet<UNote>();
+                        renderlist.ForEach(note => set.Add(note));
+                        PartManager.UpdateOverlapAdjustment(set, part.PosTick);
+                        renderlist = set.ToList();
                         if(File.Exists(outfile))File.Delete(outfile);
                     }
                     else
@@ -112,23 +114,32 @@ namespace OpenUtau.Core.Render
                     }
                     count = renderlist.Sum(note => note.Phonemes.Count);
 
+                    var ri = new List<RenderItem>();
                     foreach (UNote note in renderlist)
                     {
                         foreach (UPhoneme phoneme in note.Phonemes)
                         {
-                            cancel.ThrowIfCancellationRequested();
                             RenderItem item = BuildRenderItem(phoneme, part, project);
                             item.OutFile = outfile;
-                            if (i == count - 1) item.ln = true;
-                            if (!item.Error || useWavtool)
-                            {
-                                RenderPhoneme(engine, cacheDir, item, Path.GetFileNameWithoutExtension(project.FilePath), part.TrackNo, useWavtool, wavtool);
-                                if (item.Sound != null) renderItems.Add(item);
-                            }
-                            DocManager.Inst.ExecuteCmd(new ProgressBarNotification(100 * ++i / count, string.Format("Resampling \"{0}\" {1}/{2}", phoneme.Phoneme, i, count)));
+                            ri.Add(item);
                         }
+                    }
+                    if(useWavtool)
+                        UtauRenderScript.GenerateTempBat(Path.Combine(DocManager.UtauCachePath, $"temp-Part_{part.PartNo}.bat"), project, part, ri);
+
+                    foreach (var item in ri)
+                    {
                         cancel.ThrowIfCancellationRequested();
-                        
+                        if (i == count - 1) item.ln = true;
+                        if (!item.Error || useWavtool)
+                        {
+                            RenderPhoneme(engine, cacheDir, item, Path.GetFileNameWithoutExtension(project.FilePath), part.TrackNo, useWavtool, wavtool);
+                            if (item.Sound != null) renderItems.Add(item);
+                        }
+                        DocManager.Inst.ExecuteCmd(new ProgressBarNotification(100 * ++i / count, string.Format("Resampling \"{0}\" {1}/{2}", item.Phoneme.Phoneme, i, count)));
+
+                        cancel.ThrowIfCancellationRequested();
+
                     }
                 }
                 catch (OperationCanceledException)
@@ -262,6 +273,10 @@ namespace OpenUtau.Core.Render
             if (useWavtool && wavtool is ResamplerDriver.Factorys.ExeDriver ed) {
                 DriverModels.EngineInput engineArgs = DriverModels.CreateInputModel(item);
                 engineArgs.lastnote = item.ln;
+                if (engineArgs.intermediateWaveFile == "R.wav") {
+                    engineArgs.stp = 0;
+                    engineArgs.envelope = new[] { 0.0, 0.0 };
+                }
                 ed.DoWavetool(engineArgs);
             }
         }
@@ -303,7 +318,6 @@ namespace OpenUtau.Core.Render
                 Velocity = (int)phoneme.Parent.Expressions["velocity"].Data,
                 Volume = (int)phoneme.Parent.Expressions["volume"].Data,
                 StrFlags = phoneme.Parent.GetResamplerFlags(),
-                PitchData = BuildPitchData(phoneme, part, project),
                 DurTick = (int)phoneme.DurTick,
                 RequiredLength = (int)requiredLength,
                 LengthAdjustment = (int)lengthAdjustment,
@@ -318,6 +332,15 @@ namespace OpenUtau.Core.Render
                 Overlap = phoneme.Overlap,
                 Envelope = phoneme.Envelope.Points
             };
+            try
+            {
+                item.PitchData = BuildPitchData(phoneme, part, project);
+            }
+            catch (ArgumentException e)
+            {
+                item.PitchData = new[] { 0,0,0,0,0 }.ToList();
+                Debug.WriteLine(e);
+            }
 
             return item;
         }
@@ -384,11 +407,11 @@ namespace OpenUtau.Core.Render
             }
             else
             {
-                throw new Exception("Zero pitch points.");
+                throw new ArgumentException("Zero pitch points.");
             }
 
             // Interpolation
-            const float intervalTick = 1.25f;
+            const int intervalTick = 5;
             double intervalMs = DocManager.Inst.Project.TickToMillisecond(intervalTick, part.PosTick + phoneme.Parent.PosTick);
             double currMs = startMs;
             int i = 0;

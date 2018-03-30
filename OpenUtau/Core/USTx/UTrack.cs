@@ -27,7 +27,8 @@ namespace OpenUtau.Core.USTx
         public bool ActuallyMuted => _mute || (!Solo && (DocManager.Inst?.Project?.Tracks?.Any(t=>t.Solo) ?? false));
         public double Volume { set; get; }
         public double Pan { set; get; }
-        public bool Amended { get; set; }
+        public int ModifyCount { get; set; }
+        public bool Amended => ModifyCount != 0 || (DocManager.Inst?.Project?.Parts?.Any(part => part.TrackNo == TrackNo && part.Amended) ?? false);
         public string OverrideRenderEngine { get; set; }
 
         public Color Color { get; set; } = Colors.Transparent;

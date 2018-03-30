@@ -19,6 +19,8 @@ namespace OpenUtau.Core.USTx
         public bool Error { get; set; }
         public virtual int DurTick { set; get; }
         public int EndTick => PosTick + DurTick;
+        public int ModifyCount { get; set; }
+        public bool Amended => ModifyCount != 0;
 
         public UPart() { }
 

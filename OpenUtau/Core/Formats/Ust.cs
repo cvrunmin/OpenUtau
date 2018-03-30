@@ -105,7 +105,6 @@ namespace OpenUtau.Core.Formats
                         if (currentLines.Count != 0)
                         {
                             currentNote = NoteFromUst(project.CreateNote(), currentLines, version);
-                            currentNote.DurTick /= project.BeatPerBar;
                             currentNote.PosTick = currentTick;
                             if (!currentNote.Lyric.Replace("R", "").Replace("r", "").Equals("")) part.Notes.Add(currentNote);
                             currentTick += currentNote.DurTick;
@@ -240,8 +239,6 @@ namespace OpenUtau.Core.Formats
                         foreach (var note in writeNotes)
                         {
                             file.WriteLine($"[#{pos:00000}]");
-                            note.DurTick *= project.BeatPerBar;
-                            note.Phonemes[0].DurTick *= project.BeatPerBar;
                             NoteToUst(note, UstVersion.V1_2).ForEach(item1 => file.WriteLine(item1));
                             ++pos;
                         }
@@ -297,8 +294,6 @@ namespace OpenUtau.Core.Formats
                         foreach (var note in writeNotes)
                         {
                             file.WriteLine($"[#{pos:00000}]");
-                            note.DurTick *= project.BeatPerBar;
-                            note.Phonemes[0].DurTick *= project.BeatPerBar;
                             NoteToUst(note, UstVersion.V1_2).ForEach(item1 => file.WriteLine(item1));
                             ++pos;
                         }
@@ -310,7 +305,7 @@ namespace OpenUtau.Core.Formats
 
         internal static int MakeUstNotes(UProject project, List<UNote> writeNotes, int endtick, UVoicePart part, bool noPho = false)
         {
-            var lastnoteno = part.Notes.First().NoteNum;
+            var lastnoteno = part.Notes.FirstOrDefault()?.NoteNum ?? 0;
             foreach (var note in part.Notes)
             {
                 if (part.PosTick + note.PosTick > endtick)

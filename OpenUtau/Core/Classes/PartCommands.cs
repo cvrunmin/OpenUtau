@@ -14,11 +14,13 @@ namespace OpenUtau.Core
         public UPart part;
         public override void Execute()
         {
-            project.Tracks[part.TrackNo].Amended = true;
+            ++part.ModifyCount;
+            //project.Tracks[part.TrackNo].Amended = true;
         }
         public override void Unexecute()
         {
-            project.Tracks[part.TrackNo].Amended = true;
+            --part.ModifyCount;
+            //project.Tracks[part.TrackNo].Amended = true;
         }
     }
 

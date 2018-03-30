@@ -82,7 +82,7 @@ namespace OpenUtau.Core
                     PlaybackManager.GetActiveManager().StopPlayback();
                     undoQueue.Clear();
                     redoQueue.Clear();
-                    Render.RenderDispatcher.Inst.trackCache.ForEach(channel => channel.Dispose());
+                    Render.RenderDispatcher.Inst.trackCache.ForEach(channel => channel.Baked?.Dispose());
                     Render.RenderDispatcher.Inst.trackCache.Clear();
                     
                     Render.RenderCache.Inst.Clear();

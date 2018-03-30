@@ -11,6 +11,7 @@ using WaveFormRendererLib;
 using static System.Windows.Media.Imaging.WriteableBitmapExtensions;
 using OpenUtau.Core.Util;
 using System.Windows.Shapes;
+using OpenUtau.Core.Render;
 
 namespace OpenUtau.Core.Lib.WaveFormRenderer
 {
@@ -25,7 +26,7 @@ namespace OpenUtau.Core.Lib.WaveFormRenderer
         {
             /*return new ValueTask<WriteableBitmap>(new TaskFactory().StartNew(() =>
             {*/
-                using (var reader = new AudioFileReader(selectedFile))
+                using (var reader = new AudioFileReaderExt(selectedFile))
                 {
                     int bytesPerSample = (reader.WaveFormat.BitsPerSample / 8);
                     var samples = reader.Length / (bytesPerSample);
@@ -82,7 +83,7 @@ namespace OpenUtau.Core.Lib.WaveFormRenderer
         {
             /*return new ValueTask<WriteableBitmap>(new TaskFactory().StartNew(() =>
             {*/
-            using (var reader = new AudioFileReader(selectedFile))
+            using (var reader = new AudioFileReaderExt(selectedFile))
             {
                 int bytesPerSample = (reader.WaveFormat.BitsPerSample / 8);
                 var samples = reader.Length / (bytesPerSample);

@@ -219,7 +219,7 @@ namespace OpenUtau.UI.Models
         public void updatePlayPosMarker()
         {
             if (Part == null) return;
-            double quarter = (double)(playPosTick - (ViewMode ? 0 : Part.PosTick)) / DocManager.Inst.Project.Resolution * BeatPerBar;
+            double quarter = (double)(playPosTick - (ViewMode ? 0 : Part.PosTick)) / DocManager.Inst.Project.Resolution;
             int playPosMarkerOffset = (int)Math.Round(QuarterToCanvas(quarter) + 0.5);
             Canvas.SetLeft(playPosMarker, playPosMarkerOffset - 6);
             playPosMarkerHighlight.Height = MidiCanvas.ActualHeight;
@@ -261,8 +261,8 @@ namespace OpenUtau.UI.Models
         {
             if (quarter2 < quarter1) { double temp = quarter1; quarter1 = quarter2; quarter2 = temp; }
             if (noteNum2 < noteNum1) { int temp = noteNum1; noteNum1 = noteNum2; noteNum2 = temp; }
-            int tick1 = (int)(quarter1 * Project.Resolution / Project.BeatPerBar);
-            int tick2 = (int)(quarter2 * Project.Resolution / Project.BeatPerBar);
+            int tick1 = (int)(quarter1 * Project.Resolution);
+            int tick2 = (int)(quarter2 * Project.Resolution);
             foreach (UNote note in TempSelectedNotes) note.Selected = false;
             TempSelectedNotes.Clear();
             foreach (UNote note in Part.Notes)
@@ -304,8 +304,8 @@ namespace OpenUtau.UI.Models
             double snapUnit = GetSnapUnit();
             return Math.Round(quater / snapUnit) * snapUnit;
         }
-        public int CanvasToSnappedTick(double X) { return (int)(CanvasToSnappedQuarter(X) * Project.Resolution / BeatPerBar); }
-        public double TickToCanvas(int tick) { return (QuarterToCanvas((double)tick / Project.Resolution * BeatPerBar)); }
+        public int CanvasToSnappedTick(double X) { return (int)(CanvasToSnappedQuarter(X) * Project.Resolution); }
+        public double TickToCanvas(int tick) { return (QuarterToCanvas((double)tick / Project.Resolution)); }
 
         public int CanvasToNoteNum(double Y) { return UIConstants.MaxNoteNum - 1 - (int)((Y + OffsetY) / TrackHeight); }
         public double CanvasToPitch(double Y) { return UIConstants.MaxNoteNum - 1 - (Y + OffsetY) / TrackHeight + 0.5; }
@@ -314,8 +314,8 @@ namespace OpenUtau.UI.Models
 
         public virtual bool NoteIsInView(UNote note) // FIXME : improve performance
         {
-            double leftTick = OffsetX / QuarterWidth * Project.Resolution / Project.BeatPerBar - 512;
-            double rightTick = leftTick + ViewWidth / QuarterWidth * Project.Resolution / Project.BeatPerBar + 512;
+            double leftTick = OffsetX / QuarterWidth * Project.Resolution - 512;
+            double rightTick = leftTick + ViewWidth / QuarterWidth * Project.Resolution + 512;
             int adjust = (ViewMode ? Project.Parts.Find(part => part.PartNo == note.PartNo)?.PosTick ?? 0 : 0);
             return (note.PosTick + adjust < rightTick && note.EndTick + adjust > leftTick);
         }
@@ -440,9 +440,9 @@ namespace OpenUtau.UI.Models
         private void OnPartModified()
         {
             Title = ViewingPart.Name;
-            QuarterOffset = (double)(ViewMode ? 0 : Part.PosTick) / Project.Resolution * BeatPerBar;
+            QuarterOffset = (double)(ViewMode ? 0 : Part.PosTick) / Project.Resolution;
             int projectDurTick = Project.Parts.OrderBy(part => part.EndTick).LastOrDefault()?.EndTick ?? 0;
-            QuarterCount = (double)(ViewMode ? projectDurTick : Part.DurTick) / Project.Resolution * BeatPerBar;
+            QuarterCount = (double)(ViewMode ? projectDurTick : Part.DurTick) / Project.Resolution;
             QuarterWidth = QuarterWidth;
             OffsetX = OffsetX;
             MarkUpdate();

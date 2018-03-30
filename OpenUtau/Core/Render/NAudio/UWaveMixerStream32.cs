@@ -114,6 +114,12 @@ namespace OpenUtau.Core.Render.NAudio
         /// </summary>
         public int InputCount => inputStreams.Count;
 
+        internal void RemoveInputStreams()
+        {
+            inputStreams.Clear();
+            length = 0;
+        }
+
         /// <summary>
         /// Automatically stop when all inputs have been read
         /// </summary>

@@ -9,6 +9,7 @@ using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
 using OpenUtau.Core.USTx;
+using OpenUtau.Core.Render;
 
 namespace OpenUtau.Core.Formats
 {
@@ -35,7 +36,7 @@ namespace OpenUtau.Core.Formats
             WaveStream stream = null;
             try
             {
-                stream = new AudioFileReader(filepath);
+                stream = new AudioFileReaderExt(filepath);
             }
             catch(Exception e)
             {
@@ -72,7 +73,7 @@ namespace OpenUtau.Core.Formats
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
             float[] peaks;
-            using (var stream = new AudioFileReader(path))
+            using (var stream = new AudioFileReaderExt(path))
             {
                 using (var offset = new WaveOffsetStream(new Wave32To16Stream(stream), TimeSpan.Zero, startPos, durPos != TimeSpan.MinValue ? durPos : stream.TotalTime))
                 {

@@ -13,6 +13,7 @@ namespace OpenUtau.Core.Render
     {
         public static void GenerateTempHelperBat(string path)
         {
+            if (!Directory.Exists(Path.GetDirectoryName(path))) Directory.CreateDirectory(Path.GetDirectoryName(path));
             using (var sw = new StreamWriter(File.Create(path)))
             {
                 sw.WriteLine(@"@if exist %temp% goto A");
@@ -22,7 +23,24 @@ namespace OpenUtau.Core.Render
             }
         }
 
-        public static void GenerateTempBat(string path, UProject project, UVoicePart part)
+        public static void GenerateTempBat(string path, UProject project, UVoicePart part) {
+            var list = new List<UNote>();
+            Formats.Ust.MakeUstNotes(project, list, part.PosTick, part);
+            var set = new SortedSet<UNote>();
+            foreach (var note in list)
+            {
+                set.Add(note);
+            }
+            PartManager.UpdateOverlapAdjustment(set, part.PosTick);
+            var ri = new List<RenderItem>();
+            foreach (var item in set.SelectMany(note => note.Phonemes))
+            {
+                ri.Add(ResamplerInterface.BuildRenderItem(item, part, project, true));
+            }
+            GenerateTempBat(path, project, part, ri);
+        }
+
+        public static void GenerateTempBat(string path, UProject project, UVoicePart part, List<RenderItem> renderItems)
         {
             GenerateTempHelperBat(Path.Combine(Path.GetDirectoryName(path), $"temp_helper-{part.PartNo}.bat"));
             using (var sw = new StreamWriter(File.Create(path)))
@@ -46,29 +64,16 @@ namespace OpenUtau.Core.Render
                 sw.WriteLine(@"@del ""%output%"" 2>nul");
                 sw.WriteLine(@"@mkdir ""%cachedir%"" 2>nul");
                 sw.WriteLine();
-                // Length = Length@Tempo+Corr value, Corr value = Preutter - Preutter of next note + Overlap of next note
-                var list = new List<UNote>();
-                Formats.Ust.MakeUstNotes(project, list, part.PosTick, part);
-                var set = new SortedSet<UNote>();
-                foreach (var note in list)
-                {
-                    set.Add(note);
-                }
-                PartManager.UpdateOverlapAdjustment(set, part.PosTick);
-                var ri = new List<RenderItem>();
-                foreach (var item in set.SelectMany(note => note.Phonemes))
-                {
-                    ri.Add(ResamplerInterface.BuildRenderItem(item, part, project, true));
-                }
+                
                 #region RenderNote
                 var c = 0;
-                sw.WriteLine($"@set endpt={ri.Count - 1}");
-                foreach (var item in ri)
+                sw.WriteLine($"@set endpt={renderItems.Count - 1}");
+                foreach (var item in renderItems)
                 {
                     c++;
                     if (item.Oto?.File.EndsWith("R.wav") ?? true)
                     {
-                        sw.WriteLine($@"@""%tool%"" ""%output%"" ""%oto%\R.wav"" 0 {item.DurTick * 4}@{item.Tempo}{item.LengthAdjustment:+#.###;-#.###;+0} 0 0");
+                        sw.WriteLine($@"@""%tool%"" ""%output%"" ""%oto%\R.wav"" 0 {item.DurTick}@{item.Tempo}{item.LengthAdjustment:+#.###;-#.###;+0} 0 0");
                     }
                     else if(!item.Error)
                     {
@@ -78,8 +83,8 @@ namespace OpenUtau.Core.Render
                         sw.WriteLine($@"@set stp={Math.Max(0,(item.Oto?.Preutter ?? 0) - item.Phoneme.Preutter)}");
                         sw.WriteLine($@"@set vel={item.Velocity}");
                         sw.WriteLine($@"@set temp=""{ResamplerInterface.GetCacheFile(Path.Combine(Path.GetDirectoryName(project.FilePath ?? path), "UCache"), item, string.IsNullOrWhiteSpace(project.FilePath) ? "temp" : Path.GetFileNameWithoutExtension(project.FilePath), part.TrackNo, c - 1)}""");
-                        sw.WriteLine($@"@echo {new string('#', 40 * c / ri.Count)}{new string('-', 40 - 40 * c / ri.Count)}({c}/{ri.Count})");
-                        sw.WriteLine($@"@call ""%helper%"" ""%oto%\{item.Oto?.File}"" {MusicMath.GetNoteString(item.NoteNum)} {item.DurTick * 4}@{item.Tempo}{item.LengthAdjustment:+#.###;-#.###;+0} {item.Phoneme.Preutter} {item.Oto?.Offset} {item.RequiredLength:D} {item.Oto.Consonant} {item.Oto.Cutoff} {c - 1}");
+                        sw.WriteLine($@"@echo {new string('#', 40 * c / renderItems.Count)}{new string('-', 40 - 40 * c / renderItems.Count)}({c}/{renderItems.Count})");
+                        sw.WriteLine($@"@call ""%helper%"" ""%oto%\{item.Oto?.File}"" {MusicMath.GetNoteString(item.NoteNum)} {item.DurTick}@{item.Tempo}{item.LengthAdjustment:+#.###;-#.###;+0} {item.Phoneme.Preutter} {item.Oto?.Offset} {item.RequiredLength:D} {item.Oto.Consonant} {item.Oto.Cutoff} {c - 1}");
                     }
                 }
                 #endregion

@@ -36,6 +36,7 @@ namespace OpenUtau.UI.Dialogs
             if (chkboxRamCache.IsChecked.Value) {
                 RenderCache.Inst.Clear();
                 RenderDispatcher.Inst.trackCache.Clear();
+                RenderDispatcher.Inst.partCache.Clear();
             }
             if (chkboxdiskCache.IsChecked.Value) {
                 if (!string.IsNullOrEmpty(DocManager.Inst.Project.FilePath)) {

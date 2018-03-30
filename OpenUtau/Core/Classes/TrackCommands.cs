@@ -15,11 +15,11 @@ namespace OpenUtau.Core
         public UTrack track;
         public override void Execute()
         {
-            track.Amended = true;
+            ++track.ModifyCount;
         }
         public override void Unexecute()
         {
-            track.Amended = true;
+            --track.ModifyCount;
         }
         public void UpdateTrackNo()
         {

@@ -103,7 +103,7 @@ namespace OpenUtau.Core.Render.NAudio
 
         public void AddPart(USTx.UProject project, UWavePart part) {
             try {
-                var stream = new AudioFileReader(part.FilePath);
+                var stream = new AudioFileReaderExt(part.FilePath);
                 var s1 = new UWaveOffsetStream(stream, TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)), TimeSpan.FromMilliseconds(project.TickToMillisecond(part.HeadTrimTick, part.PosTick)), TimeSpan.FromMilliseconds(project.TickToMillisecond(part.DurTick, part.PosTick)));
                 if (Parts.ContainsKey(part.PartNo)) Parts[part.PartNo] = (stream, s1);
                 else Parts.Add(part.PartNo, (stream, s1));

@@ -271,30 +271,30 @@ namespace OpenUtau.UI.Controls
                     else fText = fTextPool[barNumber];
                     drawingContext.DrawText(fText, new Point(snappedLeft + 3, 8));
                 }
-                if (DocManager.Inst.Project.SubBPM.ContainsKey((int)(tick * zoomRatio * Resolution / BeatPerBar)))
+                if (DocManager.Inst.Project.SubBPM.ContainsKey((int)(tick * zoomRatio * Resolution)))
                 {
                     FormattedText fText;
-                    if (!fTextPoolSubBpm.ContainsKey((int)(tick * zoomRatio * Resolution / BeatPerBar)))
+                    if (!fTextPoolSubBpm.ContainsKey((int)(tick * zoomRatio * Resolution)))
                     {
                         fText = new FormattedText(
-                            DocManager.Inst.Project.SubBPM[(int)(tick * zoomRatio * Resolution / BeatPerBar)].ToString(),
+                            DocManager.Inst.Project.SubBPM[(int)(tick * zoomRatio * Resolution)].ToString(),
                             System.Threading.Thread.CurrentThread.CurrentUICulture,
                             FlowDirection.LeftToRight, SystemFonts.CaptionFontFamily.GetTypefaces().First(),
                             12,
                             darkPen.Brush);
-                        fTextPoolSubBpm.Add((int)(tick * zoomRatio * Resolution / BeatPerBar), fText);
+                        fTextPoolSubBpm.Add((int)(tick * zoomRatio * Resolution), fText);
                     }
-                    else if (!fTextPoolSubBpm[(int)(tick * zoomRatio * Resolution / BeatPerBar)].Text.Equals(DocManager.Inst.Project.SubBPM[(int)(tick * zoomRatio * Resolution / BeatPerBar)].ToString()))
+                    else if (!fTextPoolSubBpm[(int)(tick * zoomRatio * Resolution)].Text.Equals(DocManager.Inst.Project.SubBPM[(int)(tick * zoomRatio * Resolution)].ToString()))
                     {
                         fText = new FormattedText(
-    DocManager.Inst.Project.SubBPM[(int)(tick * zoomRatio * Resolution / BeatPerBar)].ToString(),
+    DocManager.Inst.Project.SubBPM[(int)(tick * zoomRatio * Resolution)].ToString(),
     System.Threading.Thread.CurrentThread.CurrentUICulture,
     FlowDirection.LeftToRight, SystemFonts.CaptionFontFamily.GetTypefaces().First(),
     12,
     darkPen.Brush);
-                        fTextPoolSubBpm[(int)(tick * zoomRatio * Resolution / BeatPerBar)]= fText;
+                        fTextPoolSubBpm[(int)(tick * zoomRatio * Resolution)]= fText;
                     }
-                    else fText = fTextPoolSubBpm[(int)(tick * zoomRatio * Resolution / BeatPerBar)];
+                    else fText = fTextPoolSubBpm[(int)(tick * zoomRatio * Resolution)];
                     drawingContext.DrawText(fText, new Point(snappedLeft + 3, 0));
                 }
                 left += interval;
