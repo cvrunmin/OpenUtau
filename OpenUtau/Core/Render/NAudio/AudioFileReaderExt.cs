@@ -46,8 +46,6 @@ namespace OpenUtau.Core.Render
 
         private void CreateReaderStream(string fileName)
         {
-            try
-            {
                 if (fileName.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
                 {
                     readerStream = new WaveFileReader(fileName);
@@ -74,10 +72,6 @@ namespace OpenUtau.Core.Render
                     // fall back to media foundation reader, see if that can play it
                     readerStream = new MediaFoundationReader(fileName);
                 }
-            }
-            catch (IOException)
-            {
-            }
         }
 
 

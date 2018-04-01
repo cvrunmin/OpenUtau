@@ -84,6 +84,7 @@ namespace OpenUtau.Core
                     redoQueue.Clear();
                     Render.RenderDispatcher.Inst.trackCache.ForEach(channel => channel.Baked?.Dispose());
                     Render.RenderDispatcher.Inst.trackCache.Clear();
+                    Render.RenderDispatcher.Inst.partCache.Clear();
                     
                     Render.RenderCache.Inst.Clear();
                     undoGroup = null;

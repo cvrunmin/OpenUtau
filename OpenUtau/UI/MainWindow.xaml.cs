@@ -546,7 +546,7 @@ namespace OpenUtau.UI
                 EnsureFileExists = true,
                 Multiselect = false
             };
-            dialog.Filters.Add(new CommonFileDialogFilter("Audio Files", "*.wav; *.mp3; *.aiff; *.aif; *.wma"));
+            dialog.Filters.Add(new CommonFileDialogFilter("Audio Files", "*.wav; *.mp3; *.aiff; *.aif; *.wma; *.ogg"));
             dialog.Filters.Add(new CommonFileDialogFilter("Wave", "*.wav"));
             dialog.Filters.Add(new CommonFileDialogFilter("MP3", "*.mp3"));
             dialog.Filters.Add(new CommonFileDialogFilter("AIFF", "*.aiff; *.aif"));
@@ -717,6 +717,27 @@ namespace OpenUtau.UI
         private void MenuRenewPartNo_Click(object sender, RoutedEventArgs e)
         {
             PartManager.RenewPartNo();
+        }
+
+        private void Menux4_Click(object sender, RoutedEventArgs e) {
+            foreach (var item in trackVM.Project.Parts)
+            {
+                item.PosTick *= 4;
+                item.DurTick *= 4;
+                if (item is UVoicePart voice)
+                {
+                    foreach (var note in voice.Notes)
+                    {
+                        note.PosTick *= 4;
+                        note.DurTick *= 4;
+                        foreach (var pho in note.Phonemes)
+                        {
+                            pho.PosTick *= 4;
+                            pho.DurTick *= 4;
+                        }
+                    }
+                }
+            }
         }
         # endregion
 
