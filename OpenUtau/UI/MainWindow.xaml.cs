@@ -403,14 +403,14 @@ namespace OpenUtau.UI
                 {
                     int newDurTick = (int)(trackVM.Project.Resolution * trackVM.CanvasRoundToSnappedQuarter(mousePos.X)) - _hitPartElement.Part.PosTick;
                     if (newDurTick > _resizeMinDurTick && newDurTick != _hitPartElement.Part.DurTick)
-                        DocManager.Inst.ExecuteCmd(new ResizePartCommand(trackVM.Project, _hitPartElement.Part, newDurTick, Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)));
+                        DocManager.Inst.ExecuteCmd(new ResizePartCommand(trackVM.Project, _hitPartElement.Part, newDurTick));
                 }
                 else
                 {
                     int deltaDurTick = (int)(trackVM.CanvasRoundToSnappedQuarter(mousePos.X) * trackVM.Project.Resolution) - _hitPartElement.Part.EndTick;
                     if (deltaDurTick != 0 && _partResizeShortest.DurTick + deltaDurTick > _resizeMinDurTick)
                         foreach (UPart part in trackVM.SelectedParts)
-                            DocManager.Inst.ExecuteCmd(new ResizePartCommand(trackVM.Project, part, part.DurTick + deltaDurTick, Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)));
+                            DocManager.Inst.ExecuteCmd(new ResizePartCommand(trackVM.Project, part, part.DurTick + deltaDurTick));
                 }
             }
             else if (Mouse.RightButton == MouseButtonState.Pressed) // Remove
@@ -720,24 +720,22 @@ namespace OpenUtau.UI
         }
 
         private void Menux4_Click(object sender, RoutedEventArgs e) {
+            DocManager.Inst.StartUndoGroup();
             foreach (var item in trackVM.Project.Parts)
             {
-                item.PosTick *= 4;
-                item.DurTick *= 4;
+                DocManager.Inst.ExecuteCmd(new MovePartCommand(trackVM.Project, item, item.PosTick * 4, item.TrackNo), true);
+                DocManager.Inst.ExecuteCmd(new ResizePartCommand(trackVM.Project, item, item.DurTick * 4), true);
                 if (item is UVoicePart voice)
                 {
                     foreach (var note in voice.Notes)
                     {
-                        note.PosTick *= 4;
-                        note.DurTick *= 4;
-                        foreach (var pho in note.Phonemes)
-                        {
-                            pho.PosTick *= 4;
-                            pho.DurTick *= 4;
-                        }
+                        DocManager.Inst.ExecuteCmd(new MoveNoteCommand(voice, note, note.PosTick * 3, 0), true);
+                        DocManager.Inst.ExecuteCmd(new ResizeNoteCommand(voice, note, note.DurTick * 3), true);
                     }
+                    PartManager.UpdatePart(voice, true);
                 }
             }
+            DocManager.Inst.EndUndoGroup();
         }
         # endregion
 

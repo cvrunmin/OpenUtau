@@ -71,7 +71,7 @@ namespace OpenUtau.Core.Render
                 foreach (var item in renderItems)
                 {
                     c++;
-                    if (item.Oto?.File.EndsWith("R.wav") ?? true)
+                    if (item.Oto?.File.Equals("R.wav") ?? true)
                     {
                         sw.WriteLine($@"@""%tool%"" ""%output%"" ""%oto%\R.wav"" 0 {item.DurTick}@{item.Tempo}{item.LengthAdjustment:+#.###;-#.###;+0} 0 0");
                     }

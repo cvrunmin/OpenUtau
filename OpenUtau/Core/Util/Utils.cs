@@ -195,6 +195,7 @@ namespace OpenUtau.Core.Util
 
         public static string FindOverlapping(string a, string b)
         {
+            if(a.Length > 0 && b.Length > 0)
             for (int i = a.Length - 1; i >= 0; i--)
             {
                 if (a[i] == b[0])

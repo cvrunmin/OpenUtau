@@ -36,7 +36,7 @@ namespace OpenUtau.Core.Render
                         //TakeSamples = (int)(RenderItem.DurMs * (cachedSound.WaveFormat?.SampleRate).GetValueOrDefault() / 1000),
                         //SkipOverSamples = (int)(RenderItem.SkipOver * (cachedSound.WaveFormat?.SampleRate).GetValueOrDefault() / 1000)
                         StartTime = TimeSpan.FromMilliseconds(RenderItem.PosMs),
-                        SourceOffset = TimeSpan.FromMilliseconds(RenderItem.SkipOver),
+                        SourceOffset = TimeSpan.FromMilliseconds(Math.Max(0,RenderItem.SkipOver)),
                         SourceLength = TimeSpan.FromMilliseconds(RenderItem.DurMs)
                     };
                     this.signalChain = offsetSampleProvider;
@@ -96,15 +96,25 @@ namespace OpenUtau.Core.Render
         public override long Position { get => (signalChain?.Position).GetValueOrDefault(); set { if (signalChain != null) signalChain.Position = value; } }
     }
 
-    public static class ProviderHelper {
+    public static class ProviderHelper
+    {
         public static WaveStream ToWaveStream(this ISampleProvider provider) {
+            return provider.ToWaveStream(TimeSpan.Zero);
+        }
+        public static WaveStream ToWaveStream(this ISampleProvider provider, TimeSpan limit) {
             return provider.ToWaveProvider().ToWaveStream();
         }
 
-        public static WaveStream ToWaveStream(this IWaveProvider provider) {
+        public static WaveStream ToWaveStream(this IWaveProvider provider)
+        {
+            return provider.ToWaveStream(TimeSpan.Zero);
+        }
+
+        public static WaveStream ToWaveStream(this IWaveProvider provider, TimeSpan limit) {
             var str = new System.IO.MemoryStream();
             var buffer = new byte[provider.WaveFormat.AverageBytesPerSecond];
-            while (true)
+            var lb = limit.TotalSeconds * provider.WaveFormat.AverageBytesPerSecond;
+            while (str.Position < lb || lb == 0)
             {
                 if (2147483591 - str.Position < buffer.Length)
                 {

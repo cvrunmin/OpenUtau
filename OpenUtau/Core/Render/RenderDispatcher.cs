@@ -159,7 +159,15 @@ namespace OpenUtau.Core.Render
                                     }
                                     token.ThrowIfCancellationRequested();
                                 }
-                                var src = partCache[part.PartNo];
+                                WaveStream src;
+                                try
+                                {
+                                    src = partCache[part.PartNo];
+                                }
+                                catch (Exception)
+                                {
+                                    src = new SilenceProvider(trackMixing.WaveFormat).ToWaveStream();
+                                }
                                 trackMixing.AddInputStream(new UWaveOffsetStream(src, TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)), TimeSpan.Zero, src.TotalTime));
                                 part.ModifyCount = 0;
                             }, token));

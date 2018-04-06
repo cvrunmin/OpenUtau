@@ -125,7 +125,7 @@ namespace OpenUtau.UI.Dialogs
                 SaveSinger(SelectedSinger);
                 foreach (var track in DocManager.Inst.Project.Tracks)
                 {
-                    if (track.Singer.Equals(SelectedSinger))
+                    if (SelectedSinger.Equals(track.Singer))
                     {
                         track.ModifyCount++;
                     }

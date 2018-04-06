@@ -92,7 +92,7 @@ namespace OpenUtau.Core.Render.NAudio
         /// <summary>
         /// Gets the block alignment for this WaveStream
         /// </summary>
-        public override int BlockAlign => (int)SourceToDest(sourceStream.BlockAlign);
+        public override int BlockAlign => (int)SourceToDest(sourceStream?.BlockAlign ?? 0);
 
         /// <summary>
         /// Returns the stream length

@@ -158,32 +158,14 @@ namespace OpenUtau.Core
     public class ResizePartCommand : PartCommand
     {
         int newDur, oldDur;
-        bool stretch;
-        public ResizePartCommand(UProject project, UPart part, int newDur, bool stretch = false) { this.project = project; this.part = part; this.newDur = newDur; this.oldDur = part.DurTick; this.stretch = stretch; }
+        public ResizePartCommand(UProject project, UPart part, int newDur) { this.project = project; this.part = part; this.newDur = newDur; this.oldDur = part.DurTick; }
         public override string ToString() { return "Change parts duration"; }
         public override void Execute() {
             part.DurTick = newDur;
-            //if (stretch && part is UVoicePart voice) {
-            //    var sra = (float)newDur / oldDur;
-            //    foreach (var note in voice.Notes)
-            //    {
-            //        note.PosTick = (int)Math.Floor(note.PosTick * sra);
-            //        note.DurTick = (int)Math.Floor(note.DurTick * sra);
-            //    }
-            //}
             base.Execute();
         }
         public override void Unexecute() {
             part.DurTick = oldDur;
-            //if (stretch && part is UVoicePart voice)
-            //{
-            //    var sra = (float)newDur / oldDur;
-            //    foreach (var note in voice.Notes)
-            //    {
-            //        note.PosTick = (int)Math.Ceiling(note.PosTick / sra);
-            //        note.DurTick = (int)Math.Ceiling(note.DurTick / sra);
-            //    }
-            //}
             base.Unexecute();
         }
     }
