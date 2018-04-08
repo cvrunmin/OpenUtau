@@ -727,7 +727,8 @@ namespace OpenUtau.UI
                 DocManager.Inst.ExecuteCmd(new ResizePartCommand(trackVM.Project, item, item.DurTick * 4), true);
                 if (item is UVoicePart voice)
                 {
-                    foreach (var note in voice.Notes)
+                    var list = new List<UNote>(voice.Notes);
+                    foreach (var note in list)
                     {
                         DocManager.Inst.ExecuteCmd(new MoveNoteCommand(voice, note, note.PosTick * 3, 0), true);
                         DocManager.Inst.ExecuteCmd(new ResizeNoteCommand(voice, note, note.DurTick * 3), true);
