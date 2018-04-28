@@ -65,11 +65,11 @@ namespace OpenUtau.Core
     {
         public KeyValuePair<int, double> value;
         public bool removal;
-        public UpdateProjectBpmsNotification(UProject project, double bpm, int tick, bool removeal)
+        public UpdateProjectBpmsNotification(UProject project, double bpm, int tick, bool removal)
         {
             this.project = project;
             this.value = new KeyValuePair<int, double>(tick, bpm);
-            this.removal = removeal;
+            this.removal = removal;
         }
         public override string ToString() { return (!removal ? "Add" : "Remove") + " project\'s bpm " + value.Value + " at tick " + value.Key; }
     }

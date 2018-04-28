@@ -736,6 +736,11 @@ namespace OpenUtau.UI
                     PartManager.UpdatePart(voice, true);
                 }
             }
+            foreach (var item in new Dictionary<int,double>(trackVM.Project.SubBPM))
+            {
+                DocManager.Inst.ExecuteCmd(new UpdateProjectBpmsNotification(trackVM.Project, item.Value, item.Key, true));
+                DocManager.Inst.ExecuteCmd(new UpdateProjectBpmsNotification(trackVM.Project, item.Value, item.Key * 4, false));
+            }
             DocManager.Inst.EndUndoGroup();
         }
         # endregion

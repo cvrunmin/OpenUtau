@@ -51,7 +51,12 @@ namespace OpenUtau.Core.ResamplerDriver.Factorys
                     Args.Tempo,
                     Base64.Base64EncodeInt12(Args.pitchBend));
 
-                var p = Process.Start(new ProcessStartInfo(ExePath, ArgParam) { UseShellExecute = false, CreateNoWindow = true });
+                var p = Process.Start(new ProcessStartInfo(ExePath, ArgParam) {
+                    UseShellExecute = false,
+
+                    CreateNoWindow = true
+
+                });
                 p.WaitForExit();
                 if (p != null)
                 {
@@ -86,7 +91,9 @@ namespace OpenUtau.Core.ResamplerDriver.Factorys
                     StartInfo = new ProcessStartInfo(ExePath, ArgParam)
                     {
                         UseShellExecute = false,
+
                         CreateNoWindow = true,
+
                         //RedirectStandardOutput = true
                     }
                 };

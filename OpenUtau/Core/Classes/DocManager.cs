@@ -26,6 +26,10 @@ namespace OpenUtau.Core
                 limit = 5;
             }
             Factory = new TaskFactory(new LimitedTaskScheduler(limit));
+            if (!Directory.Exists(CachePath))
+            {
+                Directory.CreateDirectory(CachePath);
+            }
         }
 
         public TaskFactory Factory;
