@@ -17,16 +17,23 @@ namespace OpenUtau.Core.Render.NAudio
         private readonly int bytesPerSample;
         public List<WaveStream> InputStreams => inputStreams;
 
+        private bool predefinedFormat;
         /// <summary>
         /// Creates a new 32 bit WaveMixerStream
         /// </summary>
-        public UWaveMixerStream32()
+        public UWaveMixerStream32() : this(44100, 2)
+        {
+            predefinedFormat = false;
+        }
+
+        public UWaveMixerStream32(int rate, int channel)
         {
             AutoStop = true;
-            waveFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
+            waveFormat = WaveFormat.CreateIeeeFloatWaveFormat(rate, channel);
             bytesPerSample = 4;
             inputStreams = new List<WaveStream>();
             inputsLock = new object();
+            predefinedFormat = true;
         }
 
         /// <summary>
@@ -59,7 +66,7 @@ namespace OpenUtau.Core.Render.NAudio
             if (waveStream.WaveFormat.BitsPerSample != 32)
                 throw new ArgumentException("Only 32 bit audio currently supported", "waveStream");
 
-            if (inputStreams.Count == 0)
+            if (!predefinedFormat && inputStreams.Count == 0)
             {
                 // first one - set the format
                 int sampleRate = waveStream.WaveFormat.SampleRate;
@@ -73,7 +80,7 @@ namespace OpenUtau.Core.Render.NAudio
                         waveStream = new WaveChannel32(waveStream);
                     }else
                     {
-                        waveStream = new WaveFormatConversionStream(waveFormat, waveStream);
+                        waveStream = new UWaveFormatConvertStream(waveStream, WaveFormat);
                     }
                 }
                     //throw new ArgumentException("All incoming channels must have the same format", "waveStream");

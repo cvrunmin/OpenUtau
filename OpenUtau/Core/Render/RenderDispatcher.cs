@@ -75,7 +75,7 @@ namespace OpenUtau.Core.Render
             await Task.WhenAll(schedule);
             schedule.Clear();
             DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, $"Rendering Tracks 0/{total}"));
-            UWaveMixerStream32 masterMix = new UWaveMixerStream32();
+            UWaveMixerStream32 masterMix = new UWaveMixerStream32(Core.Util.Preferences.Default.SamplingRate, 2);
             List<TrackSampleProvider> trackSources = Enumerable.Repeat((TrackSampleProvider)null, project.Tracks.Count).ToList();
             var parts = project.Parts.GroupBy(part => part.TrackNo).ToDictionary(group => group.Key);
             foreach (UTrack track in project.Tracks)
@@ -93,7 +93,7 @@ namespace OpenUtau.Core.Render
                                 channel.Baked?.Dispose();
                             }
                         });
-                        var trackMixing = new UWaveMixerStream32();
+                        var trackMixing = new UWaveMixerStream32(masterMix.WaveFormat.SampleRate, masterMix.WaveFormat.Channels);
                         trackSources[track.TrackNo] = (new TrackSampleProvider() { TrackNo = track.TrackNo, PlainVolume = DecibelToVolume(track.Volume), Muted = track.ActuallyMuted, Pan = (float)track.Pan / 90f });
                         var singer = track.Singer;
                         var subschedule = new List<Task>();
