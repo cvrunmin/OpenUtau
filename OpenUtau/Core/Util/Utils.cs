@@ -8,6 +8,7 @@ using System.Windows.Data;
 using System.Globalization;
 using System.Windows.Media;
 using System.Windows.Controls;
+using static OpenUtau.Core.Formats.Presamp;
 
 namespace OpenUtau.Core.Util
 {
@@ -213,6 +214,28 @@ namespace OpenUtau.Core.Util
                 }
             }
             return "";
+        }
+
+        public static SortedDictionary<string, SortedSet<string>> DeRedirect(this SortedDictionary<string, VCContent> dict)
+        {
+            SortedSet<string> FindContent(string key, ref SortedDictionary<string, VCContent> dict1)
+            {
+                if (dict1[key].IsRedirect)
+                {
+                    return FindContent(dict1[key].RedirectTo, ref dict1);
+                }
+                else
+                {
+                    return dict1[key].Content;
+                }
+            }
+
+            var result = new SortedDictionary<string, SortedSet<string>>();
+            foreach (var key in dict.Keys)
+            {
+                result.Add(key, FindContent(key, ref dict));
+            }
+            return result;
         }
     }
 

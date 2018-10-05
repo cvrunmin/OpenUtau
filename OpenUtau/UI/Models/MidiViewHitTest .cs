@@ -51,7 +51,7 @@ namespace OpenUtau.UI.Models
             int tick = (int)(midiVM.CanvasToQuarter(mousePos.X) * Project.Resolution);
             int noteNum = midiVM.CanvasToNoteNum(mousePos.Y);
             foreach (UNote note in midiVM.Part.Notes)
-                if (note.PosTick <= tick && note.EndTick >= tick && note.NoteNum == noteNum) return note;
+                if (note.PosTick + (midiVM.ViewMode ? midiVM.Part.PosTick : 0) <= tick && note.EndTick + (midiVM.ViewMode ? midiVM.Part.PosTick : 0) >= tick && note.NoteNum == noteNum) return note;
             return null;
         }
 

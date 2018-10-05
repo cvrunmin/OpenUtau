@@ -23,7 +23,10 @@ namespace OpenUtau.Core.USTx
         public List<UTrack> Tracks = new List<UTrack>();
         public List<UPart> Parts = new List<UPart>();
         public List<USinger> Singers = new List<USinger>();
-        public Dictionary<int, double> SubBPM = new Dictionary<int, double>();
+
+        private Dictionary<int, double> _subBPM = new Dictionary<int, double>();
+
+        public Dictionary<int, double> SubBPM { get => (_subBPM = _subBPM.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value)); }
 
         public Dictionary<string, UExpression> ExpressionTable = new Dictionary<string, UExpression>();
 

@@ -308,7 +308,7 @@ namespace OpenUtau.Core.Render
             double requiredLength = Math.Ceiling(length / 50 + 1) * 50;
             double lengthAdjustment = phoneme.TailIntrude == 0 ? phoneme.Preutter : phoneme.Preutter - phoneme.TailIntrude + phoneme.TailOverlap;
 
-            double tempo = project.SubBPM.FirstOrDefault(pair => part.PosTick + phoneme.Parent.PosTick + phoneme.PosTick >= pair.Key).Value;
+            double tempo = project.SubBPM.LastOrDefault(pair => part.PosTick + phoneme.Parent.PosTick + phoneme.PosTick >= pair.Key).Value;
             RenderItem item = new RenderItem()
             {
                 Error = err,

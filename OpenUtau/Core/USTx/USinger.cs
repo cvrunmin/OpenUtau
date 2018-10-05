@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static OpenUtau.Core.Formats.Presamp;
 
 namespace OpenUtau.Core.USTx
 {
@@ -100,9 +101,9 @@ namespace OpenUtau.Core.USTx
 
         public Dictionary<string, string> PitchMap = new Dictionary<string, string>();
         public SortedDictionary<string, UOto> AliasMap = new SortedDictionary<string, UOto>();
-        public SortedDictionary<string, SortedSet<string>> ConsonentMap = new SortedDictionary<string, SortedSet<string>>();
+        public SortedDictionary<string, VCContent> ConsonentMap = new SortedDictionary<string, VCContent>();
         public SortedDictionary<string, SortedSet<string>> ConsonentRawMap = new SortedDictionary<string, SortedSet<string>>();
-        public SortedDictionary<string, SortedSet<string>> VowelMap = new SortedDictionary<string, SortedSet<string>>();
+        public SortedDictionary<string, VCContent> VowelMap = new SortedDictionary<string, VCContent>();
         public SortedDictionary<string, SortedSet<string>> VowelRawMap = new SortedDictionary<string, SortedSet<string>>();
         public SortedDictionary<string, UDictionaryNote> PresetLyricsMap = new SortedDictionary<string, UDictionaryNote>();
     }

@@ -143,6 +143,7 @@
     <Compile Include="Core\Classes\PlaybackManager.cs" />
     <Compile Include="Core\Classes\TrackCommands.cs" />
     <Compile Include="Core\Formats\Midi.cs" />
+    <Compile Include="Core\Formats\Presamp.cs" />
     <Compile Include="Core\Formats\USTx.cs">
       <SubType>Code</SubType>
     </Compile>

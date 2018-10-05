@@ -38,7 +38,7 @@ namespace OpenUtau.Core.Util
 
         public static string GetVowel(string lyrics, USinger singer)
         {
-            var vowel = singer?.VowelMap?.FirstOrDefault(pair => pair.Value.Contains(lyrics)).Key;
+            var vowel = singer?.VowelMap?.DeRedirect().FirstOrDefault(pair => pair.Value.Contains(lyrics)).Key;
             return string.IsNullOrEmpty(vowel) ? GetVowel(lyrics) : vowel;
         }
 
@@ -75,7 +75,7 @@ namespace OpenUtau.Core.Util
 
         public static string GetConsonant(string lyrics, USinger singer)
         {
-            var consonant = singer?.ConsonentMap?.FirstOrDefault(pair => pair.Value.Contains(lyrics)).Key;
+            var consonant = singer?.ConsonentMap?.DeRedirect().FirstOrDefault(pair => pair.Value.Contains(lyrics)).Key;
             return string.IsNullOrEmpty(consonant) ? GetConsonant(lyrics) : consonant;
         }
     }

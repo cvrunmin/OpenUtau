@@ -16,6 +16,7 @@ using JsonFx.Serialization;
 using JsonFx.Serialization.Resolvers;
 using static OpenUtau.Core.Formats.USTx;
 using OpenUtau.Core.Util;
+using static OpenUtau.Core.Formats.Presamp;
 
 namespace OpenUtau.Core.Formats
 {
@@ -183,6 +184,16 @@ namespace OpenUtau.Core.Formats
 
         private static void AddExtraDetail(USinger singer)
         {
+            bool presamp = false;
+            if (File.Exists(Path.Combine(singer.Path, "presamp.ini"))) {
+                var p = Presamp.Load(Path.Combine(singer.Path, "presamp.ini"));
+                if (p != null)
+                {
+                    singer.ConsonentMap = p.ConsonentMap;
+                    singer.VowelMap = p.VowelMap;
+                    presamp = true;
+                }
+            }
             List<Util.SamplingStyleHelper.Style> list = new List<Util.SamplingStyleHelper.Style>();
             foreach (var item in singer.AliasMap.Values)
             {
@@ -193,7 +204,7 @@ namespace OpenUtau.Core.Formats
                 }
                 SamplingStyleHelper.Style style = SamplingStyleHelper.GetStyle(pho);
                 list.Add(style);
-                if (style == SamplingStyleHelper.Style.CV || style == SamplingStyleHelper.Style.VCV)
+                if (!presamp && (style == SamplingStyleHelper.Style.CV || style == SamplingStyleHelper.Style.VCV))
                 {
                     var consonent = LyricsHelper.GetConsonant(pho);
                     var vowel = LyricsHelper.GetVowel(pho);
@@ -210,6 +221,7 @@ namespace OpenUtau.Core.Formats
                     if (!singer.VowelRawMap[vowel].Contains(pho1)) singer.VowelRawMap[vowel].Add(pho1);
                 }
             }
+            if(!presamp)
             InjectCVMod(singer);
             var avg = list.Average(style => style == Util.SamplingStyleHelper.Style.CV ? 1 : style == Util.SamplingStyleHelper.Style.VCV ? 3 : style == Util.SamplingStyleHelper.Style.VC ? 2 : 0);
             var v = Math.Round(avg);
@@ -244,51 +256,51 @@ namespace OpenUtau.Core.Formats
                     {
                         if (!map.Vowels.Removal.Contains(pair.Key))
                         {
-                            singer.VowelMap.Add(pair.Key, new SortedSet<string>(pair.Value));
+                            singer.VowelMap.Add(pair.Key, new VCContent() { Content = new SortedSet<string>(pair.Value) });
                         }
                     }
                     foreach (var pair in singer.ConsonentRawMap)
                     {
                         if (!map.Consonents.Removal.Contains(pair.Key))
                         {
-                            singer.ConsonentMap.Add(pair.Key, new SortedSet<string>(pair.Value));
+                            singer.ConsonentMap.Add(pair.Key, new VCContent() { Content = new SortedSet<string>(pair.Value) });
                         }
                     }
                     foreach (var a in map.Vowels.Addition)
                     {
-                        singer.VowelMap.Add(a.Key, a.Value);
+                        singer.VowelMap.Add(a.Key, new VCContent() { Content = a.Value });
                     }
                     foreach (var a in map.Consonents.Addition)
                     {
-                        singer.ConsonentMap.Add(a.Key, a.Value);
+                        singer.ConsonentMap.Add(a.Key, new VCContent() { Content = a.Value });
                     }
                     foreach (var mod in map.Vowels.Modification)
                     {
                         var raw = singer.VowelMap[mod.Key];
-                        mod.Value.Remove.ForEach(remove => raw.Remove(remove));
-                        mod.Value.Add.ForEach(add => raw.Add(add));
+                        mod.Value.Remove.ForEach(remove => raw.Content.Remove(remove));
+                        mod.Value.Add.ForEach(add => raw.Content.Add(add));
                         singer.VowelMap[mod.Key] = raw;
                     }
                     foreach (var mod in map.Consonents.Modification)
                     {
                         var raw = singer.ConsonentMap[mod.Key];
-                        mod.Value.Remove.ForEach(remove => raw.Remove(remove));
-                        mod.Value.Add.ForEach(add => raw.Add(add));
+                        mod.Value.Remove.ForEach(remove => raw.Content.Remove(remove));
+                        mod.Value.Add.ForEach(add => raw.Content.Add(add));
                         singer.ConsonentMap[mod.Key] = raw;
                     }
                 }
             }
             else
             {
-                singer.VowelMap = new SortedDictionary<string,SortedSet<string>>();
+                singer.VowelMap = new SortedDictionary<string,VCContent>();
                 foreach (var pair in singer.VowelRawMap)
                 {
-                    singer.VowelMap.Add(pair.Key, new SortedSet<string>(pair.Value));
+                    singer.VowelMap.Add(pair.Key, new VCContent() { Content = new SortedSet<string>(pair.Value) });
                 }
-                singer.ConsonentMap = new SortedDictionary<string, SortedSet<string>>();
+                singer.ConsonentMap = new SortedDictionary<string, VCContent>();
                 foreach (var pair in singer.ConsonentRawMap)
                 {
-                    singer.ConsonentMap.Add(pair.Key, new SortedSet<string>(pair.Value));
+                    singer.ConsonentMap.Add(pair.Key, new VCContent() { Content = new SortedSet<string>(pair.Value) });
                 }
             }
         }
@@ -311,9 +323,10 @@ namespace OpenUtau.Core.Formats
                     Modification = new Dictionary<string, CVMap.CVMapPart.Mod>()
                 }
             };
-            
-            var keep = singer.VowelMap.Intersect(singer.VowelRawMap, new CVMapCompare()).ToList();
-            var add = singer.VowelMap.Except(keep, new CVMapCompare());
+
+            var deredirvm = singer.VowelMap.DeRedirect();
+            var keep = deredirvm.Intersect(singer.VowelRawMap, new CVMapCompare()).ToList();
+            var add = deredirvm.Except(keep, new CVMapCompare());
             var rem = singer.VowelRawMap.Except(keep, new CVMapCompare());
             map.Vowels.Removal.AddRange(rem.Select(pair => pair.Key));
             foreach (var pair in add)
@@ -322,8 +335,8 @@ namespace OpenUtau.Core.Formats
             }
             foreach (var pair in keep)
             {
-                var k1 = singer.VowelMap[pair.Key].Intersect(singer.VowelRawMap[pair.Key]).ToList();
-                var a1 = singer.VowelMap[pair.Key].Except(k1);
+                var k1 = deredirvm[pair.Key].Intersect(singer.VowelRawMap[pair.Key]).ToList();
+                var a1 = deredirvm[pair.Key].Except(k1);
                 var r1 = singer.VowelRawMap[pair.Key].Except(k1);
                 if (a1.Any() || r1.Any())
                 {
@@ -335,8 +348,9 @@ namespace OpenUtau.Core.Formats
                     map.Vowels.Modification.Add(pair.Key, mod);
                 }
             }
-            keep = singer.ConsonentMap.Intersect(singer.ConsonentRawMap, new CVMapCompare()).ToList();
-            add = singer.ConsonentMap.Except(keep, new CVMapCompare());
+            deredirvm = singer.ConsonentMap.DeRedirect();
+            keep = deredirvm.Intersect(singer.ConsonentRawMap, new CVMapCompare()).ToList();
+            add = deredirvm.Except(keep, new CVMapCompare());
             rem = singer.ConsonentRawMap.Except(keep, new CVMapCompare());
             map.Consonents.Removal.AddRange(rem.Select(pair => pair.Key));
             foreach (var pair in add)
@@ -345,8 +359,8 @@ namespace OpenUtau.Core.Formats
             }
             foreach (var pair in keep)
             {
-                var k1 = singer.ConsonentMap[pair.Key].Intersect(singer.ConsonentRawMap[pair.Key]).ToList();
-                var a1 = singer.ConsonentMap[pair.Key].Except(k1);
+                var k1 = deredirvm[pair.Key].Intersect(singer.ConsonentRawMap[pair.Key]).ToList();
+                var a1 = deredirvm[pair.Key].Except(k1);
                 var r1 = singer.ConsonentRawMap[pair.Key].Except(k1);
                 if (a1.Any() || r1.Any())
                 {

@@ -543,11 +543,11 @@ namespace OpenUtau.UI
                             if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                         }
                     }
-                    else if (!MidiVM.SelectedNotes.Any()) // Add note
+                    else if (MidiVM.SelectedNotes.Count == 0) // Add note
                     {
                         UNote newNote = DocManager.Inst.Project.CreateNote(
                             MidiVM.CanvasToNoteNum(mousePos.Y),
-                            MidiVM.CanvasToSnappedTick(mousePos.X),
+                            MidiVM.CanvasToSnappedTick(mousePos.X) - (MidiVM.ViewMode ? MidiVM.Part.PosTick : 0),
                             _lastNoteLength);
                         newNote.PartNo = MidiVM.Part.PartNo;
                         newNote.NoteNo = MidiVM.Part.Notes.Count;
@@ -558,7 +558,6 @@ namespace OpenUtau.UI
 
                         if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                         DocManager.Inst.ExecuteCmd(new AddNoteCommand(MidiVM.Part, newNote));
-                        if (!LyricsPresetDedicate) DocManager.Inst.EndUndoGroup();
                         MidiVM.MarkUpdate();
                         // Enable drag
                         MidiVM.DeselectAll();
@@ -567,7 +566,6 @@ namespace OpenUtau.UI
                         _noteHit = newNote;
                         _tickMoveRelative = 0;
                         _tickMoveStart = newNote.PosTick;
-                        if (!LyricsPresetDedicate) DocManager.Inst.StartUndoGroup();
                     }
                     else
                     {

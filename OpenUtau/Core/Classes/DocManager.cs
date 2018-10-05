@@ -88,6 +88,9 @@ namespace OpenUtau.Core
                     redoQueue.Clear();
                     Render.RenderDispatcher.Inst.trackCache.ForEach(channel => channel.Baked?.Dispose());
                     Render.RenderDispatcher.Inst.trackCache.Clear();
+                    foreach (var stream in Render.RenderDispatcher.Inst.partCache.Values) {
+                        stream.Close();
+                    }
                     Render.RenderDispatcher.Inst.partCache.Clear();
                     
                     Render.RenderCache.Inst.Clear();

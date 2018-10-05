@@ -1,4 +1,5 @@
 ﻿using OpenUtau.Core.USTx;
+using OpenUtau.Core.Util;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -37,30 +38,11 @@ namespace OpenUtau.UI.Dialogs
             foreach (var item in Singer.ConsonentMap.Keys)
             {
                 listConsonents.Items.Add(item);
-                if (!table.Columns.Contains(item) && !string.IsNullOrEmpty(item))
-                    table.Columns.Add(new DataColumn() { Caption = item, ColumnName = item });
             }
             foreach (var vowel in Singer.VowelMap)
             {
                 listVowel.Items.Add(vowel.Key);
-                var row = table.NewRow();
-                row.SetField("Vowels", vowel.Key);
-                var map = new Dictionary<string, SortedSet<string>>();
-                foreach (var pho in vowel.Value)
-                {
-                    string consonant = Core.Util.LyricsHelper.GetConsonant(pho);
-                    consonant = string.IsNullOrEmpty(consonant) ? "-" : consonant;
-                    if (!map.ContainsKey(consonant)) map.Add(consonant, new SortedSet<string>());
-                    map[consonant].Add(pho);
-                }
-                foreach (var pair in map)
-                {
-                    if (table.Columns.Contains(pair.Key))
-                        row.SetField(pair.Key, string.Join(", ", pair.Value));
-                }
-                table.Rows.Add(row);
             }
-            dataGridCV.DataContext = table.DefaultView;
             if (!noset)
             {
                 listVowel.SelectedIndex = 0;
@@ -72,30 +54,7 @@ namespace OpenUtau.UI.Dialogs
             Singer = singer;
             LoadSinger();
         }
-
-        private void dataGridCV_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e)
-        {
-            if (e.EditAction == DataGridEditAction.Commit)
-            {
-
-            }
-        }
-
-        private void dataGridCV_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
-        {
-            if (e.EditAction == DataGridEditAction.Commit)
-            {
-                DataRow row = ((DataRowView)e.Row.Item).Row;
-                if (row.Table.Rows.IndexOf(row) > 0)
-                {
-                    var post = ((TextBox)e.EditingElement).Text;
-                    var pre = row.Field<string>(e.Column.Header as string);
-                    if (row.Table.Columns.IndexOf(e.Column.Header as string) == 0) {
-                        
-                    }
-                }
-            }
-        }
+        
 
         private void listVowel_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -103,7 +62,7 @@ namespace OpenUtau.UI.Dialogs
             if (listVowel.SelectedItem is string key && Singer.VowelMap.ContainsKey(key))
             {
                 txtVowel.Text = key;
-                var pho = Singer.VowelMap[key];
+                var pho = Singer.VowelMap.DeRedirect()[key];
                 var s = "";
                 var i = 0;
                 foreach (var p in pho)
@@ -122,7 +81,7 @@ namespace OpenUtau.UI.Dialogs
             if (listConsonents.SelectedItem is string key && Singer.ConsonentMap.ContainsKey(key))
             {
                 txtConsonent.Text = key;
-                var pho = Singer.ConsonentMap[key];
+                var pho = Singer.ConsonentMap.DeRedirect()[key];
                 var s = "";
                 var i = 0;
                 foreach (var p in pho)
@@ -147,7 +106,7 @@ namespace OpenUtau.UI.Dialogs
                     {
                         phos.Add(s);
                     }
-                    Singer.ConsonentMap.Add(txtConsonent.Text, phos);
+                    Singer.ConsonentMap.Add(txtConsonent.Text, new Core.Formats.Presamp.VCContent() { Content = phos });
                     var s1 = txtConsonent.Text;
                     LoadSinger(true);
                     listConsonents.SelectedItem = s1;
@@ -171,7 +130,7 @@ namespace OpenUtau.UI.Dialogs
                     {
                         phos.Add(s);
                     }
-                    Singer.VowelMap.Add(txtVowel.Text, phos);
+                    Singer.VowelMap.Add(txtVowel.Text, new Core.Formats.Presamp.VCContent() { Content = phos });
                     var s1 = txtVowel.Text;
                     LoadSinger(true);
                     listVowel.SelectedItem = s1;
@@ -218,7 +177,7 @@ namespace OpenUtau.UI.Dialogs
                 {
                     phos.Add(s);
                 }
-                Singer.ConsonentMap.Add(txtConsonent.Text, phos);
+                Singer.ConsonentMap.Add(txtConsonent.Text, new Core.Formats.Presamp.VCContent() { Content = phos });
                 var ind = listConsonents.SelectedIndex;
                 LoadSinger(true);
                 listConsonents.SelectedIndex = ind;
@@ -236,7 +195,7 @@ namespace OpenUtau.UI.Dialogs
                 {
                     phos.Add(s);
                 }
-                Singer.VowelMap.Add(txtVowel.Text, phos);
+                Singer.VowelMap.Add(txtVowel.Text, new Core.Formats.Presamp.VCContent() { Content = phos });
                 var ind = listVowel.SelectedIndex;
                 LoadSinger(true);
                 listVowel.SelectedIndex = ind;

@@ -7,7 +7,6 @@
         mc:Ignorable="d"
         Title="SingerCVTableDialog" Height="480" Width="650">
     <Grid>
-        <DataGrid x:Name="dataGridCV" Margin="10,10,10,0" ItemsSource="{Binding}" RowEditEnding="dataGridCV_RowEditEnding" CellEditEnding="dataGridCV_CellEditEnding" Height="429" VerticalAlignment="Top" Visibility="Collapsed"/>
         <TabControl>
             <TabItem Header="Vowels">
                 <Grid Background="#FFE5E5E5">

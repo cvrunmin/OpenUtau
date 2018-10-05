@@ -261,7 +261,7 @@ namespace OpenUtau.Core.USTx
         {
             var data = new List<PitchPoint>();
             foreach (var p in this._data) data.Add(p.Clone());
-            return new PitchBendExpression(newParent) { Data = data };
+            return new PitchBendExpression(newParent) { Data = data, SnapFirst = this.SnapFirst };
         }
         public override UExpression Split(UNote newParent, int offset)
         {
@@ -361,7 +361,16 @@ namespace OpenUtau.Core.USTx
             };
         }
         public override UExpression Split(UNote newParent, int postick) {
-            var exp = Clone(newParent);
+            var exp = Clone(newParent) as VibratoExpression;
+            if (postick >= Parent.PosTick + Parent.DurTick * (1 - Length / 100f))
+            {
+                this.Disable();
+                exp.Length = Parent.DurTick * Length / 100f / newParent.DurTick;
+            }
+            else {
+                exp.Length = 100;
+                this.Length = (Parent.DurTick * Length / 100f - newParent.DurTick) / Parent.DurTick;
+            }
             return exp;
         }
         public bool IsEnabled { get; private set; }

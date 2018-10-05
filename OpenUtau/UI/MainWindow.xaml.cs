@@ -868,7 +868,7 @@ namespace OpenUtau.UI
         private void CmdImportAudio(string file, bool relative, bool drop = false)
         {
             UWavePart part = Core.Formats.Wave.CreatePart(file);
-            if (part == null) return;
+            if (part == null || part.DurTick == 0) return;
             part.UseRelativePath = relative;
             int trackNo = trackVM.Project.Tracks.Count;
             part.TrackNo = trackNo;
