@@ -14,12 +14,20 @@ namespace OpenUtau.Core.Render
         public static void GenerateTempHelperBat(string path)
         {
             if (!Directory.Exists(Path.GetDirectoryName(path))) Directory.CreateDirectory(Path.GetDirectoryName(path));
+            try
+            {
+
             using (var sw = new StreamWriter(File.Create(path)))
             {
                 sw.WriteLine(@"@if exist %temp% goto A");
                 sw.WriteLine(@"@""%resamp%"" %1 %temp% %2 %vel% %flag% %5 %6 %7 %8 %params%");
                 sw.WriteLine(@":A");
                 sw.WriteLine(@"@if %9 EQU %endpt% (""%tool%"" ""%output%"" %temp% %stp% %3 %env% LAST_NOTE) else (""%tool%"" ""%output%"" %temp% %stp% %3 %env%)");
+                }
+            }
+            catch (IOException)
+            {
+                ;
             }
         }
 

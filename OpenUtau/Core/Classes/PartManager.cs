@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Threading;
 
 using OpenUtau.Core.USTx;
+using OpenUtau.Core.Render;
 
 namespace OpenUtau.Core
 {
@@ -55,6 +56,10 @@ namespace OpenUtau.Core
                 }
                 pno++;
             }
+            RenderCache.Inst.Clear();
+            RenderDispatcher.Inst.trackCache.ForEach(pair => pair.Baked?.Close());
+            RenderDispatcher.Inst.trackCache.Clear();
+            RenderDispatcher.Inst.partCache.Clear();
         }
 
         public static void UpdatePart(UVoicePart part, USinger singer, bool shouldRedraw = true, bool commanded = false)

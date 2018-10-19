@@ -275,29 +275,43 @@ namespace OpenUtau.Core.Util
             {
                 if (dest == Style.VCV)
                 {
-                    if (former != null)
-                    {
-                        string mainPho;
-                        if (former.Lyric.Equals("-")) {
-                            mainPho = former.Phonemes[0].Phoneme;
-                        }
-                        else
+                    string GetDestPho(bool romaji) {
+                        var neworiginal = romaji && HiraganaRomajiHelper.IsSupportedHiragana(original) ? HiraganaRomajiHelper.ToRomaji(original) : original;
+                        if (former != null)
                         {
-                            mainPho = former.Lyric.Split(' ')[1];
+                            string mainPho;
+                            if (former.Lyric.Equals("-"))
+                            {
+                                mainPho = former.Phonemes[0].Phoneme;
+                            }
+                            else
+                            {
+                                var lyrics = former.Lyric.Split(' ');
+                                if (lyrics.Length == 1)
+                                {
+                                    mainPho = lyrics[0];
+                                }
+                                else
+                                {
+                                    mainPho = lyrics[1];
+                                }
+                            }
+                            if (HiraganaRomajiHelper.IsSupportedHiragana(mainPho))
+                            {
+                                return HiraganaRomajiHelper.GetVowel(mainPho) + " " + neworiginal;
+                            }
+                            if (HiraganaRomajiHelper.IsSupportedRomaji(mainPho))
+                            {
+                                return mainPho.Last() + " " + neworiginal;
+                            }
+                            int startIndex = mainPho.IndexOfAny(new[] { 'a', 'e', 'i', 'o', 'u' });
+                            var wildGuessVowel = mainPho.Substring(Math.Max(0, startIndex));
+                            return wildGuessVowel + " " + neworiginal;
                         }
-                        if (HiraganaRomajiHelper.IsSupportedHiragana(mainPho))
-                        {
-                            return HiraganaRomajiHelper.GetVowel(mainPho) + " " + original;
-                        }
-                        if (HiraganaRomajiHelper.IsSupportedRomaji(mainPho))
-                        {
-                            return mainPho.Last() + " " + original;
-                        }
-                        int startIndex = mainPho.IndexOfAny(new[] { 'a', 'e', 'i', 'o', 'u' });
-                        var wildGuessVowel = mainPho.Substring(Math.Max(0, startIndex));
-                        return wildGuessVowel + " " + original;
+                        return "- " + neworiginal;
                     }
-                    return "- " + original;
+                    string trial = GetDestPho(false);
+                    return singer?.AliasMap.ContainsKey(trial) != false ? trial : GetDestPho(true);
                 }
                 if(dest == Style.CVVC)
                 {

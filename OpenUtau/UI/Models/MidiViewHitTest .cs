@@ -57,7 +57,7 @@ namespace OpenUtau.UI.Models
 
         public bool HitNoteResizeArea(UNote note, Point mousePos)
         {
-            double x = midiVM.QuarterToCanvas((double)note.EndTick / Project.Resolution);
+            double x = midiVM.QuarterToCanvas((double)(note.EndTick + (midiVM.ViewMode ? midiVM.Part.PosTick : 0)) / Project.Resolution);
             return mousePos.X <= x && mousePos.X > x - UIConstants.ResizeMargin;
         }
 
