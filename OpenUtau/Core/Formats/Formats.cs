@@ -9,7 +9,7 @@ using OpenUtau.Core.USTx;
 
 namespace OpenUtau.Core.Formats
 {
-    public enum ProjectFormats { Unknown, Vsq3, Vsq4, Ust, Ustx };
+    public enum ProjectFormats { Unknown, Vsq3, Vsq4, Vpr, Ust, Ustx };
 
     static class Formats
     {
@@ -19,6 +19,7 @@ namespace OpenUtau.Core.Formats
 
         public static ProjectFormats DetectProjectFormat(string file)
         {
+            if (file.EndsWith(".vpr")) return ProjectFormats.Vpr; //TODO check content, not extension
             if (!IsTextFile(file)) return ProjectFormats.Unknown;
             string contents = "";
             StreamReader streamReader = null;
@@ -48,6 +49,7 @@ namespace OpenUtau.Core.Formats
 
             if (format == ProjectFormats.Ustx) { project = USTx.Load(file); }
             else if (format == ProjectFormats.Vsq3 || format == ProjectFormats.Vsq4) { project = VSQx.Load(file); }
+            else if (format == ProjectFormats.Vpr) { project = VPR.Load(file); }
             else if (format == ProjectFormats.Ust) { project = Ust.Load(file); }
             else
             {

@@ -59,7 +59,7 @@ namespace OpenUtau.Core
             RenderCache.Inst.Clear();
             RenderDispatcher.Inst.trackCache.ForEach(pair => pair.Baked?.Close());
             RenderDispatcher.Inst.trackCache.Clear();
-            RenderDispatcher.Inst.partCache.Clear();
+            RenderDispatcher.Inst.ReleasePartCache();
         }
 
         public static void UpdatePart(UVoicePart part, USinger singer, bool shouldRedraw = true, bool commanded = false)
@@ -111,25 +111,63 @@ namespace OpenUtau.Core
 
         private static void UpdateEnvelope(UVoicePart part)
         {
+            double ClampIntoEnvelope(EnvelopeExpression envelope, ExpPoint point, double posTick) {
+                var pt1 = envelope.Points.FindAll(pt => pt.X <= (posTick + point.X)).OrderByDescending(a => a.X).ThenByDescending(a => a.Y).FirstOrDefault();
+                if(pt1 == null) { pt1 = new ExpPoint(0, 0); }
+                var pt2 = envelope.Points.Find(pt => pt.X > (point.X + posTick));
+                if (pt2 == null) return Math.Min(pt1.Y, point.Y);
+                return Math.Min((pt1.Y - pt2.Y) / (pt1.X - pt2.X) * (point.X - pt1.X + posTick) + pt1.Y, point.Y);
+            }
+
             foreach (UNote note in part.Notes)
             {
                 foreach (UPhoneme phoneme in note.Phonemes)
                 {
                     phoneme.Envelope.Points[0].X = -phoneme.Preutter;
+                    phoneme.Envelope.Points[0].Y = 0;
                     phoneme.Envelope.Points[1].X = phoneme.Envelope.Points[0].X + (phoneme.Overlapped ? phoneme.Overlap : 5);
                     phoneme.Envelope.Points[3].X = DocManager.Inst.Project.TickToMillisecond(phoneme.DurTick, part.PosTick + note.PosTick + phoneme.PosTick) - phoneme.TailIntrude;
                     phoneme.Envelope.Points[2].X = Math.Min(Math.Max(0, phoneme.Envelope.Points[1].X), phoneme.Envelope.Points[3].X);
                     phoneme.Envelope.Points[4].X = phoneme.Envelope.Points[3].X + phoneme.TailOverlap;
+                    phoneme.Envelope.Points[4].Y = 0;
 
                     phoneme.Envelope.Points[1].Y = (int)phoneme.Parent.Expressions["volume"].Data;
-                    phoneme.Envelope.Points[1].X = phoneme.Envelope.Points[0].X + (phoneme.Overlapped ? phoneme.Overlap : 5) * (int)phoneme.Parent.Expressions["accent"].Data / 100.0;
-                    phoneme.Envelope.Points[1].Y = (int)phoneme.Parent.Expressions["accent"].Data * (int)phoneme.Parent.Expressions["volume"].Data / 100;
+                    if (phoneme.PosTick == 0)
+                    {
+                        phoneme.Envelope.Points[1].X = phoneme.Envelope.Points[0].X + (phoneme.Overlapped ? phoneme.Overlap : 5) * (int)phoneme.Parent.Expressions["accent"].Data / 100.0;
+                        phoneme.Envelope.Points[1].Y = (int)phoneme.Parent.Expressions["accent"].Data * (int)phoneme.Parent.Expressions["volume"].Data / 100;
+                    }
                     phoneme.Envelope.Points[2].X = Math.Min(Math.Max(0, phoneme.Envelope.Points[1].X), phoneme.Envelope.Points[3].X);
                     phoneme.Envelope.Points[2].Y = (int)phoneme.Parent.Expressions["volume"].Data;
                     phoneme.Envelope.Points[3].Y = (int)phoneme.Parent.Expressions["volume"].Data;
                     phoneme.Envelope.Points[3].X -= (phoneme.Envelope.Points[3].X - phoneme.Envelope.Points[2].X) * (int)phoneme.Parent.Expressions["release"].Data / 500;
-                    phoneme.Envelope.Points[3].Y *= 1.0 - (int)phoneme.Parent.Expressions["release"].Data / 100.0;
+                    //phoneme.Envelope.Points[3].Y *= 1.0 - (int)phoneme.Parent.Expressions["release"].Data / 100.0;
                     phoneme.Envelope.Points[2].X += (phoneme.Envelope.Points[3].X - phoneme.Envelope.Points[2].X) * ((int)phoneme.Parent.Expressions["decay"].Data / 100.0);
+                }
+                note.Envelope.Points[0] = note.Phonemes.First().Envelope.Points[0].Clone();
+                note.Envelope.Points[1] = note.Phonemes.First().Envelope.Points[1].Clone();
+                var lastpho = note.Phonemes.Last();
+                note.Envelope.Points[3] = lastpho.Envelope.Points[3].Clone();
+                note.Envelope.Points[4] = lastpho.Envelope.Points[4].Clone();
+                var posCompansate = DocManager.Inst.Project.TickToMillisecond(lastpho.PosTick, part.PosTick + note.PosTick);
+                note.Envelope.Points[3].X += posCompansate;
+                note.Envelope.Points[4].X += posCompansate;
+
+                note.Envelope.Points[1].Y = (int)note.Expressions["volume"].Data;
+                note.Envelope.Points[1].X = note.Envelope.Points[0].X + (note.Phonemes.First().Overlapped ? note.Phonemes.First().Overlap : 5) * (int)note.Expressions["accent"].Data / 100.0;
+                note.Envelope.Points[1].Y = (int)note.Expressions["accent"].Data * (int)note.Expressions["volume"].Data / 100;
+                note.Envelope.Points[2].X = Math.Min(Math.Max(0, note.Envelope.Points[1].X), note.Envelope.Points[3].X);
+                note.Envelope.Points[2].Y = (int)note.Expressions["volume"].Data;
+                note.Envelope.Points[3].Y = (int)note.Expressions["volume"].Data;
+                note.Envelope.Points[3].X -= (note.Envelope.Points[3].X - note.Envelope.Points[2].X) * (int)note.Expressions["release"].Data / 500;
+                note.Envelope.Points[3].Y *= 1.0 - (int)note.Expressions["release"].Data / 100.0;
+                note.Envelope.Points[2].X += (note.Envelope.Points[3].X - note.Envelope.Points[2].X) * ((int)note.Expressions["decay"].Data / 100.0);
+                foreach (var item in note.Phonemes)
+                {
+                    foreach (var item1 in item.Envelope.Points)
+                    {
+                        item1.Y = ClampIntoEnvelope(note.Envelope, item1, DocManager.Inst.Project.TickToMillisecond(item.PosTick, part.PosTick + note.PosTick));
+                    }
                 }
             }
         }
@@ -218,23 +256,7 @@ namespace OpenUtau.Core
                             }
                         }
                     }
-                    bool hyphenHolder = note.Lyric.Equals("-") || phoneme.Phoneme.Equals("-");
-                    if (phoneme.Phoneme.Equals("-")) {
-                        try
-                        {
-                            phoneme.Phoneme = Util.LyricsHelper.GetVowel(oldpho.Phoneme);
-                            if (!singer.AliasMap.ContainsKey(phoneme.PhonemeRemapped) && Util.HiraganaRomajiHelper.IsSupportedRomaji(phoneme.Phoneme))
-                            {
-                                if(singer.AliasMap.ContainsKey(Util.HiraganaRomajiHelper.ToHiragana(phoneme.Phoneme) + phoneme.RemappedBank))
-                                phoneme.Phoneme = Util.HiraganaRomajiHelper.ToHiragana(phoneme.Phoneme);
-                            }
-                        }
-                        catch (Exception)
-                        {
-                            System.Diagnostics.Debug.WriteLine("Cannot replace \"-\" placeholder");
-                        }
-                    }
-
+                    bool hyphenHolder = phoneme.Phoneme.Equals("-");
                     if (singer.AliasMap.ContainsKey(phoneme.PhonemeRemapped))
                     {
                         phoneme.Oto = singer.AliasMap[phoneme.PhonemeRemapped];
@@ -301,6 +323,23 @@ namespace OpenUtau.Core
 
         private static void UpdatePhonemes(UVoicePart part, USinger singer)
         {
+            UNote GetFormerNote(UNote me) {
+                return part.Notes.FirstOrDefault(note1 => note1 != me && Math.Abs(me.PosTick - note1.EndTick) < DocManager.Inst.Project.Resolution / 64);
+            }
+            string GetSuitableLyrics(UNote me) {
+                if (me.Lyric != "-")
+                {
+                    return me.Lyric;
+                }
+                else {
+                    UNote former = me;
+                    do
+                    {
+                        former = GetFormerNote(former);
+                    } while (former != null && former.Lyric == "-");
+                    return former == null ? "-" : Util.LyricsHelper.GetVowel(former.Lyric, singer);
+                }
+            }
             if (part == null || singer == null) return;
             foreach (var note in part.Notes)
             {
@@ -313,9 +352,10 @@ namespace OpenUtau.Core
                 }
                 else if (part.ConvertStyle ?? Util.Preferences.Default.AutoConvertStyles)
                 {
-                    UNote former = part.Notes.FirstOrDefault(note1 => note1 != note && Math.Abs(note.PosTick - note1.EndTick) < DocManager.Inst.Project.Resolution / 64);
+                    UNote former = GetFormerNote(note);
                     UNote lator = part.Notes.FirstOrDefault(note1 => note1 != note && Math.Abs(note1.PosTick - note.EndTick) < DocManager.Inst.Project.Resolution / 64);
-                    var mod = Util.SamplingStyleHelper.GetCorrespondingPhoneme(note.Lyric, former, lator, singer.Style, singer);
+                    var lyrics = GetSuitableLyrics(note);
+                    var mod = Util.SamplingStyleHelper.GetCorrespondingPhoneme(lyrics, former, lator, singer.Style, singer);
                     var mods = mod.Split('\t');
                     if (mods.Length == 1) {
                         if(note.Phonemes.Count == 1)
@@ -344,12 +384,14 @@ namespace OpenUtau.Core
                 }
                 else
                 {
-                    if(note.Phonemes.Count == 1)
-                        note.Phonemes[0].Phoneme = note.Lyric;
+                    UNote former = part.Notes.FirstOrDefault(note1 => note1 != note && Math.Abs(note.PosTick - note1.EndTick) < DocManager.Inst.Project.Resolution / 64);
+                    var lyrics = GetSuitableLyrics(note);
+                    if (note.Phonemes.Count == 1)
+                        note.Phonemes[0].Phoneme = lyrics;
                     else
                     {
                         note.Phonemes.Clear();
-                        note.Phonemes.Add(new UPhoneme() { Parent = note, Phoneme = note.Lyric });
+                        note.Phonemes.Add(new UPhoneme() { Parent = note, Phoneme = lyrics });
                     }
                 }
             }

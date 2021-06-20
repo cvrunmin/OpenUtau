@@ -22,18 +22,19 @@ namespace OpenUtau.Core.Render
 
         private static RenderDispatcher _s;
         public static RenderDispatcher Inst { get { if (_s == null) { _s = new RenderDispatcher(); } return _s; } }
-        public RenderDispatcher() {
+        public RenderDispatcher()
+        {
 
         }
 
         public async void WriteToFile(string file)
         {
-            await Task.Run(()=> WaveFileWriter.CreateWaveFile16(file, GetMixingSampleProvider())).ContinueWith(task=>DocManager.Inst.ExecuteCmd(new ProgressBarNotification(100, "Done!")));
+            await Task.Run(() => WaveFileWriter.CreateWaveFile16(file, GetMixingSampleProvider())).ContinueWith(task => DocManager.Inst.ExecuteCmd(new ProgressBarNotification(100, "Done!")));
         }
 
         public async void WriteToFile(string file, UProject project)
         {
-            await Task.Run(async ()=>WaveFileWriter.CreateWaveFile(file, (await GetMixingSampleProvider(project)).ToWaveProvider())).ContinueWith(task=>DocManager.Inst.ExecuteCmd(new ProgressBarNotification(100, "Done!")));
+            await Task.Run(async () => WaveFileWriter.CreateWaveFile(file, (await GetMixingSampleProvider(project)).ToWaveProvider())).ContinueWith(task => DocManager.Inst.ExecuteCmd(new ProgressBarNotification(100, "Done!")));
         }
 
         public SequencingSampleProvider GetMixingSampleProvider()
@@ -51,12 +52,22 @@ namespace OpenUtau.Core.Render
         public List<(UWaveMixerStream32 Raw, TrackWaveChannel Baked)> trackCache = new List<(UWaveMixerStream32, TrackWaveChannel)>();
         public Dictionary<int, WaveStream> partCache = new Dictionary<int, WaveStream>();
 
-        public Task<UWaveMixerStream32> GetMixingStream(UProject project) {
+        public void ReleasePartCache()
+        {
+            foreach (var cache in partCache)
+            {
+                cache.Value?.Dispose();
+            }
+            partCache.Clear();
+        }
+
+        public Task<UWaveMixerStream32> GetMixingStream(UProject project)
+        {
             return GetMixingStream(project, CancellationToken.None);
         }
         public async Task<UWaveMixerStream32> GetMixingStream(UProject project, CancellationToken token)
         {
-            if (trackCache.Count == 0) trackCache = Enumerable.Repeat(((UWaveMixerStream32, TrackWaveChannel))(null,null), project.Tracks.Count).ToList();
+            if (trackCache.Count == 0) trackCache = Enumerable.Repeat(((UWaveMixerStream32, TrackWaveChannel))(null, null), project.Tracks.Count).ToList();
             if (trackCache.Capacity < project.Tracks.Count || trackCache.Count < project.Tracks.Count)
             {
                 trackCache.Capacity = project.Tracks.Count;
@@ -67,11 +78,11 @@ namespace OpenUtau.Core.Render
             int total = project.Tracks.Count;
             var schedule = new List<Task>();
             DocManager.Inst.ExecuteCmd(new ProgressBarNotification(-1, $"Checking cache"));
-            if(!Preferences.Default.UseScript)
-            foreach (var item in project.Tracks.Select(track=>track.Singer).Distinct())
-            {
-                schedule.Add(Task.Run(() => SoundbankCache.MakeSingerCache(item)));
-            }
+            if (!Preferences.Default.UseScript && false)
+                foreach (var item in project.Tracks.Select(track => track.Singer).Distinct())
+                {
+                    schedule.Add(Task.Run(() => SoundbankCache.MakeSingerCache(item)));
+                }
             await Task.WhenAll(schedule);
             schedule.Clear();
             DocManager.Inst.ExecuteCmd(new ProgressBarNotification(0, $"Rendering Tracks 0/{total}"));
@@ -80,7 +91,7 @@ namespace OpenUtau.Core.Render
             var parts = project.Parts.GroupBy(part => part.TrackNo).ToDictionary(group => group.Key);
             foreach (UTrack track in project.Tracks)
             {
-                schedule.Add(Task.Run(async() =>
+                schedule.Add(Task.Run(async () =>
                 {
                     token.ThrowIfCancellationRequested();
                     if (track.Amended || !trackCache.Any(track1 => track1.Baked?.TrackNo == track.TrackNo))
@@ -104,7 +115,7 @@ namespace OpenUtau.Core.Render
                             {
                                 if (!partCache.ContainsKey(part.PartNo) || part.Amended)
                                 {
-                                    if (partCache.ContainsKey(part.PartNo))partCache[part.PartNo]?.Dispose();
+                                    if (partCache.ContainsKey(part.PartNo)) partCache[part.PartNo]?.Dispose();
                                     if (part is UWavePart)
                                     {
                                         WaveStream s;
@@ -166,7 +177,7 @@ namespace OpenUtau.Core.Render
                                 }
                                 catch (Exception)
                                 {
-                                    src = new SilenceProvider(trackMixing.WaveFormat).ToWaveStream();
+                                    src = new SilenceProvider(trackMixing.WaveFormat).ToWaveStream(TimeSpan.FromMilliseconds(project.TickToMillisecond(part.DurTick)));
                                 }
                                 trackMixing.AddInputStream(new UWaveOffsetStream(src, TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)), TimeSpan.Zero, src.TotalTime));
                                 part.ModifyCount = 0;
@@ -217,33 +228,34 @@ namespace OpenUtau.Core.Render
             }
             else*/
             bool usescript = Preferences.Default.UseScript;
-            return await Task.Run(()=>BuildVoicePartAudio(part, project, engine, token, usescript)).ContinueWith(async task =>
-            {
-                if (!task.IsCanceled)
-                {
-                    if (Preferences.Default.UseScript)
-                    {
-                        try
-                        {
-                            return new AudioFileReaderExt(Path.Combine(DocManager.CachePath, $"temp-Part_{part.PartNo}.wav"));
-                        }
-                        catch (Exception e)
-                        {
-                            return WritePartProviderToStream(
-                                new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(), part.PartNo, CancellationToken.None);
-                        }
-                    }
-                    else
-                    {
-                        ISampleProvider src = task.Result ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider();
-                        return await (DocManager.Inst.Factory.StartNew(() => WritePartProviderToStream(src, part.PartNo, token)));
-                    }
-                }
-                return null;
-            });
+            return await Task.Run(() => BuildVoicePartAudio(part, project, engine, token, usescript)).ContinueWith(async task =>
+              {
+                  if (!task.IsCanceled)
+                  {
+                      if (Preferences.Default.UseScript)
+                      {
+                          try
+                          {
+                              return new AudioFileReaderExt(Path.Combine(DocManager.CachePath, $"temp-Part_{part.PartNo}.wav"));
+                          }
+                          catch (Exception e)
+                          {
+                              return WritePartProviderToStream(
+                                  new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(), part.PartNo, CancellationToken.None);
+                          }
+                      }
+                      else
+                      {
+                          ISampleProvider src = task.Result ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider();
+                          return await (DocManager.Inst.Factory.StartNew(() => WritePartProviderToStream(src, part.PartNo, token)));
+                      }
+                  }
+                  return null;
+              });
         }
 
-        public async Task<TrackWaveChannel> RenderTrackStream(UProject project, UTrack track, CancellationToken token, bool slient = false, int i = 0, int total = 0) {
+        public async Task<TrackWaveChannel> RenderTrackStream(UProject project, UTrack track, CancellationToken token, bool slient = false, int i = 0, int total = 0)
+        {
             var parts = project.Parts.Where(part => part.TrackNo == track.TrackNo);
             var trackMixing = new UWaveMixerStream32();
             var source = (new TrackSampleProvider() { TrackNo = track.TrackNo, PlainVolume = DecibelToVolume(track.Volume), Muted = track.ActuallyMuted, Pan = (float)track.Pan / 90f });
@@ -269,14 +281,16 @@ namespace OpenUtau.Core.Render
                     {
                         System.IO.FileInfo ResamplerFile = new System.IO.FileInfo(string.IsNullOrWhiteSpace(track.OverrideRenderEngine) ? PathManager.Inst.GetPreviewEnginePath() : System.IO.Path.Combine(PathManager.Inst.GetEngineSearchPath(), track.OverrideRenderEngine));
                         IResamplerDriver engine = ResamplerDriver.ResamplerDriver.LoadEngine(ResamplerFile.FullName);
-                        subschedule.Add(BuildVoicePartAudio(part as UVoicePart, project, engine, token).ContinueWith(async task => {
+                        subschedule.Add(BuildVoicePartAudio(part as UVoicePart, project, engine, token).ContinueWith(async task =>
+                        {
                             if (!task.IsCanceled)
                             {
                                 ISampleProvider src = task.Result ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider();
                                 return await DocManager.Inst.Factory.StartNew(() => WritePartProviderToStream(src, part.PartNo, token), token);
                             }
                             return null;
-                        }, token).ContinueWith(task => {
+                        }, token).ContinueWith(task =>
+                        {
                             DocManager.Inst.ExecuteCmd(new ProgressBarNotification((int)((float)i / total * 100), $"Rendering Tracks {i}/{total}"));
                             try
                             {
@@ -299,7 +313,7 @@ namespace OpenUtau.Core.Render
             }
             await Task.WhenAll(subschedule);
             token.ThrowIfCancellationRequested();
-            if(!slient)DocManager.Inst.ExecuteCmd(new ProgressBarNotification((int)((float)i / total * 100), $"Rendering Tracks {i}/{total}"));
+            if (!slient) DocManager.Inst.ExecuteCmd(new ProgressBarNotification((int)((float)i / total * 100), $"Rendering Tracks {i}/{total}"));
             return new TrackWaveChannel(trackMixing) { TrackNo = source.TrackNo, PlainVolume = source.PlainVolume, Pan = source.Pan, Muted = source.Muted };
         }
 
@@ -307,18 +321,20 @@ namespace OpenUtau.Core.Render
         {
             return GetMixingSampleProvider(project, skippedTracks, CancellationToken.None);
         }
-        public async Task<MixingSampleProvider> GetMixingSampleProvider(UProject project, int[] skippedTracks, CancellationToken token) {
+        public async Task<MixingSampleProvider> GetMixingSampleProvider(UProject project, int[] skippedTracks, CancellationToken token)
+        {
             MixingSampleProvider masterMix = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
             List<TrackSampleProvider> trackSources = Enumerable.Repeat((TrackSampleProvider)null, project.Tracks.Count).ToList();
             var parts = project.Parts.GroupBy(part => part.TrackNo).SkipWhile(group => skippedTracks.Contains(group.Key)).ToDictionary(group => group.Key);
             var schedule = new List<Task>();
-            foreach (var item in project.Tracks.Select(track => track.Singer).Distinct())
+            //foreach (var item in project.Tracks.Select(track => track.Singer).Distinct())
+            //{
+            //    SoundbankCache.MakeSingerCache(item);
+            //}
+            foreach (UTrack track in project.Tracks.SkipWhile(track => skippedTracks.Contains(track.TrackNo)))
             {
-                SoundbankCache.MakeSingerCache(item);
-            }
-            foreach (UTrack track in project.Tracks.SkipWhile(track=>skippedTracks.Contains(track.TrackNo)))
-            {
-                schedule.Add(Task.Run(async() => {
+                schedule.Add(Task.Run(async () =>
+                {
                     token.ThrowIfCancellationRequested();
                     trackSources[track.TrackNo] = (new TrackSampleProvider() { TrackNo = track.TrackNo, PlainVolume = DecibelToVolume(track.Volume), Muted = track.ActuallyMuted, Pan = (float)track.Pan / 90f });
                     var subschedule = new List<Task>();
@@ -343,7 +359,8 @@ namespace OpenUtau.Core.Render
                             {
                                 System.IO.FileInfo ResamplerFile = new System.IO.FileInfo(string.IsNullOrWhiteSpace(track.OverrideRenderEngine) ? PathManager.Inst.GetPreviewEnginePath() : System.IO.Path.Combine(PathManager.Inst.GetEngineSearchPath(), track.OverrideRenderEngine));
                                 IResamplerDriver engine = ResamplerDriver.ResamplerDriver.LoadEngine(ResamplerFile.FullName);
-                                subschedule.Add(BuildVoicePartAudio(part as UVoicePart, project, engine, token).ContinueWith(task => {
+                                subschedule.Add(BuildVoicePartAudio(part as UVoicePart, project, engine, token).ContinueWith(task =>
+                                {
                                     trackSources[part.TrackNo].AddSource(task.Result ?? new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToSampleProvider(),
                                         TimeSpan.FromMilliseconds(project.TickToMillisecond(part.PosTick)/* - project.TickToMillisecond(480, part.PosTick) * part.PosTick / project.Resolution*/));
                                 }));
@@ -352,7 +369,9 @@ namespace OpenUtau.Core.Render
                         token.ThrowIfCancellationRequested();
                     }
                     await Task.WhenAll(subschedule);
-                },token).ContinueWith(task => { if (!task.IsCanceled)
+                }, token).ContinueWith(task =>
+                {
+                    if (!task.IsCanceled)
                         masterMix.AddMixerInput(trackSources[track.TrackNo]);
                 }));
                 token.ThrowIfCancellationRequested();
@@ -371,7 +390,7 @@ namespace OpenUtau.Core.Render
             }
             catch
             {
-                return new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToWaveStream(); 
+                return new SilenceProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2)).ToWaveStream();
             }
             var offseted = new UWaveOffsetStream(stream) { SourceOffset = TimeSpan.FromMilliseconds((int)project.TickToMillisecond(part.HeadTrimTick, part.PosTick - part.HeadTrimTick)), SourceLength = TimeSpan.FromMilliseconds((int)project.TickToMillisecond(part.DurTick, part.PosTick)) };
             return offseted;
@@ -392,11 +411,12 @@ namespace OpenUtau.Core.Render
             {
                 sample = stream.ToSampleProvider();
             }
-            var offseted = new UOffsetSampleProvider(sample) { SkipOver = new TimeSpan(0,0,0,0,(int)project.TickToMillisecond(part.HeadTrimTick, part.PosTick - part.HeadTrimTick)), Take = new TimeSpan(0,0,0,0,(int)project.TickToMillisecond(part.DurTick, part.PosTick))};
+            var offseted = new UOffsetSampleProvider(sample) { SkipOver = new TimeSpan(0, 0, 0, 0, (int)project.TickToMillisecond(part.HeadTrimTick, part.PosTick - part.HeadTrimTick)), Take = new TimeSpan(0, 0, 0, 0, (int)project.TickToMillisecond(part.DurTick, part.PosTick)) };
             return offseted;
         }
 
-        private Task<SequencingSampleProvider> BuildVoicePartAudio(UVoicePart part, UProject project, IResamplerDriver engine, bool useWavtool = false) {
+        private Task<SequencingSampleProvider> BuildVoicePartAudio(UVoicePart part, UProject project, IResamplerDriver engine, bool useWavtool = false)
+        {
             return BuildVoicePartAudio(part, project, engine, System.Threading.CancellationToken.None, useWavtool);
         }
         private async Task<SequencingSampleProvider> BuildVoicePartAudio(UVoicePart part, UProject project, IResamplerDriver engine, System.Threading.CancellationToken cancel, bool useWavtool = false)
@@ -410,7 +430,8 @@ namespace OpenUtau.Core.Render
             return db == -24 ? 0 : db < -16 ? (float)MusicMath.DecibelToLinear(db * 2 + 16) : (float)MusicMath.DecibelToLinear(db);
         }
 
-        public static WaveStream WritePartProviderToStream(ISampleProvider source, int partNo, CancellationToken token) {
+        public static WaveStream WritePartProviderToStream(ISampleProvider source, int partNo, CancellationToken token)
+        {
             double elisimatedMs;
             try
             {

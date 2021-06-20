@@ -36,10 +36,13 @@ namespace OpenUtau.UI.Dialogs
             get => _selectedGrid;
         }
         public UTrack Track { get; set; }
+
+        private Controls.TrackHeader trackHeader { get; set; }
         List<string> singerPaths;
-        public TrackPreferencesDialog(UTrack track)
+        public TrackPreferencesDialog(UTrack track, Controls.TrackHeader header)
         {
             Track = track;
+            trackHeader = header;
             InitializeComponent();
 
             var singers = new Dictionary<string, USinger>
@@ -121,6 +124,8 @@ namespace OpenUtau.UI.Dialogs
             var color = new System.Windows.Forms.ColorDialog();
             color.ShowDialog();
             Track.Color = color.Color.ToMediaColor();
+            trackHeader.UpdateTrackColor();
+            BindingOperations.GetBindingExpression(butTrackColor.Background, SolidColorBrush.ColorProperty).UpdateTarget();
         }
     }
 }

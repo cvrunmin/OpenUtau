@@ -21,6 +21,8 @@ namespace OpenUtau.UI.Dialogs
     {
         public bool ExportTrack => comboExportU.SelectedIndex == 1;
 
+        public string CustomTitle { get; set; } = "Export Ust";
+
         public ExportUstDialog()
         {
             InitializeComponent();

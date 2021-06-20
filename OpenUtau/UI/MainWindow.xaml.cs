@@ -1,30 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using System.Windows.Shell;
-
-using WinInterop = System.Windows.Interop;
-using System.Runtime.InteropServices;
 
 using OpenUtau.UI.Models;
 using OpenUtau.UI.Controls;
 using OpenUtau.Core;
 using OpenUtau.Core.USTx;
-using System.Windows.Forms;
-using OpenUtau.Core.Render;
 using OpenUtau.UI.Dialogs;
 using Microsoft.WindowsAPICodePack.Dialogs;
-using OpenUtau.Core.Util;
 
 namespace OpenUtau.UI
 {
@@ -527,15 +515,16 @@ namespace OpenUtau.UI
 
         private void MenuImportTrack_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog()
+            var openFileDialog = new CommonOpenFileDialog()
             {
-                Filter = "Project Files|*.ustx; *.vsqx; *.ust|All Files|*.*",
                 Multiselect = true,
-                CheckFileExists = true
+                EnsureFileExists = true
             };
-            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            openFileDialog.Filters.Add(new CommonFileDialogFilter("Project Files", "*.ustx;*.vsqx;*.vpr;*.ust"));
+
+            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                CmdImportFile(openFileDialog.FileNames);
+                CmdImportFile(openFileDialog.FileNames.ToArray());
             }
         }
 
@@ -558,13 +547,13 @@ namespace OpenUtau.UI
 
         private void MenuImportMidi_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog()
+            var openFileDialog = new CommonOpenFileDialog()
             {
-                Filter = "Midi File|*.mid",
                 Multiselect = false,
-                CheckFileExists = true
+                EnsureFileExists = true
             };
-            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            openFileDialog.Filters.Add(new CommonFileDialogFilter("Midi", "*.mid"));
+            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
                 CmdImportAudio(openFileDialog.FileName, false);
                 var project = DocManager.Inst.Project;
@@ -599,6 +588,15 @@ namespace OpenUtau.UI
             if(dialog.ShowDialog().Value)
             {
                 Core.Formats.Ust.Save(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(DocManager.Inst.Project.FilePath), DocManager.Inst.Project.Name), DocManager.Inst.Project, dialog.ExportTrack, dialog.chkboxPosAsRest.IsChecked.Value);
+            }
+        }
+        private void MenuExportMidi_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new ExportUstDialog() { CustomTitle = "Export Midi" };
+            dialog.chkboxPosAsRest.Visibility = Visibility.Collapsed;
+            if(dialog.ShowDialog().Value)
+            {
+                Core.Formats.Midi.Save(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(DocManager.Inst.Project.FilePath), DocManager.Inst.Project.Name), DocManager.Inst.Project, dialog.ExportTrack);
             }
         }
 
@@ -657,7 +655,7 @@ namespace OpenUtau.UI
                         + "including smooth editing and intellegent phonology support "
                         + "to singing software synthesizer community."
                         + "\n\nOpenUtau is an open source software under the MIT Licence. Visit us on GitHub.";
-            System.Windows.Forms.MessageBox.Show(text, "About OpenUtau", MessageBoxButtons.OK, MessageBoxIcon.None);
+            System.Windows.MessageBox.Show(text, "About OpenUtau", MessageBoxButton.OK, MessageBoxImage.None);
         }
 
         private void MenuPrefs_Click(object sender, RoutedEventArgs e)
@@ -694,24 +692,30 @@ namespace OpenUtau.UI
         {
             List<UPart> removal = new List<UPart>();
             List<UPart> additional = new List<UPart>();
-            foreach (var group in trackVM.SelectedParts.GroupBy(upart => upart.TrackNo))
+            try
             {
-                removal = removal.Concat(group.AsEnumerable()).ToList();
-                additional.Add(Core.Util.Utils.MergeParts(group.Key, group.ToArray()));
+                foreach (var group in trackVM.SelectedParts.GroupBy(upart => upart.TrackNo))
+                {
+                    removal = removal.Concat(group.AsEnumerable()).ToList();
+                    additional.Add(Core.Util.Utils.MergeParts(group.Key, group.ToArray()));
+                }
+                trackVM.DeselectAll();
+                DocManager.Inst.StartUndoGroup();
+                foreach (var item in removal)
+                {
+                    DocManager.Inst.ExecuteCmd(new RemovePartCommand(trackVM.Project, item));
+                }
+                foreach (var item in additional)
+                {
+                    DocManager.Inst.ExecuteCmd(new AddPartCommand(trackVM.Project, item));
+                    trackVM.SelectPart(item);
+                }
+                DocManager.Inst.EndUndoGroup();
+                trackVM.MarkUpdate();
             }
-            trackVM.DeselectAll();
-            DocManager.Inst.StartUndoGroup();
-            foreach (var item in removal)
-            {
-                DocManager.Inst.ExecuteCmd(new RemovePartCommand(trackVM.Project, item));
+            catch (ArgumentException ex) {
+                MessageBox.Show(ex.Message, "Merge Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
-            foreach (var item in additional)
-            {
-                DocManager.Inst.ExecuteCmd(new AddPartCommand(trackVM.Project, item));
-                trackVM.SelectPart(item);
-            }
-            DocManager.Inst.EndUndoGroup();
-            trackVM.MarkUpdate();
         }
 
         private void MenuRenewPartNo_Click(object sender, RoutedEventArgs e)
@@ -811,13 +815,13 @@ namespace OpenUtau.UI
 
         private void CmdOpenFileDialog()
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog()
+            var openFileDialog = new CommonOpenFileDialog()
             {
-                Filter = "Project Files|*.ustx; *.vsqx; *.ust|All Files|*.*",
-                Multiselect = true,
-                CheckFileExists = true
+                Multiselect = false,
+                EnsureFileExists = true
             };
-            if (openFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) CmdOpenFile(openFileDialog.FileNames);
+            openFileDialog.Filters.Add(new CommonFileDialogFilter("Project Files", "*.ustx;*.vsqx;*.vpr;*.ust"));
+            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) CmdOpenFile(new string[] { openFileDialog.FileName });
         }
 
         private void CmdOpenFile(string[] files)
@@ -853,8 +857,11 @@ namespace OpenUtau.UI
         {
             if (!DocManager.Inst.Project.Saved || saveAs)
             {
-                SaveFileDialog dialog = new SaveFileDialog() { DefaultExt = "ustx", Filter = "Project Files|*.ustx", Title = "Save File" };
-                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                var dialog = new CommonSaveFileDialog() {
+                    DefaultExtension = "ustx", Title = "Save File"
+                };
+                dialog.Filters.Add(new CommonFileDialogFilter("Project Files", "*.ustx"));
+                if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
                 {
                     DocManager.Inst.ExecuteCmd(new SaveProjectNotification(dialog.FileName));
                 }

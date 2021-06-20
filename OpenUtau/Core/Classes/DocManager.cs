@@ -91,7 +91,7 @@ namespace OpenUtau.Core
                     foreach (var stream in Render.RenderDispatcher.Inst.partCache.Values) {
                         stream.Close();
                     }
-                    Render.RenderDispatcher.Inst.partCache.Clear();
+                    Render.RenderDispatcher.Inst.ReleasePartCache();
                     
                     Render.RenderCache.Inst.Clear();
                     undoGroup = null;

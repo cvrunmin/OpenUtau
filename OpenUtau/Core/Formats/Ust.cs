@@ -210,6 +210,7 @@ namespace OpenUtau.Core.Formats
                 foreach (var track in project.Tracks)
                 {
                     var tParts = parts.Where(part => part.TrackNo == track.TrackNo).OrderBy(part => part.PosTick);
+                    if (tParts.Count() == 0) continue;
                     using (var file = File.CreateText(pathFormat + $"_Track-{track.TrackNo}.ust"))
                     {
                         file.WriteLine(versionTag);
@@ -501,7 +502,7 @@ namespace OpenUtau.Core.Formats
             }
         }
 
-        static String VibratoToUst(VibratoExpression vibrato)
+        internal static String VibratoToUst(VibratoExpression vibrato)
         {
             List<double> args = new List<double>()
             {

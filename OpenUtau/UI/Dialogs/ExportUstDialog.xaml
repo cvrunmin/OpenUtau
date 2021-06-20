@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OpenUtau.UI.Dialogs"
         mc:Ignorable="d"
-        Title="ExportUstDialog" Height="300" Width="300" Loaded="Window_Loaded">
+        Title="{Binding CustomTitle, RelativeSource={RelativeSource Self}}" Height="300" Width="300" Loaded="Window_Loaded">
     <Grid>
         <Label Content="Export Unit" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
         <ComboBox x:Name="comboExportU" Margin="88.017,10,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120" SelectedIndex="0" SelectionChanged="comboExportU_SelectionChanged">

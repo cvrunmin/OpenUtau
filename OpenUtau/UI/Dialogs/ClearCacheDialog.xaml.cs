@@ -37,13 +37,22 @@ namespace OpenUtau.UI.Dialogs
                 RenderCache.Inst.Clear();
                 RenderDispatcher.Inst.trackCache.ForEach(pair => pair.Baked?.Close());
                 RenderDispatcher.Inst.trackCache.Clear();
-                RenderDispatcher.Inst.partCache.Clear();
+                RenderDispatcher.Inst.ReleasePartCache();
             }
             if (chkboxdiskCache.IsChecked.Value) {
                 if (!string.IsNullOrEmpty(DocManager.Inst.Project.FilePath)) {
                     string path = Path.Combine(Path.GetDirectoryName(DocManager.Inst.Project.FilePath), "UCache");
                     if(Directory.Exists(path))
-                    Directory.Delete(path, true);
+                    {
+                        try
+                        {
+                            Directory.Delete(path, true);
+                        }
+                        catch (IOException)
+                        {
+                            System.Diagnostics.Debug.Write("Cannot delete sound cache!");
+                        }
+                    }
                 }
             }
             if (chkboxVbCache.IsChecked.Value) {

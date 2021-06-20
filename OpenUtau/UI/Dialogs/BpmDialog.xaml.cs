@@ -34,7 +34,11 @@ namespace OpenUtau.UI.Dialogs
         {
             if (SubBpm)
             {
-                DocManager.Inst.ExecuteCmd(new UpdateProjectBpmsNotification(DocManager.Inst.Project, Bpm, TickLoc, Bpm == DocManager.Inst.Project.BPM ^ (Bpm != DocManager.Inst.Project.SubBPM.LastOrDefault(pair => pair.Key < TickLoc).Value && DocManager.Inst.Project.SubBPM.LastOrDefault(pair => pair.Key < TickLoc).Value != 0)));
+                DocManager.Inst.ExecuteCmd(new UpdateProjectBpmsNotification(DocManager.Inst.Project, Bpm, TickLoc,
+                    (Bpm == DocManager.Inst.Project.BPM &&
+                    DocManager.Inst.Project.SubBPM.LastOrDefault(pair => pair.Key < TickLoc).Value == 0)
+                    ^ (Bpm == DocManager.Inst.Project.SubBPM.LastOrDefault(pair => pair.Key < TickLoc).Value &&
+                    DocManager.Inst.Project.SubBPM.LastOrDefault(pair => pair.Key < TickLoc).Value != 0)));
             }
             else
             {

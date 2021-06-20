@@ -37,6 +37,7 @@
                 </MenuItem>
                 <MenuItem Header="{DynamicResource MenuExport}">
                     <MenuItem Header="Ust" Click="MenuExportUst_Click"/>
+                    <MenuItem Header="Midi" Click="MenuExportMidi_Click"/>
                     <MenuItem Header="{DynamicResource MenuRenderAll}" Click="MenuRenderAll_Click"/>
                 </MenuItem>
                 <MenuItem Header="{DynamicResource MenuRecentFile}" IsEnabled="False">

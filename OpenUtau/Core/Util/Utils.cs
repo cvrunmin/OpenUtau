@@ -144,6 +144,7 @@ namespace OpenUtau.Core.Util
 
         private static void ValidateMergingParts(UWavePart[] parts)
         {
+            Array.Sort(parts, (x, y) => x.PosTick.CompareTo(y.PosTick));
             var expectedTrackNo = parts[0].TrackNo;
             var expectedFile = parts[0].FilePath;
             for (int i = 0; i < parts.Length; i++)
@@ -156,7 +157,7 @@ namespace OpenUtau.Core.Util
                 {
                     throw new ArgumentException("Not all parts have the same file", nameof(parts));
                 }
-                if (i > 0 && parts[i].EndTick != parts[i - 1].PosTick)
+                if (i > 0 && parts[i - 1].EndTick != parts[i].PosTick)
                 {
                     throw new ArgumentException("Non-continous parts", nameof(parts));
                 }

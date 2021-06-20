@@ -131,6 +131,11 @@ namespace OpenUtau.UI.Controls
             rectTrackColor.Fill.InvalidateProperty(SolidColorBrush.ColorProperty);
         }
 
+        public void UpdateTrackColor() {
+            //this.InvalidateVisual();
+            BindingOperations.GetBindingExpression(rectTrackColor.Fill, SolidColorBrush.ColorProperty).UpdateTarget();
+        }
+
         ContextMenu headerMenu;
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -149,7 +154,7 @@ namespace OpenUtau.UI.Controls
                     headerMenu.Items.Add(item);
                     var item1 = new MenuItem() { Header = Lang.LanguageManager.GetLocalized("MenuPreferences") };
                     item1.Click += (_o, _c) => {
-                        var dialog = new TrackPreferencesDialog(Track);
+                        var dialog = new TrackPreferencesDialog(Track, this);
                         dialog.ShowDialog();
                     };
                     headerMenu.Items.Add(item1);

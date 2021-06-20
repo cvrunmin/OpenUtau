@@ -23,6 +23,9 @@ namespace OpenUtau.Core.USTx
         public Dictionary<string, UExpression.UExpDiff> VirtualExpressions = new Dictionary<string, UExpression.UExpDiff>();
         public PitchBendExpression PitchBend;
         public VibratoExpression Vibrato;
+        public EnvelopeExpression Envelope;
+
+
         public bool Error = false;
         public bool Selected = false;
 
@@ -30,16 +33,17 @@ namespace OpenUtau.Core.USTx
 
         public bool IsLyricBoxActive { get; internal set; }
 
-        private UNote()
+        protected UNote()
         {
             PitchBend = new PitchBendExpression(this);
             Vibrato = new VibratoExpression(this);
+            Envelope = new EnvelopeExpression(this);
             Phonemes.Add(new UPhoneme() { Parent = this, PosTick = 0 });
         }
 
         public static UNote Create() { return new UNote(); }
 
-        public UNote Clone()
+        public virtual UNote Clone()
         {
             UNote _note = new UNote()
             {
@@ -55,6 +59,7 @@ namespace OpenUtau.Core.USTx
             foreach (var pair in this.VirtualExpressions) _note.VirtualExpressions.Add(pair.Key, pair.Value);
             _note.PitchBend = (PitchBendExpression)this.PitchBend.Clone(_note);
             _note.Vibrato = (VibratoExpression)Vibrato.Clone(_note);
+            _note.Envelope = (EnvelopeExpression)Envelope.Clone(_note);
             return _note;
         }
 
@@ -125,6 +130,35 @@ namespace OpenUtau.Core.USTx
         {
             return string.Format("\"{0}\" Pos:{1} Dur:{2} Note:{3}", Lyric, PosTick, DurTick, NoteNum)
                 + (Error ? " Error" : "") + (Selected ? " Selected" : "");
+        }
+    }
+
+    public class UNestableNote : UNote {
+
+        private List<UNote> Notes = new List<UNote>();
+
+        public new int DurTick => Notes.Max(note => note.EndTick) - PosTick;
+
+        public new int PosTick => Notes.Min(note => note.PosTick);
+
+        public int RootNoteNo = 0;
+
+        private UNote RootNote => Notes.Any() && RootNoteNo >= 0 ? Notes[RootNoteNo] : null;
+
+        public new int NoteNum => RootNote?.NoteNum ?? 60;
+
+        public new int PartNo => RootNote?.PartNo ?? -1;
+        
+        public new static UNestableNote Create() {
+            return new UNestableNote();
+        }
+
+        public override UNote Clone()
+        {
+            var note = new UNestableNote() {
+                Notes = Notes.Select(ln=>ln.Clone()).ToList()
+            };
+            return note;
         }
     }
 

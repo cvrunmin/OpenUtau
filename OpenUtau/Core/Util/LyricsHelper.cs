@@ -269,7 +269,7 @@ namespace OpenUtau.Core.Util
         }
 
         public static string GetCorrespondingPhoneme(string original, UNote former, UNote lator, Style dest, USinger singer = null) {
-            Style style = GetStyle(original);
+            Style style = GetStyle(original, singer);
             if (original.Equals("-")) return original;
             if (style == Style.CV)
             {
@@ -282,7 +282,7 @@ namespace OpenUtau.Core.Util
                             string mainPho;
                             if (former.Lyric.Equals("-"))
                             {
-                                mainPho = former.Phonemes[0].Phoneme;
+                                mainPho = LyricsHelper.GetVowel(former.Phonemes[0].Phoneme, singer);
                             }
                             else
                             {
@@ -317,7 +317,6 @@ namespace OpenUtau.Core.Util
                 {
                     string pt1 = "";
                     string pt2 = "";
-                    //TODO Smart CV2CVVC conversion
                     if (former == null) {
                         pt1 = "- " + original;
                     }
@@ -325,8 +324,12 @@ namespace OpenUtau.Core.Util
                     {
                         pt1 = original;
                     }
-                    if (lator == null) {
+                    if (lator == null)
+                    {
                         pt2 = LyricsHelper.GetVowel(original, singer) + " R";
+                    }
+                    else if (lator.Lyric == "-") {
+                        pt2 = LyricsHelper.GetVowel(original, singer) + " " + LyricsHelper.GetConsonant(LyricsHelper.GetVowel(original, singer), singer);
                     }
                     else
                     {
@@ -344,6 +347,29 @@ namespace OpenUtau.Core.Util
                 {
                     return original.Substring(original.IndexOf(' ') + 1);
                 }
+                if (dest == Style.CVVC) {
+                    string pt1 = "";
+                    string pt2 = "";
+                    if (original.StartsWith("- "))
+                    {
+                        pt1 = original;
+                    }
+                    else {
+                        pt1 = original.Substring(original.IndexOf(' ') + 1);
+                    }
+                    if (lator == null)
+                    {
+                        pt2 = LyricsHelper.GetVowel(original, singer) + " R";
+                    }
+                    else
+                    {
+                        Style style1 = GetStyle(lator.Lyric);
+                        if (style1 == Style.VC || style1 == Style.VCV) return pt1;
+                        string con = LyricsHelper.GetConsonant(lator.Lyric, singer);
+                        pt2 = LyricsHelper.GetVowel(original, singer) + " " + (string.IsNullOrEmpty(con) ? LyricsHelper.GetVowel(lator.Lyric, singer) : con);
+                    }
+                    return pt1 + '\t' + pt2;
+                }
             }
             else if (style == Style.CVVC)
             {
@@ -357,7 +383,7 @@ namespace OpenUtau.Core.Util
         /// </summary>
         /// <param name="phoneme"></param>
         /// <returns></returns>
-        public static Style GetStyle(string phoneme) {
+        public static Style GetStyle(string phoneme, USinger singer = null) {
             var match = Regex.Match(phoneme, pattern: @"([\w-]+)\s(\w+)");
             if (match.Success)
             {
@@ -365,7 +391,7 @@ namespace OpenUtau.Core.Util
                 {
                     return Style.VCV;
                 }
-                if (HiraganaRomajiHelper.IsSupportedHiragana(match.Groups[2].Value) || HiraganaRomajiHelper.IsSupportedRomaji(match.Groups[2].Value))
+                if ((singer == null || singer.Style == Style.VCV) && (HiraganaRomajiHelper.IsSupportedHiragana(match.Groups[2].Value) || HiraganaRomajiHelper.IsSupportedRomaji(match.Groups[2].Value)))
                     return Style.VCV;
                 return Style.VC;
             }

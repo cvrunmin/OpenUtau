@@ -164,9 +164,9 @@ namespace OpenUtau.Core.Render.NAudio
                 if (bytesWritten < numBytes)
                 {
                     // don't read too far into source stream
-                    int sourceBytesRequired = (int)Math.Min(
+                    int sourceBytesRequired = Math.Max(0,(int)Math.Min(
                         numBytes - bytesWritten,
-                        sourceLengthBytes + sourceOffsetBytes - sourceStream.Position);
+                        sourceLengthBytes + sourceOffsetBytes - sourceStream.Position));
                     int read = sourceStream.Read(destBuffer, bytesWritten + offset, sourceBytesRequired);
                     bytesWritten += read;
                 }
